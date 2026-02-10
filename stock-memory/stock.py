@@ -3,6 +3,9 @@
 import streamlit as st
 from openai import OpenAI
 import time
+import pandas as pd
+import os
+from datetime import datetime
 
 # 페이지 설정
 st.set_page_config(
@@ -38,9 +41,134 @@ with st.sidebar:
 # 메인 화면
 st.markdown("# stock")
 
+# 데이터 디렉토리 생성
+data_dir = "./data"
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
+
+# 엑셀 파일 경로
+excel_path = os.path.join(data_dir, "stockmemory.xlsx")
+
 # 세션 상태 초기화
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+# 주식 거래 내역 데이터 초기화
+if "stock_data" not in st.session_state:
+    # 기존 파일이 있으면 로드
+    if os.path.exists(excel_path):
+        try:
+            st.session_state.stock_data = pd.read_excel(excel_path, engine="openpyxl")
+        except Exception as e:
+            st.error(f"파일 로드 오류: {e}")
+            st.session_state.stock_data = pd.DataFrame(columns=[
+                "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"
+            ])
+    else:
+        # 새 데이터프레임 생성
+        st.session_state.stock_data = pd.DataFrame(columns=[
+            "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"
+        ])
+
+# 주식 거래 내역 관리 섹션
+st.markdown("## 📊 주식 거래 내역")
+
+# 행 추가/삭제 컨트롤
+col1, col2, col3 = st.columns([1, 1, 2])
+
+with col1:
+    if st.button("➕ 행 추가"):
+        new_row = pd.DataFrame([{
+            "날짜": datetime.now().strftime("%Y-%m-%d"),
+            "종목명": "",
+            "구분": "매수",
+            "수량": 0,
+            "체결 단가": 0,
+            "수수료": 0,
+            "정산금액": 0,
+            "메모": ""
+        }])
+        st.session_state.stock_data = pd.concat([st.session_state.stock_data, new_row], ignore_index=True)
+        st.rerun()
+
+with col2:
+    if st.button("💾 저장"):
+        try:
+            st.session_state.stock_data.to_excel(excel_path, index=False, engine="openpyxl")
+            st.success(f"✅ 저장 완료: {excel_path}")
+        except Exception as e:
+            st.error(f"저장 오류: {e}")
+
+# 삭제할 행 선택
+if len(st.session_state.stock_data) > 0:
+    with col3:
+        delete_indices = st.multiselect(
+            "삭제할 행 선택",
+            options=range(len(st.session_state.stock_data)),
+            format_func=lambda x: f"행 {x+1}: {st.session_state.stock_data.iloc[x].get('종목명', '')} ({st.session_state.stock_data.iloc[x].get('날짜', '')})"
+        )
+        if delete_indices and st.button("🗑️ 선택한 행 삭제"):
+            st.session_state.stock_data = st.session_state.stock_data.drop(
+                st.session_state.stock_data.index[delete_indices]
+            ).reset_index(drop=True)
+            st.rerun()
+
+# 데이터 편집기
+if len(st.session_state.stock_data) > 0:
+    edited_df = st.data_editor(
+        st.session_state.stock_data,
+        use_container_width=True,
+        num_rows="dynamic",
+        column_config={
+            "날짜": st.column_config.DateColumn(
+                "날짜",
+                format="YYYY-MM-DD",
+                step=1,
+            ),
+            "종목명": st.column_config.TextColumn(
+                "종목명",
+                width="medium",
+            ),
+            "구분": st.column_config.SelectboxColumn(
+                "구분",
+                options=["매수", "매도"],
+                width="small",
+            ),
+            "수량": st.column_config.NumberColumn(
+                "수량",
+                min_value=0,
+                step=1,
+                format="%d",
+            ),
+            "체결 단가": st.column_config.NumberColumn(
+                "체결 단가",
+                min_value=0,
+                format="%d",
+            ),
+            "수수료": st.column_config.NumberColumn(
+                "수수료",
+                min_value=0,
+                format="%d",
+            ),
+            "정산금액": st.column_config.NumberColumn(
+                "정산금액",
+                format="%d",
+            ),
+            "메모": st.column_config.TextColumn(
+                "메모",
+                width="large",
+            ),
+        },
+        hide_index=True,
+    )
+    st.session_state.stock_data = edited_df
+else:
+    st.info("📝 '행 추가' 버튼을 클릭하여 거래 내역을 추가하세요.")
+
+st.markdown("---")
+
+# 챗봇 섹션
+st.markdown("## 💬 챗봇")
 
 # OpenAI API 호출 함수
 def call_openai_api(messages: list) -> str:
