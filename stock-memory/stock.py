@@ -3,8 +3,6 @@
 import streamlit as st
 from openai import OpenAI
 import time
-import pandas as pd
-from datetime import datetime
 
 # 페이지 설정
 st.set_page_config(
@@ -39,71 +37,6 @@ with st.sidebar:
 
 # 메인 화면
 st.markdown("# stock")
-
-# 파일 첨부 영역
-uploaded_file = st.file_uploader(
-    "📎 엑셀 파일 첨부 (.xlsx)",
-    type=["xlsx"],
-    help="엑셀 파일을 업로드하면 JSON 데이터로 변환합니다."
-)
-
-attached_json = None
-
-if uploaded_file is not None:
-    try:
-        df = pd.read_excel(uploaded_file, header=0, engine="openpyxl")
-        df.columns = df.columns.astype(str).str.strip()
-        key_order = ["발신일시", "제목", "발신인", "수신인", "참조", "내용"]
-        col_map = {}
-        for i, key in enumerate(key_order):
-            if key in df.columns:
-                col_map[key] = df.columns.get_loc(key)
-            elif i < len(df.columns):
-                col_map[key] = i
-        rows = []
-        for _, row in df.iterrows():
-            item = {}
-            for key in key_order:
-                if key not in col_map:
-                    continue
-                idx = col_map[key]
-                val = row.iloc[idx]
-                if pd.isna(val):
-                    val = None
-                elif key == "발신일시" and val is not None:
-                    if isinstance(val, datetime):
-                        val = val.isoformat()
-                    elif isinstance(val, pd.Timestamp):
-                        val = val.isoformat()
-                    else:
-                        try:
-                            val = pd.to_datetime(val).isoformat()
-                        except Exception:
-                            val = str(val)
-                elif key == "수신인":
-                    if pd.isna(val) or val is None or str(val).strip() == "":
-                        val = []
-                    else:
-                        val = [s.strip() for s in str(val).split(",") if s.strip()]
-                elif hasattr(val, "isoformat"):
-                    val = val.isoformat() if hasattr(val, "isoformat") else str(val)
-                else:
-                    val = str(val) if val is not None else None
-                item[key] = val
-            rows.append(item)
-        attached_json = rows
-        if "attached_json" not in st.session_state:
-            st.session_state.attached_json = None
-        st.session_state.attached_json = attached_json
-        st.success(f"✅ 엑셀을 읽어 {len(attached_json)}건의 JSON 데이터를 처리했습니다.")
-    except Exception as e:
-        st.error(f"엑셀 읽기 오류: {e}")
-        attached_json = None
-        st.session_state.attached_json = None
-else:
-    if "attached_json" in st.session_state:
-        st.session_state.attached_json = None
-    attached_json = None
 
 # 세션 상태 초기화
 if "messages" not in st.session_state:
