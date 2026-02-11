@@ -46,8 +46,8 @@ data_dir = "./data"
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 
-# 엑셀 파일 경로
-excel_path = os.path.join(data_dir, "stockmemory.xlsx")
+# CSV 파일 경로
+csv_path = os.path.join(data_dir, "stockmemory.csv")
 
 # 세션 상태 초기화
 if "messages" not in st.session_state:
@@ -56,10 +56,10 @@ if "messages" not in st.session_state:
 # 주식 거래 내역 데이터 초기화
 if "stock_data" not in st.session_state:
     # 기존 파일이 있으면 로드
-    if os.path.exists(excel_path):
+    if os.path.exists(csv_path):
         try:
-            # 엑셀 첫 행을 헤더로 읽기 (컬럼명 그대로 사용)
-            df = pd.read_excel(excel_path, engine="openpyxl", header=0)
+            # CSV 첫 행을 헤더로 읽기, 내용 그대로 사용
+            df = pd.read_csv(csv_path, encoding="utf-8-sig", header=0)
             df.columns = df.columns.astype(str).str.strip()
             if "선택" not in df.columns:
                 df.insert(0, "선택", False)
@@ -113,10 +113,10 @@ with col1:
 with col2:
     if st.button("💾 저장"):
         try:
-            # 엑셀 저장 시 '선택' 컬럼 제외
+            # CSV 저장 시 '선택' 컬럼 제외
             save_df = st.session_state.stock_data.drop(columns=["선택"], errors="ignore")
-            save_df.to_excel(excel_path, index=False, engine="openpyxl")
-            st.success(f"✅ 저장 완료: {excel_path}")
+            save_df.to_csv(csv_path, index=False, encoding="utf-8-sig")
+            st.success(f"✅ 저장 완료: {csv_path}")
         except Exception as e:
             st.error(f"저장 오류: {e}")
 
