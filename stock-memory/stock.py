@@ -27,6 +27,12 @@ try:
 except:
     API_KEY = ""
 
+# Google Sheet URL 설정 (secrets에서 가져오거나 기본값 사용)
+try:
+    GSHEET_URL = st.secrets.get("google_sheet_url", "")
+except:
+    GSHEET_URL = ""
+
 # 사이드바 설정
 with st.sidebar:
     st.markdown("### 설정")
@@ -46,13 +52,11 @@ with st.sidebar:
         )
     
     with st.expander("📋 Google Sheet 불러오기", expanded=False):
-        st.text_input(
-            "Google Sheet URL 또는 스프레드시트 ID",
-            value=st.session_state.get("gsheet_url", ""),
-            key="gsheet_url",
-            placeholder="https://docs.google.com/spreadsheets/d/...",
-            help="시트 공유 시 서비스 계정 이메일을 편집 권한으로 추가하세요.",
-        )
+        if GSHEET_URL:
+            st.info(f"✅ Google Sheet URL이 설정되어 있습니다.")
+        else:
+            st.warning("⚠️ Streamlit secrets에 `google_sheet_url`을 설정하세요.")
+        st.caption("시트 공유 시 서비스 계정 이메일을 편집 권한으로 추가하세요.")
 
 # 메인 화면
 st.markdown("# stock")
@@ -223,9 +227,9 @@ with col_btn4:
         if not GSPREAD_AVAILABLE:
             st.error("gspread 패키지가 없습니다. pip install gspread google-auth")
         else:
-            url = (st.session_state.get("gsheet_url") or "").strip()
+            url = (GSHEET_URL or "").strip()
             if not url:
-                st.warning("사이드바에서 Google Sheet URL을 입력하세요.")
+                st.warning("Streamlit secrets에 `google_sheet_url`을 설정하세요.")
             else:
                 creds = None
                 try:
@@ -233,7 +237,7 @@ with col_btn4:
                 except Exception:
                     pass
                 if not creds or not isinstance(creds, dict):
-                    st.error("Streamlit secrets에 gcp_service_account(서비스 계정 정보)를 설정하세요.")
+                    st.error("Streamlit secrets에 `gcp_service_account`(서비스 계정 정보)를 설정하세요.")
                 else:
                     df = load_google_sheet(url, creds)
                     if df is not None and len(df.columns) > 0:
