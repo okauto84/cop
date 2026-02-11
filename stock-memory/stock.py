@@ -85,7 +85,7 @@ def normalize_for_editor(df: pd.DataFrame) -> pd.DataFrame:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 테이블 데이터: 페이지 열 때 CSV 로드, 동일한 header/셀 내용 유지
+# 테이블 데이터: 최초 1회만 CSV 로드, 이후에는 세션에 저장된 값 유지(수정 내용이 되돌아가지 않도록)
 if "table_data" not in st.session_state:
     df = load_stock_csv(csv_path)
     if df is not None and len(df.columns) > 0:
@@ -95,14 +95,6 @@ if "table_data" not in st.session_state:
     else:
         default_cols = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
         st.session_state.table_data = pd.DataFrame(columns=default_cols)
-else:
-    # 테이블이 비어 있는데 CSV에 데이터가 있으면 다시 로드 (경로/파일 이슈 해결 후 반영)
-    if len(st.session_state.table_data) == 0:
-        df = load_stock_csv(csv_path)
-        if df is not None and len(df) > 0:
-            if "선택" not in df.columns:
-                df.insert(0, "선택", False)
-            st.session_state.table_data = df
 
 # ---------- 테이블 섹션: CSV와 동일한 header/셀 내용, 왼쪽 체크박스 + 행삭제 ----------
 st.markdown("## 📊 내역")
@@ -123,13 +115,15 @@ for col in table_df.columns:
     else:
         column_config[col] = st.column_config.TextColumn(col, width="medium")
 
+# 사용자가 셀·행을 직접 수정 가능, 편집 내용은 세션에 유지(메모리 상태로 되돌아가지 않음)
 display_df = st.data_editor(
     table_df,
     use_container_width=True,
-    num_rows="fixed",
+    num_rows="dynamic",
     column_config=column_config,
     hide_index=True,
 )
+# 편집 결과를 항상 세션에 반영하여 다음 rerun에서도 수정 상태 유지
 st.session_state.table_data = display_df
 
 # 표 아래 버튼: 행 추가, 행 삭제, 저장
@@ -170,11 +164,14 @@ with col_btn2:
 
 with col_btn3:
     if st.button("저장"):
-        df = st.session_state.table_data
-        save_df = df.drop(columns=["선택"], errors="ignore")
+        # 현재 세션에 저장된 최종 상태(화면 표시와 동일)로 파일 저장
+        final_state = st.session_state.table_data.copy()
+        save_df = final_state.drop(columns=["선택"], errors="ignore")
         try:
-            save_df.to_csv(csv_path, index=False, encoding="utf-8-sig")
-            st.success(f"저장 완료: {os.path.basename(csv_path)}")
+            save_path = os.path.abspath(csv_path)
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            save_df.to_csv(save_path, index=False, encoding="utf-8-sig")
+            st.success(f"저장 완료: {save_path}")
         except Exception as e:
             st.error(f"저장 오류: {e}")
 
