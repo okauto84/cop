@@ -58,33 +58,41 @@ if "stock_data" not in st.session_state:
     # 기존 파일이 있으면 로드
     if os.path.exists(excel_path):
         try:
-            st.session_state.stock_data = pd.read_excel(excel_path, engine="openpyxl")
+            df = pd.read_excel(excel_path, engine="openpyxl")
+            if "선택" not in df.columns:
+                df.insert(0, "선택", False)
+            st.session_state.stock_data = df
         except Exception as e:
             st.error(f"파일 로드 오류: {e}")
-            columns = ["날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
+            columns = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
             empty_rows = [
-                {"날짜": None, "종목명": "", "구분": "매수", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
+                {"선택": False, "날짜": None, "종목명": "", "구분": "매수", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
                 for _ in range(10)
             ]
             st.session_state.stock_data = pd.DataFrame(empty_rows, columns=columns)
     else:
-        # 새 데이터프레임 생성: 8개 컬럼, 10행
-        columns = ["날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
+        # 새 데이터프레임 생성: 선택 체크박스 + 8개 컬럼, 10행
+        columns = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
         empty_rows = [
-            {"날짜": None, "종목명": "", "구분": "매수", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
+            {"선택": False, "날짜": None, "종목명": "", "구분": "매수", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
             for _ in range(10)
         ]
         st.session_state.stock_data = pd.DataFrame(empty_rows, columns=columns)
+
+# 기존 데이터에 '선택' 컬럼이 없으면 추가 (이미 로드된 세션 등)
+if "선택" not in st.session_state.stock_data.columns:
+    st.session_state.stock_data.insert(0, "선택", False)
 
 # 주식 거래 내역 관리 섹션
 st.markdown("## 📊 내역")
 
 # 행 추가/삭제 컨트롤
-col1, col2, col3 = st.columns([1, 1, 2])
+col1, col2, col3 = st.columns([1, 1, 1])
 
 with col1:
     if st.button("➕ 행 추가"):
         new_row = pd.DataFrame([{
+            "선택": False,
             "날짜": datetime.now().strftime("%Y-%m-%d"),
             "종목명": "",
             "구분": "매수",
@@ -100,24 +108,22 @@ with col1:
 with col2:
     if st.button("💾 저장"):
         try:
-            st.session_state.stock_data.to_excel(excel_path, index=False, engine="openpyxl")
+            # 엑셀 저장 시 '선택' 컬럼 제외
+            save_df = st.session_state.stock_data.drop(columns=["선택"], errors="ignore")
+            save_df.to_excel(excel_path, index=False, engine="openpyxl")
             st.success(f"✅ 저장 완료: {excel_path}")
         except Exception as e:
             st.error(f"저장 오류: {e}")
 
-# 삭제할 행 선택
-if len(st.session_state.stock_data) > 0:
-    with col3:
-        delete_indices = st.multiselect(
-            "삭제할 행 선택",
-            options=range(len(st.session_state.stock_data)),
-            format_func=lambda x: f"행 {x+1}: {st.session_state.stock_data.iloc[x].get('종목명', '')} ({st.session_state.stock_data.iloc[x].get('날짜', '')})"
-        )
-        if delete_indices and st.button("🗑️ 선택한 행 삭제"):
-            st.session_state.stock_data = st.session_state.stock_data.drop(
-                st.session_state.stock_data.index[delete_indices]
-            ).reset_index(drop=True)
-            st.rerun()
+with col3:
+    if st.button("🗑️ 삭제"):
+        if "선택" in st.session_state.stock_data.columns:
+            # 체크된 행 제외 (체크 안 된 행만 유지)
+            st.session_state.stock_data = st.session_state.stock_data[
+                st.session_state.stock_data["선택"] == False
+            ].reset_index(drop=True)
+            st.session_state.stock_data["선택"] = False  # 남은 행 체크 초기화
+        st.rerun()
 
 # 데이터 편집기
 if len(st.session_state.stock_data) > 0:
@@ -126,6 +132,11 @@ if len(st.session_state.stock_data) > 0:
         use_container_width=True,
         num_rows="dynamic",
         column_config={
+            "선택": st.column_config.CheckboxColumn(
+                "선택",
+                width="small",
+                help="삭제할 행을 선택하세요.",
+            ),
             "날짜": st.column_config.DateColumn(
                 "날짜",
                 format="YYYY-MM-DD",
