@@ -58,7 +58,9 @@ if "stock_data" not in st.session_state:
     # 기존 파일이 있으면 로드
     if os.path.exists(excel_path):
         try:
-            df = pd.read_excel(excel_path, engine="openpyxl")
+            # 엑셀 첫 행을 헤더로 읽기 (컬럼명 그대로 사용)
+            df = pd.read_excel(excel_path, engine="openpyxl", header=0)
+            df.columns = df.columns.astype(str).str.strip()
             if "선택" not in df.columns:
                 df.insert(0, "선택", False)
             st.session_state.stock_data = df
@@ -66,7 +68,7 @@ if "stock_data" not in st.session_state:
             st.error(f"파일 로드 오류: {e}")
             columns = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
             empty_rows = [
-                {"선택": False, "날짜": None, "종목명": "", "구분": "매수", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
+                {"선택": False, "날짜": None, "종목명": "", "구분": "", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
                 for _ in range(10)
             ]
             st.session_state.stock_data = pd.DataFrame(empty_rows, columns=columns)
@@ -74,7 +76,7 @@ if "stock_data" not in st.session_state:
         # 새 데이터프레임 생성: 선택 체크박스 + 8개 컬럼, 10행
         columns = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
         empty_rows = [
-            {"선택": False, "날짜": None, "종목명": "", "구분": "매수", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
+            {"선택": False, "날짜": None, "종목명": "", "구분": "", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
             for _ in range(10)
         ]
         st.session_state.stock_data = pd.DataFrame(empty_rows, columns=columns)
@@ -91,17 +93,20 @@ col1, col2, col3 = st.columns([1, 1, 1])
 
 with col1:
     if st.button("➕ 행 추가"):
-        new_row = pd.DataFrame([{
-            "선택": False,
-            "날짜": datetime.now().strftime("%Y-%m-%d"),
-            "종목명": "",
-            "구분": "매수",
-            "수량": 0,
-            "체결 단가": 0,
-            "수수료": 0,
-            "정산금액": 0,
-            "메모": ""
-        }])
+        # 현재 테이블 컬럼과 동일하게 새 행 생성 (구분은 빈 값)
+        row = {}
+        for col in st.session_state.stock_data.columns:
+            if col == "선택":
+                row[col] = False
+            elif col == "날짜":
+                row[col] = datetime.now().strftime("%Y-%m-%d")
+            elif col == "구분":
+                row[col] = ""
+            elif col in ("수량", "체결 단가", "수수료", "정산금액"):
+                row[col] = 0
+            else:
+                row[col] = ""
+        new_row = pd.DataFrame([row])
         st.session_state.stock_data = pd.concat([st.session_state.stock_data, new_row], ignore_index=True)
         st.rerun()
 
@@ -125,57 +130,51 @@ with col3:
             st.session_state.stock_data["선택"] = False  # 남은 행 체크 초기화
         st.rerun()
 
-# 데이터 편집기
+# 데이터 편집기: 엑셀 헤더(첫 행)와 동일한 컬럼으로 표시
 if len(st.session_state.stock_data) > 0:
+    # 실제 컬럼명에 맞춰 column_config 동적 생성
+    column_config = {}
+    for col in st.session_state.stock_data.columns:
+        if col == "선택":
+            column_config[col] = st.column_config.CheckboxColumn(
+                "선택",
+                width="small",
+                help="삭제할 행을 선택하세요.",
+            )
+        elif col == "날짜":
+            column_config[col] = st.column_config.DateColumn(
+                col,
+                format="YYYY-MM-DD",
+                step=1,
+            )
+        elif col == "구분":
+            column_config[col] = st.column_config.SelectboxColumn(
+                col,
+                options=["", "매수", "매도"],
+                width="small",
+            )
+        elif col == "수량":
+            column_config[col] = st.column_config.NumberColumn(
+                col,
+                min_value=0,
+                step=1,
+                format="%d",
+            )
+        elif col in ("체결 단가", "수수료", "정산금액"):
+            column_config[col] = st.column_config.NumberColumn(
+                col,
+                min_value=0,
+                format="%d",
+            )
+        else:
+            # 엑셀에 있는 기타 컬럼은 텍스트로 표시
+            column_config[col] = st.column_config.TextColumn(col, width="medium")
+
     edited_df = st.data_editor(
         st.session_state.stock_data,
         use_container_width=True,
         num_rows="dynamic",
-        column_config={
-            "선택": st.column_config.CheckboxColumn(
-                "선택",
-                width="small",
-                help="삭제할 행을 선택하세요.",
-            ),
-            "날짜": st.column_config.DateColumn(
-                "날짜",
-                format="YYYY-MM-DD",
-                step=1,
-            ),
-            "종목명": st.column_config.TextColumn(
-                "종목명",
-                width="medium",
-            ),
-            "구분": st.column_config.SelectboxColumn(
-                "구분",
-                options=["매수", "매도"],
-                width="small",
-            ),
-            "수량": st.column_config.NumberColumn(
-                "수량",
-                min_value=0,
-                step=1,
-                format="%d",
-            ),
-            "체결 단가": st.column_config.NumberColumn(
-                "체결 단가",
-                min_value=0,
-                format="%d",
-            ),
-            "수수료": st.column_config.NumberColumn(
-                "수수료",
-                min_value=0,
-                format="%d",
-            ),
-            "정산금액": st.column_config.NumberColumn(
-                "정산금액",
-                format="%d",
-            ),
-            "메모": st.column_config.TextColumn(
-                "메모",
-                width="large",
-            ),
-        },
+        column_config=column_config,
         hide_index=True,
     )
     st.session_state.stock_data = edited_df
