@@ -162,7 +162,7 @@ if "table_data" not in st.session_state:
         st.session_state.table_data = pd.DataFrame(columns=default_cols)
 
 # ---------- 테이블 섹션: CSV와 동일한 header/셀 내용, 왼쪽 체크박스 + 행삭제 ----------
-st.markdown("## 📊 일지지")
+st.markdown("## 📊 일지")
 
 table_df = normalize_for_editor(st.session_state.table_data)
 column_config = {}
@@ -236,7 +236,7 @@ with col_btn3:
             save_path = os.path.abspath(csv_path)
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             save_df.to_csv(save_path, index=False, encoding="utf-8-sig")
-            st.success(f"저장 완료: {save_path}")
+            st.success("저장 완료")
         except Exception as e:
             st.error(f"저장 오류: {e}")
 
