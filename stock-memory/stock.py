@@ -46,34 +46,35 @@ data_dir = "./data"
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 
-# CSV 파일 경로
+# CSV 파일 경로 (./data/stockmemory.csv)
 csv_path = os.path.join(data_dir, "stockmemory.csv")
+
+def load_stock_csv(path: str) -> pd.DataFrame:
+    """./data/stockmemory.csv 파일을 읽어 동일한 header와 값으로 DataFrame 반환"""
+    if not os.path.exists(path):
+        return None
+    for encoding in ("utf-8-sig", "utf-8", "cp949", "euc-kr"):
+        try:
+            df = pd.read_csv(path, encoding=encoding, header=0)
+            df.columns = df.columns.astype(str).str.strip()
+            return df
+        except (UnicodeDecodeError, Exception):
+            continue
+    return None
 
 # 세션 상태 초기화
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 주식 거래 내역 데이터 초기화
+# 주식 거래 내역 데이터 초기화: CSV 파일 읽어서 동일한 header/값으로 표시
 if "stock_data" not in st.session_state:
-    # 기존 파일이 있으면 로드
-    if os.path.exists(csv_path):
-        try:
-            # CSV 첫 행을 헤더로 읽기, 내용 그대로 사용
-            df = pd.read_csv(csv_path, encoding="utf-8-sig", header=0)
-            df.columns = df.columns.astype(str).str.strip()
-            if "선택" not in df.columns:
-                df.insert(0, "선택", False)
-            st.session_state.stock_data = df
-        except Exception as e:
-            st.error(f"파일 로드 오류: {e}")
-            columns = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
-            empty_rows = [
-                {"선택": False, "날짜": None, "종목명": "", "구분": "", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
-                for _ in range(10)
-            ]
-            st.session_state.stock_data = pd.DataFrame(empty_rows, columns=columns)
+    df = load_stock_csv(csv_path)
+    if df is not None and len(df.columns) > 0:
+        if "선택" not in df.columns:
+            df.insert(0, "선택", False)
+        st.session_state.stock_data = df
     else:
-        # 새 데이터프레임 생성: 선택 체크박스 + 8개 컬럼, 10행
+        # 파일 없거나 비어 있으면 기본 컬럼으로 빈 테이블
         columns = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
         empty_rows = [
             {"선택": False, "날짜": None, "종목명": "", "구분": "", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
