@@ -40,8 +40,9 @@ with st.sidebar:
 # 메인 화면
 st.markdown("# stock")
 
-# 데이터 디렉토리 및 CSV 경로
-data_dir = "./data"
+# 데이터 디렉토리 및 CSV 경로 (스크립트 파일 기준으로 경로 해석)
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(_script_dir, "data")
 csv_path = os.path.join(data_dir, "stockmemory.csv")
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
@@ -91,7 +92,16 @@ if "table_data" not in st.session_state:
             df.insert(0, "선택", False)
         st.session_state.table_data = df
     else:
-        st.session_state.table_data = pd.DataFrame(columns=["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"])
+        default_cols = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
+        st.session_state.table_data = pd.DataFrame(columns=default_cols)
+else:
+    # 테이블이 비어 있는데 CSV에 데이터가 있으면 다시 로드 (경로/파일 이슈 해결 후 반영)
+    if len(st.session_state.table_data) == 0:
+        df = load_stock_csv(csv_path)
+        if df is not None and len(df) > 0:
+            if "선택" not in df.columns:
+                df.insert(0, "선택", False)
+            st.session_state.table_data = df
 
 # ---------- 테이블 섹션: CSV와 동일한 header/셀 내용, 왼쪽 체크박스 + 행삭제 ----------
 st.markdown("## 📊 내역")
