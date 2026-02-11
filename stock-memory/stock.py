@@ -41,17 +41,12 @@ with st.sidebar:
 # 메인 화면
 st.markdown("# stock")
 
-# 데이터 디렉토리 및 CSV 경로 (저장 시 실제 경로에 쓰기 가능하도록 처리)
+# 데이터 디렉토리 및 CSV 경로 (스크립트 파일 기준으로 경로 해석)
 _script_dir = os.path.dirname(os.path.abspath(__file__))
-_cwd = os.getcwd()
-# 스크립트 위치의 data 폴더가 쓰기 가능하면 사용, 아니면 현재 작업 디렉토리 사용
-if os.access(_script_dir, os.W_OK):
-    data_dir = os.path.join(_script_dir, "data")
-else:
-    data_dir = os.path.join(_cwd, "data")
-data_dir = os.path.abspath(data_dir)
-csv_path = os.path.abspath(os.path.join(data_dir, "stockmemory.csv"))
-os.makedirs(data_dir, exist_ok=True)
+data_dir = os.path.join(_script_dir, "data")
+csv_path = os.path.join(data_dir, "stockmemory.csv")
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
 
 
 def load_stock_csv(path: str) -> pd.DataFrame | None:
@@ -167,9 +162,7 @@ with col_btn2:
             st.session_state.table_data = remaining.copy()
             st.session_state.table_data.insert(0, "선택", False)
             try:
-                save_path = os.path.abspath(csv_path)
-                os.makedirs(os.path.dirname(save_path), exist_ok=True)
-                remaining.to_csv(save_path, index=False, encoding="utf-8-sig")
+                remaining.to_csv(csv_path, index=False, encoding="utf-8-sig")
                 st.success("선택한 행이 삭제되었습니다.")
             except Exception as e:
                 st.error(f"저장 오류: {e}")
@@ -180,10 +173,8 @@ with col_btn3:
         df = st.session_state.table_data
         save_df = df.drop(columns=["선택"], errors="ignore")
         try:
-            save_path = os.path.abspath(csv_path)
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-            save_df.to_csv(save_path, index=False, encoding="utf-8-sig")
-            st.success(f"저장 완료: {save_path}")
+            save_df.to_csv(csv_path, index=False, encoding="utf-8-sig")
+            st.success(f"저장 완료: {os.path.basename(csv_path)}")
         except Exception as e:
             st.error(f"저장 오류: {e}")
 
