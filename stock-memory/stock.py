@@ -62,6 +62,29 @@ def load_stock_csv(path: str) -> pd.DataFrame:
             continue
     return None
 
+
+def normalize_stock_data(df: pd.DataFrame) -> pd.DataFrame:
+    """data_editor의 DateColumn/NumberColumn/CheckboxColumn과 타입 호환되도록 변환"""
+    df = df.copy()
+    for col in df.columns:
+        if col == "선택":
+            # bool: "True"/"False" 문자열 또는 0/1 등 정규화
+            if df[col].dtype == object or df[col].dtype == str:
+                df[col] = df[col].astype(str).str.upper().isin(("TRUE", "1", "YES")).fillna(False)
+            df[col] = df[col].astype(bool)
+        elif col == "날짜":
+            df[col] = pd.to_datetime(df[col], errors="coerce")
+        elif col in ("수량", "체결 단가", "수수료", "정산금액"):
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+            if col == "수량":
+                df[col] = df[col].astype(int)
+            else:
+                df[col] = df[col].astype(float)
+        else:
+            # 종목명, 구분, 메모 등 → 문자열
+            df[col] = df[col].astype(str).replace("nan", "").replace("<NA>", "")
+    return df
+
 # 세션 상태 초기화
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -131,8 +154,9 @@ with col3:
             st.session_state.stock_data["선택"] = False  # 남은 행 체크 초기화
         st.rerun()
 
-# 데이터 편집기: 엑셀 헤더(첫 행)와 동일한 컬럼으로 표시
+# 데이터 편집기: 엑셀 헤더(첫 행)와 동일한 컬럼으로 표시 (타입 호환 정규화 후 표시)
 if len(st.session_state.stock_data) > 0:
+    st.session_state.stock_data = normalize_stock_data(st.session_state.stock_data)
     # 실제 컬럼명에 맞춰 column_config 동적 생성
     column_config = {}
     for col in st.session_state.stock_data.columns:
