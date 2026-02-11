@@ -3,6 +3,8 @@
 import streamlit as st
 from openai import OpenAI
 import time
+import pandas as pd
+import os
 
 # 페이지 설정
 st.set_page_config(
@@ -38,9 +40,100 @@ with st.sidebar:
 # 메인 화면
 st.markdown("# stock")
 
+# 데이터 디렉토리 및 CSV 경로
+data_dir = "./data"
+csv_path = os.path.join(data_dir, "stockmemory.csv")
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
+
+
+def load_stock_csv(path: str) -> pd.DataFrame | None:
+    """./data/stockmemory.csv 파일을 읽어 동일한 header와 셀 내용으로 DataFrame 반환"""
+    if not os.path.exists(path):
+        return None
+    for encoding in ("utf-8-sig", "utf-8", "cp949", "euc-kr"):
+        try:
+            df = pd.read_csv(path, encoding=encoding, header=0)
+            df.columns = df.columns.astype(str).str.strip()
+            return df
+        except (UnicodeDecodeError, Exception):
+            continue
+    return None
+
+
+def normalize_for_editor(df: pd.DataFrame) -> pd.DataFrame:
+    """data_editor 타입 호환을 위해 컬럼 타입 정규화"""
+    df = df.copy()
+    for col in df.columns:
+        if col == "선택":
+            if df[col].dtype == object or str(df[col].dtype) == "object":
+                df[col] = df[col].astype(str).str.upper().isin(("TRUE", "1", "YES")).fillna(False)
+            df[col] = df[col].astype(bool)
+        elif col == "날짜":
+            df[col] = pd.to_datetime(df[col], errors="coerce")
+        elif col in ("수량", "체결 단가", "수수료", "정산금액"):
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+            df[col] = df[col].astype(int if col == "수량" else float)
+        else:
+            df[col] = df[col].astype(str).replace("nan", "").replace("<NA>", "")
+    return df
+
+
 # 세션 상태 초기화
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+# 테이블 데이터: 페이지 열 때 CSV 로드, 동일한 header/셀 내용 유지
+if "table_data" not in st.session_state:
+    df = load_stock_csv(csv_path)
+    if df is not None and len(df.columns) > 0:
+        if "선택" not in df.columns:
+            df.insert(0, "선택", False)
+        st.session_state.table_data = df
+    else:
+        st.session_state.table_data = pd.DataFrame(columns=["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"])
+
+# ---------- 테이블 섹션: CSV와 동일한 header/셀 내용, 왼쪽 체크박스 + 행삭제 ----------
+st.markdown("## 📊 내역")
+
+table_df = normalize_for_editor(st.session_state.table_data)
+column_config = {}
+for col in table_df.columns:
+    if col == "선택":
+        column_config[col] = st.column_config.CheckboxColumn("선택", width="small", help="삭제할 행을 선택하세요.")
+    elif col == "날짜":
+        column_config[col] = st.column_config.DateColumn(col, format="YYYY-MM-DD", step=1)
+    elif col == "구분":
+        column_config[col] = st.column_config.SelectboxColumn(col, options=["", "매수", "매도"], width="small")
+    elif col == "수량":
+        column_config[col] = st.column_config.NumberColumn(col, min_value=0, step=1, format="%d")
+    elif col in ("체결 단가", "수수료", "정산금액"):
+        column_config[col] = st.column_config.NumberColumn(col, min_value=0, format="%d")
+    else:
+        column_config[col] = st.column_config.TextColumn(col, width="medium")
+
+display_df = st.data_editor(
+    table_df,
+    use_container_width=True,
+    num_rows="fixed",
+    column_config=column_config,
+    hide_index=True,
+)
+st.session_state.table_data = display_df
+
+# 행삭제: 체크된 행만 삭제 후 CSV 저장
+if st.button("행삭제"):
+    df = st.session_state.table_data
+    if "선택" in df.columns:
+        remaining = df[df["선택"] != True].drop(columns=["선택"], errors="ignore")
+        st.session_state.table_data = remaining.copy()
+        st.session_state.table_data.insert(0, "선택", False)
+        try:
+            remaining.to_csv(csv_path, index=False, encoding="utf-8-sig")
+            st.success("선택한 행이 삭제되었습니다.")
+        except Exception as e:
+            st.error(f"저장 오류: {e}")
+    st.rerun()
 
 st.markdown("---")
 
