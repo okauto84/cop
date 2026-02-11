@@ -5,6 +5,7 @@ from openai import OpenAI
 import time
 import pandas as pd
 import os
+import json
 from datetime import datetime
 
 try:
@@ -33,6 +34,12 @@ try:
 except:
     GSHEET_URL = ""
 
+# Google 서비스 계정 정보 설정 (secrets에서 JSON 문자열로 가져오거나 기본값 사용)
+try:
+    GCP_SERVICE_ACCOUNT_JSON = st.secrets.get("gcp_service_account_json", "")
+except:
+    GCP_SERVICE_ACCOUNT_JSON = ""
+
 # 사이드바 설정
 with st.sidebar:
     st.markdown("### 설정")
@@ -47,7 +54,7 @@ with st.sidebar:
     with st.expander("💭 모델", expanded=False):
         model_name = st.selectbox(
             "모델 선택",
-            ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"],
+            ["gpt-5-mini"],
             index=0
         )
     
@@ -56,6 +63,10 @@ with st.sidebar:
             st.info(f"✅ Google Sheet URL이 설정되어 있습니다.")
         else:
             st.warning("⚠️ Streamlit secrets에 `google_sheet_url`을 설정하세요.")
+        if GCP_SERVICE_ACCOUNT_JSON:
+            st.info(f"✅ 서비스 계정 정보가 설정되어 있습니다.")
+        else:
+            st.warning("⚠️ Streamlit secrets에 `gcp_service_account_json`을 설정하세요.")
         st.caption("시트 공유 시 서비스 계정 이메일을 편집 권한으로 추가하세요.")
 
 # 메인 화면
@@ -101,11 +112,18 @@ def normalize_for_editor(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def load_google_sheet(sheet_url_or_id: str, credentials: dict) -> pd.DataFrame | None:
-    """Google Sheet URL 또는 스프레드시트 ID로 시트를 열어 첫 번째 시트를 DataFrame으로 반환"""
-    if not GSPREAD_AVAILABLE or not sheet_url_or_id or not credentials:
+def load_google_sheet(sheet_url_or_id: str, credentials_json: str) -> pd.DataFrame | None:
+    """Google Sheet URL 또는 스프레드시트 ID로 시트를 열어 첫 번째 시트를 DataFrame으로 반환
+    
+    Args:
+        sheet_url_or_id: Google Sheet URL 또는 스프레드시트 ID
+        credentials_json: 서비스 계정 정보 JSON 문자열
+    """
+    if not GSPREAD_AVAILABLE or not sheet_url_or_id or not credentials_json:
         return None
     try:
+        # JSON 문자열을 dict로 파싱
+        credentials = json.loads(credentials_json)
         scopes = [
             "https://www.googleapis.com/auth/spreadsheets.readonly",
             "https://www.googleapis.com/auth/drive.readonly",
@@ -144,7 +162,7 @@ if "table_data" not in st.session_state:
         st.session_state.table_data = pd.DataFrame(columns=default_cols)
 
 # ---------- 테이블 섹션: CSV와 동일한 header/셀 내용, 왼쪽 체크박스 + 행삭제 ----------
-st.markdown("## 📊 내역")
+st.markdown("## 📊 일지지")
 
 table_df = normalize_for_editor(st.session_state.table_data)
 column_config = {}
@@ -231,15 +249,11 @@ with col_btn4:
             if not url:
                 st.warning("Streamlit secrets에 `google_sheet_url`을 설정하세요.")
             else:
-                creds = None
-                try:
-                    creds = st.secrets.get("gcp_service_account")
-                except Exception:
-                    pass
-                if not creds or not isinstance(creds, dict):
-                    st.error("Streamlit secrets에 `gcp_service_account`(서비스 계정 정보)를 설정하세요.")
+                creds_json = (GCP_SERVICE_ACCOUNT_JSON or "").strip()
+                if not creds_json:
+                    st.error("Streamlit secrets에 `gcp_service_account_json`(서비스 계정 정보 JSON 문자열)을 설정하세요.")
                 else:
-                    df = load_google_sheet(url, creds)
+                    df = load_google_sheet(url, creds_json)
                     if df is not None and len(df.columns) > 0:
                         if "선택" not in df.columns:
                             df.insert(0, "선택", False)
@@ -252,7 +266,7 @@ with col_btn4:
 st.markdown("---")
 
 # 챗봇 섹션
-st.markdown("## 💬 챗봇")
+st.markdown("## 💬 분석 챗봇")
 
 # OpenAI API 호출 함수
 def call_openai_api(messages: list) -> str:
