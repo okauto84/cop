@@ -5,6 +5,7 @@ from openai import OpenAI
 import time
 import pandas as pd
 import os
+from datetime import datetime
 
 # 페이지 설정
 st.set_page_config(
@@ -131,19 +132,51 @@ display_df = st.data_editor(
 )
 st.session_state.table_data = display_df
 
-# 행삭제: 체크된 행만 삭제 후 CSV 저장
-if st.button("행삭제"):
-    df = st.session_state.table_data
-    if "선택" in df.columns:
-        remaining = df[df["선택"] != True].drop(columns=["선택"], errors="ignore")
-        st.session_state.table_data = remaining.copy()
-        st.session_state.table_data.insert(0, "선택", False)
+# 표 아래 버튼: 행 추가, 행 삭제, 저장
+col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
+
+with col_btn1:
+    if st.button("행 추가"):
+        df = st.session_state.table_data
+        row = {}
+        for c in df.columns:
+            if c == "선택":
+                row[c] = False
+            elif c == "날짜":
+                row[c] = datetime.now().strftime("%Y-%m-%d")
+            elif c == "구분":
+                row[c] = ""
+            elif c in ("수량", "체결 단가", "수수료", "정산금액"):
+                row[c] = 0
+            else:
+                row[c] = ""
+        new_row = pd.DataFrame([row])
+        st.session_state.table_data = pd.concat([df, new_row], ignore_index=True)
+        st.rerun()
+
+with col_btn2:
+    if st.button("행 삭제"):
+        df = st.session_state.table_data
+        if "선택" in df.columns:
+            remaining = df[df["선택"] != True].drop(columns=["선택"], errors="ignore")
+            st.session_state.table_data = remaining.copy()
+            st.session_state.table_data.insert(0, "선택", False)
+            try:
+                remaining.to_csv(csv_path, index=False, encoding="utf-8-sig")
+                st.success("선택한 행이 삭제되었습니다.")
+            except Exception as e:
+                st.error(f"저장 오류: {e}")
+        st.rerun()
+
+with col_btn3:
+    if st.button("저장"):
+        df = st.session_state.table_data
+        save_df = df.drop(columns=["선택"], errors="ignore")
         try:
-            remaining.to_csv(csv_path, index=False, encoding="utf-8-sig")
-            st.success("선택한 행이 삭제되었습니다.")
+            save_df.to_csv(csv_path, index=False, encoding="utf-8-sig")
+            st.success(f"저장 완료: {os.path.basename(csv_path)}")
         except Exception as e:
             st.error(f"저장 오류: {e}")
-    st.rerun()
 
 st.markdown("---")
 
