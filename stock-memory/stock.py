@@ -61,17 +61,23 @@ if "stock_data" not in st.session_state:
             st.session_state.stock_data = pd.read_excel(excel_path, engine="openpyxl")
         except Exception as e:
             st.error(f"파일 로드 오류: {e}")
-            st.session_state.stock_data = pd.DataFrame(columns=[
-                "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"
-            ])
+            columns = ["날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
+            empty_rows = [
+                {"날짜": None, "종목명": "", "구분": "매수", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
+                for _ in range(10)
+            ]
+            st.session_state.stock_data = pd.DataFrame(empty_rows, columns=columns)
     else:
-        # 새 데이터프레임 생성
-        st.session_state.stock_data = pd.DataFrame(columns=[
-            "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"
-        ])
+        # 새 데이터프레임 생성: 8개 컬럼, 10행
+        columns = ["날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
+        empty_rows = [
+            {"날짜": None, "종목명": "", "구분": "매수", "수량": 0, "체결 단가": 0, "수수료": 0, "정산금액": 0, "메모": ""}
+            for _ in range(10)
+        ]
+        st.session_state.stock_data = pd.DataFrame(empty_rows, columns=columns)
 
 # 주식 거래 내역 관리 섹션
-st.markdown("## 📊 주식 거래 내역")
+st.markdown("## 📊 내역")
 
 # 행 추가/삭제 컨트롤
 col1, col2, col3 = st.columns([1, 1, 2])
