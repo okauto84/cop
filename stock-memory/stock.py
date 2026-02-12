@@ -350,9 +350,9 @@ st.markdown("""
 <style>
     /* 표 아래 버튼 행: 간격 좁게, 글자·버튼 크기 작게 */
     .main [data-testid="stHorizontalBlock"] [data-testid="column"] .stButton > button {
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
-        min-height: 1.6rem;
+        font-size: 0.75rem;
+        padding: 0.15rem 0.35rem;
+        min-height: 1.35rem;
     }
     .main [data-testid="stHorizontalBlock"] > div {
         padding-left: 0.15rem;
