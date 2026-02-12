@@ -192,7 +192,7 @@ display_df = st.data_editor(
 st.session_state.table_data = display_df
 
 # 표 아래 버튼: 행 추가, 행 삭제, 저장, google sheet 불러오기 (간격 좁게, 작은 크기)
-col_btn1, col_btn2, col_btn3, col_btn4 = st.columns([0.6, 0.6, 0.5, 1.2])
+col_btn4, col_btn1, col_btn2, col_btn3 = st.columns([1.0, 0.6, 0.6, 0.5])
 
 with col_btn1:
     if st.button("행 추가"):
@@ -241,7 +241,7 @@ with col_btn3:
             st.error(f"저장 오류: {e}")
 
 with col_btn4:
-    if st.button("google sheet 불러오기"):
+    if st.button("google sheet"):
         if not GSPREAD_AVAILABLE:
             st.error("gspread 패키지가 없습니다. pip install gspread google-auth")
         else:
@@ -266,7 +266,7 @@ with col_btn4:
 st.markdown("---")
 
 # 챗봇 섹션
-st.markdown("### 💬 분석 챗봇")
+st.markdown("#### 💬 분석")
 
 # OpenAI API 호출 함수
 def call_openai_api(messages: list) -> str:
