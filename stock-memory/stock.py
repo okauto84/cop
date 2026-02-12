@@ -162,7 +162,7 @@ if "table_data" not in st.session_state:
         st.session_state.table_data = pd.DataFrame(columns=default_cols)
 
 # ---------- 테이블 섹션: CSV와 동일한 header/셀 내용, 왼쪽 체크박스 + 행삭제 ----------
-st.markdown("## 📊 일지")
+st.markdown("#### 📊 일지")
 
 table_df = normalize_for_editor(st.session_state.table_data)
 column_config = {}
@@ -191,8 +191,8 @@ display_df = st.data_editor(
 # 편집 결과를 항상 세션에 반영하여 다음 rerun에서도 수정 상태 유지
 st.session_state.table_data = display_df
 
-# 표 아래 버튼: 행 추가, 행 삭제, 저장, google sheet 불러오기
-col_btn1, col_btn2, col_btn3, col_btn4 = st.columns([1, 1, 1, 1])
+# 표 아래 버튼: 행 추가, 행 삭제, 저장, google sheet 불러오기 (간격 좁게, 작은 크기)
+col_btn1, col_btn2, col_btn3, col_btn4 = st.columns([0.6, 0.6, 0.5, 1.2])
 
 with col_btn1:
     if st.button("행 추가"):
@@ -266,7 +266,7 @@ with col_btn4:
 st.markdown("---")
 
 # 챗봇 섹션
-st.markdown("## 💬 분석 챗봇")
+st.markdown("### 💬 분석 챗봇")
 
 # OpenAI API 호출 함수
 def call_openai_api(messages: list) -> str:
@@ -348,20 +348,27 @@ if not API_KEY or API_KEY == "":
 # CSS 스타일 추가
 st.markdown("""
 <style>
+    /* 표 아래 버튼 행: 간격 좁게, 글자·버튼 크기 작게 */
+    .main [data-testid="stHorizontalBlock"] [data-testid="column"] .stButton > button {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        min-height: 1.6rem;
+    }
+    .main [data-testid="stHorizontalBlock"] > div {
+        padding-left: 0.15rem;
+        padding-right: 0.15rem;
+    }
     .stChatMessage {
         padding: 1rem;
         border-radius: 0.5rem;
         margin-bottom: 1rem;
     }
-
     .stTextInput > div > div > input {
         border-radius: 20px;
     }
-
     .main > div {
         padding-top: 2rem;
     }
-
     .stSidebar {
         background-color: #f0f2f6;
     }
