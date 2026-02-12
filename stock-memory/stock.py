@@ -6,7 +6,15 @@ import time
 import pandas as pd
 import os
 import re
+import json
 from datetime import datetime
+
+try:
+    import gspread
+    from google.oauth2.service_account import Credentials
+    GSPREAD_AVAILABLE = True
+except ImportError:
+    GSPREAD_AVAILABLE = False
 
 # 페이지 설정
 st.set_page_config(
@@ -21,11 +29,17 @@ try:
 except:
     API_KEY = ""
 
-# Google Sheet URL 설정 (secrets에서 가져오거나 기본값 사용, 공개 시트용)
+# Google Sheet URL 설정 (secrets에서 가져오거나 기본값 사용)
 try:
     GSHEET_URL = st.secrets.get("google_sheet_url", "")
 except:
     GSHEET_URL = ""
+
+# Google Sheet 쓰기(저장)용 서비스 계정 (secrets에서 JSON 문자열로 가져오거나 기본값 사용)
+try:
+    GCP_SERVICE_ACCOUNT_JSON = st.secrets.get("gcp_service_account_json", "")
+except:
+    GCP_SERVICE_ACCOUNT_JSON = ""
 
 # 사이드바 설정
 with st.sidebar:
@@ -50,17 +64,17 @@ with st.sidebar:
             st.info("✅ Google Sheet URL이 설정되어 있습니다.")
         else:
             st.warning("⚠️ Streamlit secrets에 `google_sheet_url`을 설정하세요.")
-        st.caption("공개(링크로 공유)된 시트만 불러올 수 있습니다.")
+        st.caption("불러오기: 공개 시트. 저장: secrets에 gcp_service_account_json 필요.")
 
 # 메인 화면
 st.markdown("# stock")
 
-# 데이터 디렉토리 및 CSV 경로 (스크립트 파일 기준으로 경로 해석)
-_script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(_script_dir, "data")
-csv_path = os.path.join(data_dir, "stockmemory.csv")
-if not os.path.exists(data_dir):
-    os.makedirs(data_dir)
+def _sheet_id_from_url(sheet_url: str) -> str | None:
+    """Google Sheet URL에서 스프레드시트 ID 추출"""
+    if not sheet_url or not (s := sheet_url.strip()):
+        return None
+    match = re.search(r"/spreadsheets/d/([a-zA-Z0-9_-]+)", s)
+    return match.group(1) if match else (s if re.match(r"^[a-zA-Z0-9_-]+$", s) else None)
 
 
 def normalize_for_editor(df: pd.DataFrame) -> pd.DataFrame:
@@ -83,21 +97,44 @@ def normalize_for_editor(df: pd.DataFrame) -> pd.DataFrame:
 
 def load_google_sheet(sheet_url: str) -> pd.DataFrame | None:
     """공개된 Google Sheet URL로 첫 번째 시트를 DataFrame으로 반환 (인증 없이 CSV export 사용)"""
-    if not sheet_url or not (sheet_url := sheet_url.strip()):
+    sheet_id = _sheet_id_from_url(sheet_url)
+    if not sheet_id:
         return None
     try:
-        # URL에서 스프레드시트 ID 추출 (예: .../d/SPREADSHEET_ID/edit ...)
-        match = re.search(r"/spreadsheets/d/([a-zA-Z0-9_-]+)", sheet_url)
-        if match:
-            sheet_id = match.group(1)
-        else:
-            sheet_id = sheet_url
         export_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid=0"
         df = pd.read_csv(export_url, encoding="utf-8")
         df.columns = df.columns.astype(str).str.strip()
         return df
     except Exception:
         return None
+
+
+def save_to_google_sheet(sheet_url: str, credentials_json: str, df: pd.DataFrame) -> bool:
+    """Google Sheet 첫 번째 시트를 df 내용으로 덮어쓰기 (서비스 계정 필요)"""
+    if not GSPREAD_AVAILABLE or not sheet_url or not credentials_json or df is None:
+        return False
+    sheet_id = _sheet_id_from_url(sheet_url)
+    if not sheet_id:
+        return False
+    try:
+        credentials = json.loads(credentials_json)
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive.file",
+        ]
+        creds = Credentials.from_service_account_info(credentials, scopes=scopes)
+        gc = gspread.authorize(creds)
+        spreadsheet = gc.open_by_key(sheet_id)
+        worksheet = spreadsheet.sheet1
+        # 헤더 + 데이터를 2차원 리스트로 (NaN 등은 빈 문자열로)
+        df_clean = df.fillna("").astype(str)
+        rows = [df_clean.columns.tolist()] + df_clean.values.tolist()
+        worksheet.clear()
+        if rows:
+            worksheet.update(rows, "A1")
+        return True
+    except Exception:
+        return False
 
 
 # 세션 상태 초기화
@@ -168,25 +205,27 @@ with col_btn2:
             remaining = df[df["선택"] != True].drop(columns=["선택"], errors="ignore")
             st.session_state.table_data = remaining.copy()
             st.session_state.table_data.insert(0, "선택", False)
-            try:
-                remaining.to_csv(csv_path, index=False, encoding="utf-8-sig")
-                st.success("선택한 행이 삭제되었습니다.")
-            except Exception as e:
-                st.error(f"저장 오류: {e}")
+            st.success("선택한 행이 삭제되었습니다.")
         st.rerun()
 
 with col_btn3:
     if st.button("저장"):
-        # 현재 세션에 저장된 최종 상태(화면 표시와 동일)로 파일 저장
+        # 현재 세션 상태를 Google Sheet에 반영
         final_state = st.session_state.table_data.copy()
         save_df = final_state.drop(columns=["선택"], errors="ignore")
-        try:
-            save_path = os.path.abspath(csv_path)
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-            save_df.to_csv(save_path, index=False, encoding="utf-8-sig")
-            st.success("저장 완료")
-        except Exception as e:
-            st.error(f"저장 오류: {e}")
+        url = (GSHEET_URL or "").strip()
+        if not url:
+            st.warning("Streamlit secrets에 `google_sheet_url`을 설정하세요.")
+        elif not GSPREAD_AVAILABLE:
+            st.error("저장을 위해 gspread가 필요합니다. pip install gspread google-auth")
+        else:
+            creds_json = (GCP_SERVICE_ACCOUNT_JSON or "").strip()
+            if not creds_json:
+                st.warning("Google Sheet에 저장하려면 secrets에 `gcp_service_account_json`을 설정하세요.")
+            elif save_to_google_sheet(url, creds_json, save_df):
+                st.success("Google Sheet에 저장되었습니다.")
+            else:
+                st.error("Google Sheet 저장에 실패했습니다. URL·공유 설정·서비스 계정을 확인하세요.")
 
 with col_btn4:
     if st.button("google sheet 불러오기"):
