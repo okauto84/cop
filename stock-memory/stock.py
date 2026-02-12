@@ -80,20 +80,6 @@ if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 
 
-def load_stock_csv(path: str) -> pd.DataFrame | None:
-    """./data/stockmemory.csv 파일을 읽어 동일한 header와 셀 내용으로 DataFrame 반환"""
-    if not os.path.exists(path):
-        return None
-    for encoding in ("utf-8-sig", "utf-8", "cp949", "euc-kr"):
-        try:
-            df = pd.read_csv(path, encoding=encoding, header=0)
-            df.columns = df.columns.astype(str).str.strip()
-            return df
-        except (UnicodeDecodeError, Exception):
-            continue
-    return None
-
-
 def normalize_for_editor(df: pd.DataFrame) -> pd.DataFrame:
     """data_editor 타입 호환을 위해 컬럼 타입 정규화"""
     df = df.copy()
@@ -150,16 +136,10 @@ def load_google_sheet(sheet_url_or_id: str, credentials_json: str) -> pd.DataFra
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 테이블 데이터: 최초 1회만 CSV 로드, 이후에는 세션에 저장된 값 유지(수정 내용이 되돌아가지 않도록)
+# 테이블 데이터: CSV 로드 없음. Google Sheet 불러오기 버튼으로 시트를 불러오면 동일한 header·내용으로 표시, 이후 세션에 유지
 if "table_data" not in st.session_state:
-    df = load_stock_csv(csv_path)
-    if df is not None and len(df.columns) > 0:
-        if "선택" not in df.columns:
-            df.insert(0, "선택", False)
-        st.session_state.table_data = df
-    else:
-        default_cols = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
-        st.session_state.table_data = pd.DataFrame(columns=default_cols)
+    default_cols = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
+    st.session_state.table_data = pd.DataFrame(columns=default_cols)
 
 # ---------- 테이블 섹션: CSV와 동일한 header/셀 내용, 왼쪽 체크박스 + 행삭제 ----------
 st.markdown("#### 📊 일지")
