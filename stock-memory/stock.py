@@ -5,15 +5,8 @@ from openai import OpenAI
 import time
 import pandas as pd
 import os
-import json
+import re
 from datetime import datetime
-
-try:
-    import gspread
-    from google.oauth2.service_account import Credentials
-    GSPREAD_AVAILABLE = True
-except ImportError:
-    GSPREAD_AVAILABLE = False
 
 # 페이지 설정
 st.set_page_config(
@@ -28,17 +21,11 @@ try:
 except:
     API_KEY = ""
 
-# Google Sheet URL 설정 (secrets에서 가져오거나 기본값 사용)
+# Google Sheet URL 설정 (secrets에서 가져오거나 기본값 사용, 공개 시트용)
 try:
     GSHEET_URL = st.secrets.get("google_sheet_url", "")
 except:
     GSHEET_URL = ""
-
-# Google 서비스 계정 정보 설정 (secrets에서 JSON 문자열로 가져오거나 기본값 사용)
-try:
-    GCP_SERVICE_ACCOUNT_JSON = st.secrets.get("gcp_service_account_json", "")
-except:
-    GCP_SERVICE_ACCOUNT_JSON = ""
 
 # 사이드바 설정
 with st.sidebar:
@@ -60,14 +47,10 @@ with st.sidebar:
     
     with st.expander("📋 Google Sheet 불러오기", expanded=False):
         if GSHEET_URL:
-            st.info(f"✅ Google Sheet URL이 설정되어 있습니다.")
+            st.info("✅ Google Sheet URL이 설정되어 있습니다.")
         else:
             st.warning("⚠️ Streamlit secrets에 `google_sheet_url`을 설정하세요.")
-        if GCP_SERVICE_ACCOUNT_JSON:
-            st.info(f"✅ 서비스 계정 정보가 설정되어 있습니다.")
-        else:
-            st.warning("⚠️ Streamlit secrets에 `gcp_service_account_json`을 설정하세요.")
-        st.caption("시트 공유 시 서비스 계정 이메일을 편집 권한으로 추가하세요.")
+        st.caption("공개(링크로 공유)된 시트만 불러올 수 있습니다.")
 
 # 메인 화면
 st.markdown("# stock")
@@ -98,34 +81,19 @@ def normalize_for_editor(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def load_google_sheet(sheet_url_or_id: str, credentials_json: str) -> pd.DataFrame | None:
-    """Google Sheet URL 또는 스프레드시트 ID로 시트를 열어 첫 번째 시트를 DataFrame으로 반환
-    
-    Args:
-        sheet_url_or_id: Google Sheet URL 또는 스프레드시트 ID
-        credentials_json: 서비스 계정 정보 JSON 문자열
-    """
-    if not GSPREAD_AVAILABLE or not sheet_url_or_id or not credentials_json:
+def load_google_sheet(sheet_url: str) -> pd.DataFrame | None:
+    """공개된 Google Sheet URL로 첫 번째 시트를 DataFrame으로 반환 (인증 없이 CSV export 사용)"""
+    if not sheet_url or not (sheet_url := sheet_url.strip()):
         return None
     try:
-        # JSON 문자열을 dict로 파싱
-        credentials = json.loads(credentials_json)
-        scopes = [
-            "https://www.googleapis.com/auth/spreadsheets.readonly",
-            "https://www.googleapis.com/auth/drive.readonly",
-        ]
-        creds = Credentials.from_service_account_info(credentials, scopes=scopes)
-        gc = gspread.authorize(creds)
-        sheet_url_or_id = (sheet_url_or_id or "").strip()
-        if "docs.google.com" in sheet_url_or_id or "/spreadsheets/d/" in sheet_url_or_id:
-            spreadsheet = gc.open_by_url(sheet_url_or_id)
+        # URL에서 스프레드시트 ID 추출 (예: .../d/SPREADSHEET_ID/edit ...)
+        match = re.search(r"/spreadsheets/d/([a-zA-Z0-9_-]+)", sheet_url)
+        if match:
+            sheet_id = match.group(1)
         else:
-            spreadsheet = gc.open_by_key(sheet_url_or_id)
-        worksheet = spreadsheet.sheet1
-        rows = worksheet.get_all_records()
-        if not rows:
-            return pd.DataFrame()
-        df = pd.DataFrame(rows)
+            sheet_id = sheet_url
+        export_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid=0"
+        df = pd.read_csv(export_url, encoding="utf-8")
         df.columns = df.columns.astype(str).str.strip()
         return df
     except Exception:
@@ -221,27 +189,20 @@ with col_btn3:
             st.error(f"저장 오류: {e}")
 
 with col_btn4:
-    if st.button("google sheet"):
-        if not GSPREAD_AVAILABLE:
-            st.error("gspread 패키지가 없습니다. pip install gspread google-auth")
+    if st.button("google sheet 불러오기"):
+        url = (GSHEET_URL or "").strip()
+        if not url:
+            st.warning("Streamlit secrets에 `google_sheet_url`을 설정하세요.")
         else:
-            url = (GSHEET_URL or "").strip()
-            if not url:
-                st.warning("Streamlit secrets에 `google_sheet_url`을 설정하세요.")
+            df = load_google_sheet(url)
+            if df is not None and len(df.columns) > 0:
+                if "선택" not in df.columns:
+                    df.insert(0, "선택", False)
+                st.session_state.table_data = df
+                st.success("Google Sheet를 불러왔습니다.")
+                st.rerun()
             else:
-                creds_json = (GCP_SERVICE_ACCOUNT_JSON or "").strip()
-                if not creds_json:
-                    st.error("Streamlit secrets에 `gcp_service_account_json`(서비스 계정 정보 JSON 문자열)을 설정하세요.")
-                else:
-                    df = load_google_sheet(url, creds_json)
-                    if df is not None and len(df.columns) > 0:
-                        if "선택" not in df.columns:
-                            df.insert(0, "선택", False)
-                        st.session_state.table_data = df
-                        st.success("Google Sheet를 불러왔습니다.")
-                        st.rerun()
-                    else:
-                        st.error("시트를 불러올 수 없습니다. URL·공유 설정·secrets를 확인하세요.")
+                st.error("시트를 불러올 수 없습니다. URL을 확인하거나 시트가 ‘링크가 있는 모든 사용자’로 공개되어 있는지 확인하세요.")
 
 st.markdown("---")
 
