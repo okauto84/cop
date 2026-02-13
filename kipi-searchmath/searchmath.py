@@ -23,7 +23,7 @@ with st.sidebar:
     st.markdown("### 설정")
     model_name = st.selectbox(
         "모델 선택",
-        ["gpt-5"],
+        ["gpt-5-mini"],
         index=0
     )
 
