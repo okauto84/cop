@@ -59,7 +59,7 @@ with st.sidebar:
 
 
 # 메인 화면
-st.markdown("# okauto")
+st.markdown("# KIPI-messenger Q&A")
 
 # 파일 첨부 영역 (Powered by OpenAI 위치)
 uploaded_file = st.file_uploader(
