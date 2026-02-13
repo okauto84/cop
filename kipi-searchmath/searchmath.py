@@ -84,7 +84,7 @@ st.markdown("#### PDF 첨부")
 uploaded_file = st.file_uploader(
     "특허/출원 문서 PDF를 선택하세요",
     type=["pdf"],
-    help="PDF를 선택한 뒤 분석을 실행하면 발명의 효과와 청구항 중심 핵심 기술 내용이 생성됩니다."
+    help="PDF를 선택하면 자동으로 파싱 후 발명의 효과와 청구항 중심 핵심 기술 내용이 생성됩니다."
 )
 
 if uploaded_file is not None:
@@ -98,12 +98,11 @@ if uploaded_file is not None:
         with st.expander("추출된 원문 미리보기", expanded=False):
             st.text_area("원문", value=extracted_text[:5000] + ("..." if len(extracted_text) > 5000 else ""), height=200, disabled=True)
 
-        if st.button("발명의 효과 · 청구항 중심 핵심 기술 내용 생성"):
-            with st.spinner("OpenAI API로 분석 중..."):
-                result = call_openai_for_patent(API_KEY, model_name, extracted_text)
-            st.markdown("---")
-            st.markdown("#### 분석 결과")
-            st.markdown(result)
+        with st.spinner("OpenAI API로 분석 중..."):
+            result = call_openai_for_patent(API_KEY, model_name, extracted_text)
+        st.markdown("---")
+        st.markdown("#### 분석 결과")
+        st.markdown(result)
 
 # API 키 미설정 안내
 if not API_KEY or API_KEY == "":
