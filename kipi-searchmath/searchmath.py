@@ -43,11 +43,12 @@ def parse_pdf(uploaded_file) -> str:
     except Exception as e:
         return ""
 
-# OpenAI API 호출 함수
-def call_openai_for_patent(api_key: str, model: str, document_text: str) -> str:
-    """문서 텍스트를 바탕으로 발명의 효과·청구항 중심 핵심 기술 내용 생성"""
+# OpenAI API 호출 함수 (스트리밍)
+def call_openai_for_patent_stream(api_key: str, model: str, document_text: str):
+    """문서 텍스트를 바탕으로 발명의 효과·청구항 중심 핵심 기술 내용 생성 (스트리밍)"""
     if not api_key or api_key == "":
-        return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
+        yield "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
+        return
     try:
         client = OpenAI(api_key=api_key)
         system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 주어진 문서 텍스트에서 아래 두 가지를 명확히 추출·정리하여 답변하세요.
@@ -63,27 +64,32 @@ def call_openai_for_patent(api_key: str, model: str, document_text: str) -> str:
 ## 청구항 중심 핵심 기술 내용
 (내용)
 ---"""
-        response = client.chat.completions.create(
+        stream = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"다음 문서 내용을 분석해 주세요.\n\n{document_text}"}
             ],
+            stream=True,
         )
-        return response.choices[0].message.content
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                yield chunk.choices[0].delta.content
     except Exception as e:
         err = str(e)
         if "API_KEY" in err or "authentication" in err.lower() or "invalid" in err.lower():
-            return f"🔑 API 키 오류: API 키를 확인해주세요.\n\n에러: {err}"
-        if "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
-            return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
-        return f"❌ API 호출 오류: {err}"
+            yield f"🔑 API 키 오류: API 키를 확인해주세요.\n\n에러: {err}"
+        elif "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
+            yield f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
+        else:
+            yield f"❌ API 호출 오류: {err}"
 
-# 특허검색식 생성을 위한 OpenAI API 호출 함수
-def call_openai_for_search_query(api_key: str, model: str, analysis_result: str) -> str:
-    """LLM 분석 결과를 바탕으로 특허검색식 생성"""
+# 특허검색식 생성을 위한 OpenAI API 호출 함수 (스트리밍)
+def call_openai_for_search_query_stream(api_key: str, model: str, analysis_result: str):
+    """LLM 분석 결과를 바탕으로 특허검색식 생성 (스트리밍)"""
     if not api_key or api_key == "":
-        return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
+        yield "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
+        return
     try:
         client = OpenAI(api_key=api_key)
         system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 특허 검색을 위해 [검색식 설명]과 [검색식 작성 기준]에 따라서 주어진 LLM 분석 결과(발명의 효과 및 청구항 중심 핵심 기술 내용)를 바탕으로 유사 특허 검색을 위한 효과적인 특허 검색식을 생성하세요.
@@ -96,11 +102,10 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
 
 특허 검색식 작성 기준에 대한 설명입니다.:
 1. 단어 검색
-  - 상세내용 : 단어 검색	특정 단어가 포함된 검색
+  - 상세내용 : 단어 검색 특정 단어가 포함된 검색
   - 예시 : 디스크
 2. 구문 검색
   - 상세내용 : 검색어가 순서대로 인접하여 나열되도록 검색 (공백, 복합명사, 조사, 특수문자가 포함된 경우도 검색 가능)	
-  - 예시 : "데이터 신호"
 3. 논리연산 : AND(*)
   - 상세내용 : 입력된 키워드가 모두 포함되도록 검색	
   - 예시 : 휴대폰*케이스
@@ -121,21 +126,25 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
 ## 출력 형태를 반드시 지켜주세요.
 (검색식)
 ---"""
-        response = client.chat.completions.create(
+        stream = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"다음 LLM 분석 결과를 바탕으로 특허 검색식을 생성해 주세요.\n\n{analysis_result}"}
             ],
+            stream=True,
         )
-        return response.choices[0].message.content
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                yield chunk.choices[0].delta.content
     except Exception as e:
         err = str(e)
         if "API_KEY" in err or "authentication" in err.lower() or "invalid" in err.lower():
-            return f"🔑 API 키 오류: API 키를 확인해주세요.\n\n에러: {err}"
-        if "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
-            return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
-        return f"❌ API 호출 오류: {err}"
+            yield f"🔑 API 키 오류: API 키를 확인해주세요.\n\n에러: {err}"
+        elif "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
+            yield f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
+        else:
+            yield f"❌ API 호출 오류: {err}"
 
 # PDF 첨부 버튼 영역 (파일 업로더로 구현)
 st.markdown("#### PDF 첨부")
@@ -163,21 +172,21 @@ if uploaded_file is not None:
         with st.expander("추출된 원문 미리보기", expanded=False):
             st.text_area("원문", value=extracted_text[:5000] + ("..." if len(extracted_text) > 5000 else ""), height=200, disabled=True)
 
-        with st.spinner("OpenAI API로 분석 중..."):
-            result = call_openai_for_patent(API_KEY, model_name, extracted_text)
-        
+        # LLM 분석 결과 실시간 출력
         with st.expander("LLM 분석 결과", expanded=True):
-            st.text_area("결과", value=result, height=280, disabled=True, label_visibility="collapsed")
+            result_text = st.write_stream(call_openai_for_patent_stream(API_KEY, model_name, extracted_text))
+            result = result_text
 
         # LLM 분석 결과를 바탕으로 특허검색식 생성
         if result and not result.startswith("⚠️") and not result.startswith("🔑") and not result.startswith("📊") and not result.startswith("❌"):
             # 세션 상태 초기화 또는 새로 생성
             if "search_query_result" not in st.session_state:
-                with st.spinner("특허검색식 생성 중..."):
-                    st.session_state.search_query_result = call_openai_for_search_query(API_KEY, model_name, result)
+                with st.expander("특허검색식", expanded=True):
+                    search_query_text = st.write_stream(call_openai_for_search_query_stream(API_KEY, model_name, result))
+                    st.session_state.search_query_result = search_query_text
             
+            # 검색식 수정 가능한 text_area 표시
             with st.expander("특허검색식", expanded=True):
-                # 검색식 수정 가능한 text_area
                 edited_search_query = st.text_area(
                     "검색식", 
                     value=st.session_state.search_query_result, 
