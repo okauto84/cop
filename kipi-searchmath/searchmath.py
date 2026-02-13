@@ -86,7 +86,7 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
         return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
     try:
         client = OpenAI(api_key=api_key)
-        system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 특허 검색을 위해 [검색식 설명]과 [검색식 작성 기준]에 따라서 주어진 LLM 분석 결과(발명의 효과 및 청구항 중심 핵심 기술 내용)를 바탕으로 효과적인 특허 검색식을 생성하세요.
+        system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 특허 검색을 위해 [검색식 설명]과 [검색식 작성 기준]에 따라서 주어진 LLM 분석 결과(발명의 효과 및 청구항 중심 핵심 기술 내용)를 바탕으로 유사 특허 검색을 위한 효과적인 특허 검색식을 생성하세요.
 
 특허 검색식에 대한 설명입니다.:
 1. 핵심 기술 키워드와 동의어/유의어 포함
@@ -113,9 +113,11 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
   - 상세내용 : 첫 번째 검색어와 두 번째 검색어 사이의 거리(단어 수)를 지정하여 검색 (1~3단어 거리까지 지원, 단어 순서 고려)	
  - 예시 : 자동차^2각도
  
-출력은 반드시 다음 형식으로 작성하세요:
-(검색식 내용)
 
+
+
+
+---
 ## 검색식 설명
 (검색식 구성 요소 및 전략에 대한 설명)
 ---"""
