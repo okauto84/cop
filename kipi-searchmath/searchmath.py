@@ -111,7 +111,7 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
   - 예시 : 자동차*!엔진
 6. 논리연산: NEAR(^)	
   - 상세내용 : 첫 번째 검색어와 두 번째 검색어 사이의 거리(단어 수)를 지정하여 검색 (1~3단어 거리까지 지원, 단어 순서 고려)	
- - 예시 : 자동차^2각도
+  - 예시 : 자동차^2각도
  
 
 
