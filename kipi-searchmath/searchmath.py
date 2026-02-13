@@ -114,8 +114,8 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
   - 예시 : 자동차^2각도
 7. 단어를 구분하려는 용도로 단어 앞뒤에 싱글 따옴표('), 쌍따옴표(")를 넣지 않습니다.
 
-[출력 형태]:
-(검색식)
+출력은 반드시 다음 형식으로 작성하세요:
+(내용)
 
 """
         response = client.chat.completions.create(
