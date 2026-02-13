@@ -37,14 +37,6 @@ with st.sidebar:
             ["gpt-5-mini"],
             index=0
         )
-    
-    with st.expander("📋 Google Sheet", expanded=True):
-        st.text_input(
-            "Google Sheet URL",
-            key="sheet_url",
-            placeholder="https://docs.google.com/spreadsheets/d/...",
-            help="공개(링크로 볼 수 있음)로 설정된 스프레드시트 URL을 넣으세요."
-        )
 
 # 메인 화면
 st.markdown("# stock")
@@ -86,8 +78,8 @@ def _sheet_url_to_export_csv(url: str, gid: str = "0") -> str:
 
 
 def _read_gsheet(url: str = None) -> pd.DataFrame:
-    """공개 Google Sheet URL로 시트 읽기 (URL만 사용)"""
-    u = (url or st.session_state.get("sheet_url", "") or "").strip()
+    """공개 Google Sheet URL로 시트 읽기 (URL은 secrets 또는 인자로 전달)"""
+    u = (url or st.secrets.get("google_sheet_url", "") or "").strip()
     if not u:
         return pd.DataFrame()
     export_url = _sheet_url_to_export_csv(u)
@@ -107,9 +99,9 @@ def _read_gsheet(url: str = None) -> pd.DataFrame:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 테이블 데이터: Google Sheet URL로 읽어서 표시, 이후 세션에 유지
+# 테이블 데이터: secrets의 google_sheet_url로 읽어서 표시, 이후 세션에 유지
 if "table_data" not in st.session_state:
-    df = _read_gsheet(st.session_state.get("sheet_url", ""))
+    df = _read_gsheet(st.secrets.get("google_sheet_url", ""))
     if df is not None and len(df.columns) > 0:
         if "선택" not in df.columns:
             df.insert(0, "선택", False)
@@ -182,9 +174,9 @@ with col_btn2:
 
 with col_btn4:
     if st.button("google sheet 불러오기"):
-        url = st.session_state.get("sheet_url", "")
-        if not url or not url.strip():
-            st.error("Google Sheet URL을 사이드바에 입력하세요.")
+        url = st.secrets.get("google_sheet_url", "")
+        if not url or not str(url).strip():
+            st.error("Streamlit secrets에 google_sheet_url을 설정하세요.")
         else:
             df = _read_gsheet(url)
             if df is not None and len(df.columns) > 0:
@@ -194,7 +186,7 @@ with col_btn4:
                 st.success("Google Sheet를 불러왔습니다.")
                 st.rerun()
             else:
-                st.error("시트를 불러올 수 없습니다. URL과 시트 공개(링크로 볼 수 있음) 설정을 확인하세요.")
+                st.error("시트를 불러올 수 없습니다. google_sheet_url과 시트 공개(링크로 볼 수 있음) 설정을 확인하세요.")
 
 st.markdown("---")
 
