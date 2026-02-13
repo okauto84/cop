@@ -4,20 +4,12 @@ import streamlit as st
 from openai import OpenAI
 import time
 import pandas as pd
-import os
+import re
 from datetime import datetime
-
-try:
-    from streamlit_gsheets import GSheetsConnection
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    GSHEETS_AVAILABLE = True
-except Exception:
-    conn = None
-    GSHEETS_AVAILABLE = False
 
 # 페이지 설정
 st.set_page_config(
-    page_title="stock",
+    page_title="Stock",
     page_icon="🔍",
     layout="wide"
 )
@@ -27,8 +19,6 @@ try:
     API_KEY = st.secrets.get("openai_api_key", "")
 except:
     API_KEY = ""
-
-# Google Sheet: 전체 공개 시트면 URL만 넣으면 됨. 서비스 계정은 '시트에 저장'할 때만 필요.
 
 # 사이드바 설정
 with st.sidebar:
@@ -48,12 +38,13 @@ with st.sidebar:
             index=0
         )
     
-    with st.expander("📋 Google Sheet", expanded=False):
-        if GSHEETS_AVAILABLE:
-            st.info("✅ GSheets 연결 사용 중.")
-        else:
-            st.warning("⚠️ st-gsheets-connection 설치 및 [connections.gsheets] 설정이 필요합니다.")
-        st.caption("전체 공개 시트: spreadsheet URL만 넣으면 됨 (서비스 계정 불필요). 시트에 변경 내용을 저장하려면 서비스 계정이 필요합니다.")
+    with st.expander("📋 Google Sheet", expanded=True):
+        st.text_input(
+            "Google Sheet URL",
+            key="sheet_url",
+            placeholder="https://docs.google.com/spreadsheets/d/...",
+            help="공개(링크로 볼 수 있음)로 설정된 스프레드시트 URL을 넣으세요."
+        )
 
 # 메인 화면
 st.markdown("# stock")
@@ -77,12 +68,33 @@ def normalize_for_editor(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _read_gsheet() -> pd.DataFrame:
-    """GSheetsConnection으로 시트 읽기 (동일한 header·내용)"""
-    if not GSHEETS_AVAILABLE or conn is None:
+def _sheet_url_to_export_csv(url: str, gid: str = "0") -> str:
+    """공개 스프레드시트 URL을 CSV 내보내기 URL로 변환"""
+    url = (url or "").strip()
+    if not url:
+        return ""
+    # /d/SPREADSHEET_ID/ 형태 추출
+    m = re.search(r"/d/([a-zA-Z0-9_-]+)", url)
+    if not m:
+        return ""
+    sid = m.group(1)
+    # 기존 URL에 #gid= 숫자가 있으면 사용
+    gid_m = re.search(r"[#?]gid=(\d+)", url)
+    if gid_m:
+        gid = gid_m.group(1)
+    return f"https://docs.google.com/spreadsheets/d/{sid}/export?format=csv&gid={gid}"
+
+
+def _read_gsheet(url: str = None) -> pd.DataFrame:
+    """공개 Google Sheet URL로 시트 읽기 (URL만 사용)"""
+    u = (url or st.session_state.get("sheet_url", "") or "").strip()
+    if not u:
+        return pd.DataFrame()
+    export_url = _sheet_url_to_export_csv(u)
+    if not export_url:
         return pd.DataFrame()
     try:
-        df = conn.read()
+        df = pd.read_csv(export_url)
         if df is not None and len(df.columns) > 0:
             df.columns = df.columns.astype(str).str.strip()
             return df
@@ -95,9 +107,9 @@ def _read_gsheet() -> pd.DataFrame:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 테이블 데이터: GSheetsConnection으로 시트 읽어서 동일한 header·내용 표시, 이후 세션에 유지
+# 테이블 데이터: Google Sheet URL로 읽어서 표시, 이후 세션에 유지
 if "table_data" not in st.session_state:
-    df = _read_gsheet()
+    df = _read_gsheet(st.session_state.get("sheet_url", ""))
     if df is not None and len(df.columns) > 0:
         if "선택" not in df.columns:
             df.insert(0, "선택", False)
@@ -136,8 +148,8 @@ display_df = st.data_editor(
 # 편집 결과를 항상 세션에 반영하여 다음 rerun에서도 수정 상태 유지
 st.session_state.table_data = display_df
 
-# 표 아래 버튼: 행 추가, 행 삭제, 저장, google sheet 불러오기 (간격 좁게, 작은 크기)
-col_btn4, col_btn1, col_btn2, col_btn3 = st.columns([1.0, 0.6, 0.6, 0.5])
+# 표 아래 버튼: 행 추가, 행 삭제, google sheet 불러오기 (간격 좁게, 작은 크기)
+col_btn4, col_btn1, col_btn2 = st.columns([1.0, 0.6, 0.6])
 
 with col_btn1:
     if st.button("행 추가"):
@@ -168,30 +180,13 @@ with col_btn2:
             st.success("선택한 행이 삭제되었습니다.")
         st.rerun()
 
-with col_btn3:
-    if st.button("저장"):
-        # 현재 세션 상태를 Google Sheet에 반영 (conn.update)
-        final_state = st.session_state.table_data.copy()
-        save_df = final_state.drop(columns=["선택"], errors="ignore")
-        if not GSHEETS_AVAILABLE or conn is None:
-            st.error("GSheets 연결이 없습니다. st-gsheets-connection 설치 및 [connections.gsheets] 설정을 확인하세요.")
-        else:
-            try
-                conn.update(data=save_df)
-                st.success("Google Sheet에 저장되었습니다.")
-            except Exception as e:
-                err = str(e)
-                if "UnsupportedOperationError" in type(e).__name__ or "cannot be written" in err.lower() or "Public" in err:
-                    st.info("공개 시트에는 저장할 수 없습니다. 시트에 저장하려면 [connections.gsheets]에 type=service_account 로 서비스 계정을 넣고, 시트를 해당 이메일과 공유하세요.")
-                else:
-                    st.error(f"저장 실패: {e}")
-
 with col_btn4:
     if st.button("google sheet 불러오기"):
-        if not GSHEETS_AVAILABLE or conn is None:
-            st.error("GSheets 연결이 없습니다. pip install st-gsheets-connection 후 [connections.gsheets]에 spreadsheet URL을 설정하세요.")
+        url = st.session_state.get("sheet_url", "")
+        if not url or not url.strip():
+            st.error("Google Sheet URL을 사이드바에 입력하세요.")
         else:
-            df = _read_gsheet()
+            df = _read_gsheet(url)
             if df is not None and len(df.columns) > 0:
                 if "선택" not in df.columns:
                     df.insert(0, "선택", False)
@@ -199,7 +194,7 @@ with col_btn4:
                 st.success("Google Sheet를 불러왔습니다.")
                 st.rerun()
             else:
-                st.error("시트를 불러올 수 없습니다. [connections.gsheets]의 spreadsheet URL과 공유 설정을 확인하세요.")
+                st.error("시트를 불러올 수 없습니다. URL과 시트 공개(링크로 볼 수 있음) 설정을 확인하세요.")
 
 st.markdown("---")
 
