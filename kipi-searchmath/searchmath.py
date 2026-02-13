@@ -23,7 +23,7 @@ with st.sidebar:
     st.markdown("### 설정")
     model_name = st.selectbox(
         "모델 선택",
-        ["gpt-5-mini"],
+        ["gpt-5"],
         index=0
     )
 
@@ -101,7 +101,7 @@ if uploaded_file is not None:
         with st.spinner("OpenAI API로 분석 중..."):
             result = call_openai_for_patent(API_KEY, model_name, extracted_text)
         
-        with st.expander("분석 결과", expanded=True):
+        with st.expander("LLM 분석 결과", expanded=True):
             st.text_area("결과", value=result, height=280, disabled=True, label_visibility="collapsed")
 
         st.markdown("---")
@@ -113,9 +113,18 @@ st.markdown("""
         font-size: 0.8rem !important;
         line-height: 1.5 !important;
         font-family: inherit;
+        background-color: #ffffff !important;
+        color: #262730 !important;
+        border: 1px solid #e0e0e0 !important;
     }
     .stExpander summary {
         font-size: 0.9rem !important;
+    }
+    /* 분석 결과 영역 배경 흰색 강제 */
+    .stExpander .stTextArea textarea[disabled] {
+        background-color: #ffffff !important;
+        color: #262730 !important;
+        -webkit-text-fill-color: #262730 !important;
     }
 </style>
 """, unsafe_allow_html=True)
