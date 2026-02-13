@@ -52,8 +52,8 @@ def call_openai_for_patent(api_key: str, model: str, document_text: str) -> str:
         client = OpenAI(api_key=api_key)
         system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 주어진 문서 텍스트에서 아래 두 가지를 명확히 추출·정리하여 답변하세요.
 
-1. **발명의 효과**: 해당 발명이 달성하는 핵심적인 기술적 효과를 150자 이내로 요약하여 서술하세요.
-2. **청구항 중심으로 핵심 기술 내용**: 독립 청구항 및 필요 시 종속 청구항을 중심으로, 핵심 기술 구성과 요지를 150자 이내로 정리하세요.
+1. **발명의 효과**: 해당 발명이 달성하는 핵심적인 기술적 효과를 100자 수준으로 서술하세요.
+2. **청구항 중심으로 핵심 기술 내용**: 독립 청구항 및 필요 시 종속 청구항을 중심으로, 핵심 기술 구성과 요지를 100자 수준으로 정리하세요.
 
 출력은 반드시 다음 형식으로 작성하세요:
 ---
@@ -100,9 +100,11 @@ if uploaded_file is not None:
 
         with st.spinner("OpenAI API로 분석 중..."):
             result = call_openai_for_patent(API_KEY, model_name, extracted_text)
-        st.markdown("---")
+        
         with st.expander("분석 결과", expanded=True):
             st.text_area("결과", value=result, height=280, disabled=True, label_visibility="collapsed")
+
+        st.markdown("---")
 
 # 분석 결과·원문 미리보기: 글자 작게, 레이아웃 정리
 st.markdown("""
