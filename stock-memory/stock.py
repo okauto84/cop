@@ -176,7 +176,7 @@ with col_btn3:
         if not GSHEETS_AVAILABLE or conn is None:
             st.error("GSheets 연결이 없습니다. st-gsheets-connection 설치 및 [connections.gsheets] 설정을 확인하세요.")
         else:
-            try:
+            try
                 conn.update(data=save_df)
                 st.success("Google Sheet에 저장되었습니다.")
             except Exception as e:
