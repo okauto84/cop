@@ -191,7 +191,7 @@ if uploaded_file is not None:
                 if edited_search_query != st.session_state.search_query_result:
                     st.session_state.search_query_result = edited_search_query
 
-        st.markdown("---")
+        # st.markdown("---")
 
 # 분석 결과·원문 미리보기: 글자 작게, 레이아웃 정리
 st.markdown("""
