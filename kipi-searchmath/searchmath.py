@@ -86,17 +86,34 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
         return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
     try:
         client = OpenAI(api_key=api_key)
-        system_prompt = """당신은 특허 검색 전문가입니다. 주어진 LLM 분석 결과(발명의 효과 및 청구항 중심 핵심 기술 내용)를 바탕으로 효과적인 특허검색식을 생성하세요.
+        system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 특허 검색을 위해 [검색식 설명]과 [검색식 작성 기준]에 따라서 주어진 LLM 분석 결과(발명의 효과 및 청구항 중심 핵심 기술 내용)를 바탕으로 효과적인 특허 검색식을 생성하세요.
 
-특허검색식은 다음을 고려하여 작성하세요:
+특허 검색식에 대한 설명입니다.:
 1. 핵심 기술 키워드와 동의어/유의어 포함
 2. 기술 분야별 주요 용어 조합
-3. Boolean 연산자(AND, OR, NOT) 활용
+3. 한글, 영문, 숫자를 이용할 수 있으며 구문검색("") 및 논리연산자(AND, OR, NOT, NEAR, 절단자)를 사용하면 더 구체적인 검색이 가능합니다.
 4. 검색식은 명확하고 실행 가능한 형태로 작성
 
+특허 검색식 작성 기준에 대한 설명입니다.:
+1. 단어 검색
+  - 상세내용 : 단어 검색	특정 단어가 포함된 검색
+  - 예시 : 디스크
+2. 구문 검색
+  - 상세내용 : 검색어가 순서대로 인접하여 나열되도록 검색 (공백, 복합명사, 조사, 특수문자가 포함된 경우도 검색 가능)	
+  - 예시 : "데이터 신호"
+3. 논리연산 : AND(*)
+  - 상세내용 : 입력된 키워드가 모두 포함되도록 검색	
+  - 예시 : 휴대폰*케이스
+4. 논리연산 : OR(+)
+  - 상세내용 : 입력된 키워드 중 하나라도 포함된 검색	
+5. 논리연산: NOT(!)	
+  - 상세내용 : 입력된 키워드 중 NOT(!) 연산자 뒤의 키워드는 포함하지 않는 검색 (단독 사용 불가, AND(*)와 함께 사용 가능)	
+  - 예시 : 자동차*!엔진
+6. 논리연산: NEAR(^)	
+  - 상세내용 : 첫 번째 검색어와 두 번째 검색어 사이의 거리(단어 수)를 지정하여 검색 (1~3단어 거리까지 지원, 단어 순서 고려)	
+ - 예시 : 자동차^2각도
+ 
 출력은 반드시 다음 형식으로 작성하세요:
----
-## 특허검색식
 (검색식 내용)
 
 ## 검색식 설명
@@ -106,7 +123,7 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
             model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"다음 LLM 분석 결과를 바탕으로 특허검색식을 생성해 주세요.\n\n{analysis_result}"}
+                {"role": "user", "content": f"다음 LLM 분석 결과를 바탕으로 특허 검색식을 생성해 주세요.\n\n{analysis_result}"}
             ],
         )
         return response.choices[0].message.content
@@ -127,6 +144,13 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
+    # 파일이 변경되었는지 확인하여 세션 상태 초기화
+    current_file_id = f"{uploaded_file.name}_{uploaded_file.size}"
+    if "last_file_id" not in st.session_state or st.session_state.last_file_id != current_file_id:
+        st.session_state.last_file_id = current_file_id
+        if "search_query_result" in st.session_state:
+            del st.session_state.search_query_result
+    
     with st.spinner("PDF를 파싱하고 있습니다..."):
         extracted_text = parse_pdf(uploaded_file)
 
@@ -145,11 +169,64 @@ if uploaded_file is not None:
 
         # LLM 분석 결과를 바탕으로 특허검색식 생성
         if result and not result.startswith("⚠️") and not result.startswith("🔑") and not result.startswith("📊") and not result.startswith("❌"):
-            with st.spinner("특허검색식 생성 중..."):
-                search_query_result = call_openai_for_search_query(API_KEY, model_name, result)
+            # 세션 상태 초기화 또는 새로 생성
+            if "search_query_result" not in st.session_state:
+                with st.spinner("특허검색식 생성 중..."):
+                    st.session_state.search_query_result = call_openai_for_search_query(API_KEY, model_name, result)
             
             with st.expander("특허검색식", expanded=True):
-                st.text_area("검색식", value=search_query_result, height=280, disabled=True, label_visibility="collapsed")
+                # 검색식 수정 가능한 text_area
+                edited_search_query = st.text_area(
+                    "검색식", 
+                    value=st.session_state.search_query_result, 
+                    height=280, 
+                    disabled=False, 
+                    label_visibility="collapsed",
+                    key="search_query_editor"
+                )
+                
+                # 수정된 내용을 세션 상태에 저장
+                if edited_search_query != st.session_state.search_query_result:
+                    st.session_state.search_query_result = edited_search_query
+                
+                # 복사 버튼과 안내
+                col1, col2 = st.columns([1, 20])
+                with col1:
+                    copy_clicked = st.button("📋 복사", key="copy_search_query", use_container_width=True)
+                with col2:
+                    st.caption("검색식을 선택(Ctrl+A) 후 복사(Ctrl+C)하거나 복사 버튼을 사용하세요.")
+                
+                # 복사 기능 (JavaScript 사용)
+                if copy_clicked:
+                    # 텍스트를 JSON으로 이스케이프 처리하여 JavaScript에서 안전하게 사용
+                    import json
+                    json_text = json.dumps(edited_search_query, ensure_ascii=False)
+                    st.markdown(
+                        f"""
+                        <script>
+                            (async function() {{
+                                const textToCopy = {json_text};
+                                try {{
+                                    await navigator.clipboard.writeText(textToCopy);
+                                    console.log('복사 완료');
+                                }} catch (err) {{
+                                    console.error('복사 실패:', err);
+                                    // 대체 방법: 텍스트 영역 선택
+                                    const textarea = document.createElement('textarea');
+                                    textarea.value = textToCopy;
+                                    textarea.style.position = 'fixed';
+                                    textarea.style.opacity = '0';
+                                    document.body.appendChild(textarea);
+                                    textarea.select();
+                                    document.execCommand('copy');
+                                    document.body.removeChild(textarea);
+                                }}
+                            }})();
+                        </script>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                    st.success("✅ 클립보드에 복사되었습니다!")
 
         st.markdown("---")
 
