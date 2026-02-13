@@ -79,12 +79,51 @@ def call_openai_for_patent(api_key: str, model: str, document_text: str) -> str:
             return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
         return f"❌ API 호출 오류: {err}"
 
+# 특허검색식 생성을 위한 OpenAI API 호출 함수
+def call_openai_for_search_query(api_key: str, model: str, analysis_result: str) -> str:
+    """LLM 분석 결과를 바탕으로 특허검색식 생성"""
+    if not api_key or api_key == "":
+        return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
+    try:
+        client = OpenAI(api_key=api_key)
+        system_prompt = """당신은 특허 검색 전문가입니다. 주어진 LLM 분석 결과(발명의 효과 및 청구항 중심 핵심 기술 내용)를 바탕으로 효과적인 특허검색식을 생성하세요.
+
+특허검색식은 다음을 고려하여 작성하세요:
+1. 핵심 기술 키워드와 동의어/유의어 포함
+2. 기술 분야별 주요 용어 조합
+3. Boolean 연산자(AND, OR, NOT) 활용
+4. 검색식은 명확하고 실행 가능한 형태로 작성
+
+출력은 반드시 다음 형식으로 작성하세요:
+---
+## 특허검색식
+(검색식 내용)
+
+## 검색식 설명
+(검색식 구성 요소 및 전략에 대한 설명)
+---"""
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"다음 LLM 분석 결과를 바탕으로 특허검색식을 생성해 주세요.\n\n{analysis_result}"}
+            ],
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        err = str(e)
+        if "API_KEY" in err or "authentication" in err.lower() or "invalid" in err.lower():
+            return f"🔑 API 키 오류: API 키를 확인해주세요.\n\n에러: {err}"
+        if "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
+            return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
+        return f"❌ API 호출 오류: {err}"
+
 # PDF 첨부 버튼 영역 (파일 업로더로 구현)
 st.markdown("#### PDF 첨부")
 uploaded_file = st.file_uploader(
     "특허/출원 문서 PDF를 선택하세요",
     type=["pdf"],
-    help="PDF를 선택하면 자동으로 파싱 후 발명의 효과와 청구항 중심 핵심 기술 내용이 생성됩니다."
+    help="PDF를 선택하면 자동으로 파싱 후 발명의 효과와 청구항 중심 핵심 기술 내용을 분석하고, 이를 바탕으로 특허검색식을 생성합니다."
 )
 
 if uploaded_file is not None:
@@ -103,6 +142,14 @@ if uploaded_file is not None:
         
         with st.expander("LLM 분석 결과", expanded=True):
             st.text_area("결과", value=result, height=280, disabled=True, label_visibility="collapsed")
+
+        # LLM 분석 결과를 바탕으로 특허검색식 생성
+        if result and not result.startswith("⚠️") and not result.startswith("🔑") and not result.startswith("📊") and not result.startswith("❌"):
+            with st.spinner("특허검색식 생성 중..."):
+                search_query_result = call_openai_for_search_query(API_KEY, model_name, result)
+            
+            with st.expander("특허검색식", expanded=True):
+                st.text_area("검색식", value=search_query_result, height=280, disabled=True, label_visibility="collapsed")
 
         st.markdown("---")
 
