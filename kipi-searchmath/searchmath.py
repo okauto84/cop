@@ -101,8 +101,22 @@ if uploaded_file is not None:
         with st.spinner("OpenAI API로 분석 중..."):
             result = call_openai_for_patent(API_KEY, model_name, extracted_text)
         st.markdown("---")
-        st.markdown("#### 분석 결과")
-        st.markdown(result)
+        with st.expander("분석 결과", expanded=True):
+            st.text_area("결과", value=result, height=280, disabled=True, label_visibility="collapsed")
+
+# 분석 결과·원문 미리보기: 글자 작게, 레이아웃 정리
+st.markdown("""
+<style>
+    .stTextArea textarea {
+        font-size: 0.8rem !important;
+        line-height: 1.5 !important;
+        font-family: inherit;
+    }
+    .stExpander summary {
+        font-size: 0.9rem !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # API 키 미설정 안내
 if not API_KEY or API_KEY == "":
