@@ -118,8 +118,8 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
 
 
 ---
-## 검색식 설명
-(검색식 구성 요소 및 전략에 대한 설명)
+## 출력 형태를 반드시 지켜주세요.
+(검색식)
 ---"""
         response = client.chat.completions.create(
             model=model,
@@ -190,45 +190,6 @@ if uploaded_file is not None:
                 # 수정된 내용을 세션 상태에 저장
                 if edited_search_query != st.session_state.search_query_result:
                     st.session_state.search_query_result = edited_search_query
-                
-                # 복사 버튼과 안내
-                col1, col2 = st.columns([1, 20])
-                with col1:
-                    copy_clicked = st.button("📋 복사", key="copy_search_query", use_container_width=True)
-                with col2:
-                    st.caption("검색식을 선택(Ctrl+A) 후 복사(Ctrl+C)하거나 복사 버튼을 사용하세요.")
-                
-                # 복사 기능 (JavaScript 사용)
-                if copy_clicked:
-                    # 텍스트를 JSON으로 이스케이프 처리하여 JavaScript에서 안전하게 사용
-                    import json
-                    json_text = json.dumps(edited_search_query, ensure_ascii=False)
-                    st.markdown(
-                        f"""
-                        <script>
-                            (async function() {{
-                                const textToCopy = {json_text};
-                                try {{
-                                    await navigator.clipboard.writeText(textToCopy);
-                                    console.log('복사 완료');
-                                }} catch (err) {{
-                                    console.error('복사 실패:', err);
-                                    // 대체 방법: 텍스트 영역 선택
-                                    const textarea = document.createElement('textarea');
-                                    textarea.value = textToCopy;
-                                    textarea.style.position = 'fixed';
-                                    textarea.style.opacity = '0';
-                                    document.body.appendChild(textarea);
-                                    textarea.select();
-                                    document.execCommand('copy');
-                                    document.body.removeChild(textarea);
-                                }}
-                            }})();
-                        </script>
-                        """,
-                        unsafe_allow_html=True
-                    )
-                    st.success("✅ 클립보드에 복사되었습니다!")
 
         st.markdown("---")
 
