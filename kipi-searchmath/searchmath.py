@@ -120,7 +120,7 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
 ---
 ## 출력 형태를 반드시 지켜주세요.
 (검색식)
----"""
+"""
         response = client.chat.completions.create(
             model=model,
             messages=[
