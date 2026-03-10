@@ -28,6 +28,17 @@ st.markdown("""
 .tag-partial { background-color: #f9a825; }
 .tag-diff { background-color: #e57373; }
 .tag-same { background-color: #66bb6a; }
+.compare-box { border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; background: #fafafa; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: left; font-size: 0.9rem; line-height: 1.6; }
+.compare-box.common { border-left: 4px solid #66bb6a; }
+.compare-box.diff { border-left: 4px solid #ffb74d; }
+.compare-box-title { font-weight: bold; margin-bottom: 0.75rem; font-size: 1rem; }
+.compare-box.common .compare-box-title { color: #2e7d32; }
+.compare-box.diff .compare-box-title { color: #e65100; }
+.compare-box ul { margin: 0; padding-left: 1.25rem; }
+.compare-box li { margin-bottom: 0.5rem; }
+.compare-box .highlight { color: #1565c0; font-weight: 500; }
+/* 탭별 스크롤: 탭 패널 내용 영역에 최대 높이 및 세로 스크롤 */
+[data-testid="stTabs"] [data-testid="stVerticalBlock"] { max-height: 75vh; overflow-y: auto; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -67,7 +78,7 @@ with tab1:
         )
 
     st.markdown("---")
-    st.markdown("#### 1. 구성요소 대비표 (Claim Analysis Table)")
+    st.markdown("### 💡 구성요소 대비표 (Claim Analysis Table)")
     st.markdown(
         """
         <table class="claim-table">
@@ -109,6 +120,32 @@ with tab1:
         """,
         unsafe_allow_html=True,
     )
+
+    st.markdown("")  # 간격
+    st.markdown("#### 2. 유사점 및 차이점")
+    comp_col1, comp_col2 = st.columns(2)
+    with comp_col1:
+        st.markdown(
+            '<div class="compare-box common">'
+            '<div class="compare-box-title">✓ 유사점 (Commonalities)</div>'
+            '<ul>'
+            '<li>부품 일체화 설계: 두 발명 모두 별도의 체결 부품(나사 등) 없이 본체 구조물 사출 시 결합 기능을 <span class="highlight">일체화</span>하여 공정 단순화를 달성함.</li>'
+            '<li>탄성 결합 원리: 출원발명의 탄성채널과 인용발명의 체결 스프링은 모두 재료의 <span class="highlight">탄성 복원력</span>을 이용한 스냅 핏 (Snap-fit) 방식을 공유함.</li>'
+            '</ul>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+    with comp_col2:
+        st.markdown(
+            '<div class="compare-box diff">'
+            '<div class="compare-box-title">💡 차이점 (Differences)</div>'
+            '<ul>'
+            '<li>운동 및 기구 형태: 출원발명은 이동형 부품을 위한 <span class="highlight">선형 가이드(Sliding)</span> 구조이나, 인용발명은 고정형 부품을 위한 <span class="highlight">점 결합(Point)</span> 구조임.</li>'
+            '<li>기술적 과제: 출원발명은 <span class="highlight">기밀성(냉기 누설 차단)</span> 확보가 핵심이며, 인용발명은 <span class="highlight">부품 호환성(좌우 공용화)</span> 확보에 초점을 맞춤.</li>'
+            '</ul>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
 
 with tab2:
     st.header("공보")
