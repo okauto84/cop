@@ -175,7 +175,7 @@ with left_col:
 # 우측 패널: 검색 결과 데이터프레임
 # ==========================================
 with right_col:
-    tab_info, tab_result = st.tabs(["⌂ INFO", "1020210165598 검색 ✕"])
+    tab_result, tab_info = st.tabs(["1020210165598 검색 ✕", "⌂ INFO"])
 
     with tab_info:
         st.info("INFO 탭입니다. 필요한 안내 또는 정보를 여기에 표시할 수 있습니다.")
