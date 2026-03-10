@@ -241,6 +241,6 @@ with right_sidebar:
         st.image(str(drawing_path), use_container_width=True)
     else:
         st.caption("`./data/drawing.jpg` 파일을 추가하면 대표도면이 표시됩니다.")
-    st.divider()
+    
     st.markdown("**발명의 3요소 (AI 요약)**")
     st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
