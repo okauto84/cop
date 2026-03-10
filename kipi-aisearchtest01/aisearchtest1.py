@@ -15,8 +15,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 좌측 패널(1)과 우측 패널(3) 비율로 분할
-left_col, right_col = st.columns([1, 3])
+# 좌측 패널(1), 메인(3), 우측 사이드바(1) 비율로 분할
+left_col, right_col, right_sidebar = st.columns([1, 3, 1])
 
 # ==========================================
 # 좌측 패널: 검색 조건 및 구성요소
@@ -145,3 +145,15 @@ with right_col:
             st.button("2")
         with page_col4:
             st.button("›")
+
+# ==========================================
+# 우측 사이드바
+# ==========================================
+with right_sidebar:
+    st.markdown("**📌 사이드바**")
+    st.divider()
+    st.selectbox("정렬", ["관련도순", "출원일순", "등록일순"], label_visibility="collapsed", key="sort_opt")
+    st.caption("검색 결과 정렬 기준")
+    st.divider()
+    st.button("📥 내보내기", use_container_width=True, key="export_btn")
+    st.button("📋 클립보드", use_container_width=True, key="clipboard_btn")
