@@ -19,6 +19,15 @@ st.markdown("""
     margin-bottom: 0.5rem;
     font-size: 1rem;
 }
+.claim-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
+.claim-table th, .claim-table td { border: 1px solid #ddd; padding: 0.75rem 1rem; text-align: left; vertical-align: top; }
+.claim-table th { background-color: #f5f5f5; font-weight: bold; }
+.claim-table .comp-name { font-weight: bold; display: block; margin-bottom: 0.25rem; }
+.claim-table .comp-desc { color: #555; font-size: 0.85em; }
+.tag { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; color: white; font-size: 0.85em; font-weight: 500; }
+.tag-partial { background-color: #f9a825; }
+.tag-diff { background-color: #e57373; }
+.tag-same { background-color: #66bb6a; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -56,6 +65,50 @@ with tab1:
             "</div>",
             unsafe_allow_html=True,
         )
+
+    st.markdown("---")
+    st.markdown("#### 1. 구성요소 대비표 (Claim Analysis Table)")
+    st.markdown(
+        """
+        <table class="claim-table">
+        <thead>
+        <tr>
+        <th>출원발명 구성요소</th>
+        <th>인용발명 구성요소</th>
+        <th>관련도</th>
+        <th>대비 결과 요약</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td><span class="comp-name">베이스팬(100)</span><span class="comp-desc">양측면에 가이드공(170)이 관통 형성됨</span></td>
+        <td><span class="comp-name">베리어(73)</span><span class="comp-desc">양단에 실내측을 향해 연장된 단부측판(75) 구비</span></td>
+        <td><span class="tag tag-partial">일부동일</span></td>
+        <td>본체 구조물에 결합 기능을 통합한 점은 유사하나, 관통공 vs 측판 구조의 형태적 차이 존재</td>
+        </tr>
+        <tr>
+        <td><span class="comp-name">상측캐비넷(650)</span><span class="comp-desc">삽입채널(662) 및 삽입가이드편(664) 형성</span></td>
+        <td><span class="comp-name">측면브라켓(80)</span><span class="comp-desc">절곡된 스프링고정부(81)가 일체로 성형됨</span></td>
+        <td><span class="tag tag-diff">차이</span></td>
+        <td>슬라이딩 안내를 위한 레일 채널 구조와 스냅 결합을 위한 개별 절곡부의 물리적 형상 차이</td>
+        </tr>
+        <tr>
+        <td><span class="comp-name">커텐프레임(710)</span><span class="comp-desc">가이드공 및 단차부에 삽입되어 슬라이딩됨</span></td>
+        <td><span class="comp-name">전면패널(95)</span><span class="comp-desc">체결스프링(99)을 통해 본체에 고정됨</span></td>
+        <td><span class="tag tag-diff">차이</span></td>
+        <td>가동형 부품의 길이 조절(Sliding) 방식과 고정형 외장재의 단순 결합(Snap) 방식의 차이</td>
+        </tr>
+        <tr>
+        <td><span class="comp-name">탈거방지턱(718)</span><span class="comp-desc">탄성채널(719)에 의한 임의 이탈 방지</span></td>
+        <td><span class="comp-name">체결스프링(99)</span><span class="comp-desc">안착부(99c)와 걸림부(99d)로 탈거 방지</span></td>
+        <td><span class="tag tag-same">실질적동일</span></td>
+        <td>재료의 탄성 변형을 이용하여 결합 후 역방향 이탈을 방지하는 기구적 메커니즘이 매우 유사함</td>
+        </tr>
+        </tbody>
+        </table>
+        """,
+        unsafe_allow_html=True,
+    )
 
 with tab2:
     st.header("공보")
