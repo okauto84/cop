@@ -80,15 +80,17 @@ st.markdown("""
         to { opacity: 1; transform: translateX(0); }
     }
 
-    /* 스펙 팝업(다이얼로그) 2배 이상 크게 */
+    /* 스펙 팝업(다이얼로그): 내용 길이에 따라 세로로 늘어남 */
     div[data-testid="stDialog"] div[role="dialog"] {
         width: 90vw !important;
         max-width: 1200px !important;
-        height: 85vh !important;
         min-height: 600px !important;
+        max-height: 95vh !important;
+        height: auto !important;
+        overflow-y: auto !important;
     }
     div[data-testid="stDialog"] div[role="dialog"] [data-testid="stCode"] {
-        max-height: 75vh !important;
+        max-height: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
