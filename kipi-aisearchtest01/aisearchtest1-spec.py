@@ -76,7 +76,7 @@ st.markdown("""
 .gazette-claim-item { margin-bottom: 0.75rem; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #eee; }
 .gazette-claim-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
 /* 공보 탭 - 스크롤 따라다니는 구성요소 범례 위젯 */
-.gazette-legend-widget { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); z-index: 999; background: #fff; padding: 12px 14px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); border: 1px solid #e0e0e0; font-size: 0.8rem; color: #333; }
+.gazette-legend-widget { position: sticky; top: 0.5rem; z-index: 9; background: #fff; padding: 12px 14px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); border: 1px solid #e0e0e0; font-size: 0.8rem; color: #333; margin-bottom: 1rem; }
 .gazette-legend-widget .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .gazette-legend-widget .legend-item:last-child { margin-bottom: 0; }
 .gazette-legend-widget .legend-dot { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
