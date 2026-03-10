@@ -125,13 +125,8 @@ df_display = df_result.drop(columns=["순번"]).copy()
 if "selected_row_index" not in st.session_state:
     st.session_state.selected_row_index = None
 
-# 행 선택 시에만 우측 사이드바 표시 (좌측 | 메인 | 우측)
-_selected = st.session_state.selected_row_index
-if _selected is not None:
-    left_col, right_col, right_sidebar = st.columns([1, 3, 1])
-else:
-    left_col, right_col = st.columns([1, 4])
-    right_sidebar = None
+# 좌측 + 메인 + 우측 사이드바 항상 표시
+left_col, right_col, right_sidebar = st.columns([1, 3, 1])
 
 # ==========================================
 # 좌측 패널: 검색 조건 및 구성요소
@@ -222,35 +217,38 @@ with right_col:
             st.button("›", key="page_next")
 
 # ==========================================
-# 우측 사이드바 (행 클릭 시에만 표시): 선택 문헌 상세 + 대표도면 + 발명의 3요소
+# 우측 사이드바 (항상 표시): 선택 문헌 상세 + 대표도면 + 발명의 3요소
 # ==========================================
-if right_sidebar is not None and st.session_state.selected_row_index is not None:
+with right_sidebar:
     _idx = st.session_state.selected_row_index
-    if 0 <= _idx < len(df_result):
+    _valid = _idx is not None and 0 <= _idx < len(df_result)
+    if _valid:
         row = df_result.iloc[_idx]
-        with right_sidebar:
-            st.markdown("**📌 선택 문헌 상세**")
-            st.divider()
-            st.markdown("**출원번호**")
-            st.write(row["출원번호"])
-            st.markdown("**발명의 명칭**")
-            st.caption(row["발명의 명칭"])
-            st.markdown("**구분**")
-            st.write(row["구분"])
-            st.markdown("**CPC분류**")
-            st.caption(row["CPC분류"].replace("\n", " "))
-            st.markdown("**출원일자**")
-            st.write(row["출원일자"])
-            st.divider()
-            st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
-            drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
-            if drawing_path.exists():
-                st.image(str(drawing_path), use_container_width=True)
-            else:
-                st.caption("`./data/drawing.jpg` 파일을 추가하면 대표도면이 표시됩니다.")
-            st.divider()
-            st.markdown("**발명의 3요소 (AI 요약)**")
-            st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
-            if st.button("✕ 사이드바 닫기", use_container_width=True, key="close_sidebar_btn"):
-                st.session_state.selected_row_index = None
-                st.rerun()
+        st.markdown("**📌 선택 문헌 상세**")
+        st.divider()
+        st.markdown("**출원번호**")
+        st.write(row["출원번호"])
+        st.markdown("**발명의 명칭**")
+        st.caption(row["발명의 명칭"])
+        st.markdown("**구분**")
+        st.write(row["구분"])
+        st.markdown("**CPC분류**")
+        st.caption(row["CPC분류"].replace("\n", " "))
+        st.markdown("**출원일자**")
+        st.write(row["출원일자"])
+        if st.button("✕ 선택 해제", use_container_width=True, key="close_sidebar_btn"):
+            st.session_state.selected_row_index = None
+            st.rerun()
+        st.divider()
+    else:
+        st.caption("테이블에서 행을 선택하면 문헌 상세가 여기에 표시됩니다.")
+        st.divider()
+    st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
+    drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
+    if drawing_path.exists():
+        st.image(str(drawing_path), use_container_width=True)
+    else:
+        st.caption("`./data/drawing.jpg` 파일을 추가하면 대표도면이 표시됩니다.")
+    st.divider()
+    st.markdown("**발명의 3요소 (AI 요약)**")
+    st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
