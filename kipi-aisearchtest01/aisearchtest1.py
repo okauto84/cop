@@ -9,7 +9,7 @@ from pathlib import Path
 st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 
 
-@st.dialog("aisearchtest1-spec.py")
+@st.dialog("aisearchtest1-spec.py", width="stretch")
 def show_spec_popup():
     """테이블 행 선택 시 스펙 파일 내용을 팝업(모달)으로 표시"""
     spec_path = Path(__file__).parent / "aisearchtest1-spec.py"
@@ -72,6 +72,17 @@ st.markdown("""
     @keyframes slideIn {
         from { opacity: 0; transform: translateX(20px); }
         to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* 스펙 팝업(다이얼로그) 2배 이상 크게 */
+    div[data-testid="stDialog"] div[role="dialog"] {
+        width: 90vw !important;
+        max-width: 1200px !important;
+        height: 85vh !important;
+        min-height: 600px !important;
+    }
+    div[data-testid="stDialog"] div[role="dialog"] [data-testid="stCode"] {
+        max-height: 75vh !important;
     }
     </style>
 """, unsafe_allow_html=True)
