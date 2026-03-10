@@ -172,43 +172,24 @@ with tab1:
         )
 
 with tab2:
-    # 상단: 문서 번호 탭 및 네비게이션
+    # 제목 영역 + 분류코드
     st.markdown(
-        '<div class="gazette-doc-tabs">'
-        '<span class="tab-inactive">1020227003020</span>'
-        '<span class="tab-active">1020190168468</span>'
-        '<span class="tab-arrow">‹</span>'
+        '<div class="gazette-title-ko">컨볼루션 신경망을 사용하는 의미적 세그먼트화 및 깊이 완성 방법 및 장치</div>'
+        '<div class="gazette-title-en">METHOD AND APPARATUS FOR SEMANTIC SEGMENTATION AND DEPTH COMPLETION USING A CONVOLUTIONAL NEURAL NETWORK</div>'
+        '<div class="gazette-tag-row">'
+        '<span class="gazette-tag gazette-tag-cpc">G06N 3/08</span>'
+        '<span class="gazette-tag gazette-tag-cpc">G06N 3/045</span>'
+        '<span class="gazette-tag gazette-tag-cpc">G06F 16/55</span>'
+        '<span class="gazette-tag gazette-tag-cpc">G06T 7/11</span>'
+        '</div>'
+        '<div class="gazette-tag-row">'
+        '<span class="gazette-tag gazette-tag-ipc">G06N 3/08</span>'
+        '<span class="gazette-tag gazette-tag-ipc">G06N 3/045</span>'
+        '<span class="gazette-tag gazette-tag-ipc">G06F 16/55</span>'
+        '<span class="gazette-tag gazette-tag-ipc">G06T 7/11</span>'
         '</div>',
         unsafe_allow_html=True,
     )
-
-    # 제목 영역 + 분류코드 + 구성요소 범례 (가로 배치)
-    title_col, legend_col = st.columns([4, 1])
-    with title_col:
-        st.markdown(
-            '<div class="gazette-title-ko">컨볼루션 신경망을 사용하는 의미적 세그먼트화 및 깊이 완성 방법 및 장치</div>'
-            '<div class="gazette-title-en">METHOD AND APPARATUS FOR SEMANTIC SEGMENTATION AND DEPTH COMPLETION USING A CONVOLUTIONAL NEURAL NETWORK</div>'
-            '<div class="gazette-tag-row">'
-            '<span class="gazette-tag gazette-tag-cpc">G06N 3/08</span>'
-            '<span class="gazette-tag gazette-tag-cpc">G06N 3/045</span>'
-            '<span class="gazette-tag gazette-tag-cpc">G06F 16/55</span>'
-            '<span class="gazette-tag gazette-tag-cpc">G06T 7/11</span>'
-            '</div>'
-            '<div class="gazette-tag-row">'
-            '<span class="gazette-tag gazette-tag-ipc">G06N 3/08</span>'
-            '<span class="gazette-tag gazette-tag-ipc">G06N 3/045</span>'
-            '<span class="gazette-tag gazette-tag-ipc">G06F 16/55</span>'
-            '<span class="gazette-tag gazette-tag-ipc">G06T 7/11</span>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-    with legend_col:
-        legend_colors = ["#ffeb3b", "#f06292", "#66bb6a", "#4dd0e1", "#1976d2", "#ff9800", "#9c27b0", "#aed581"]
-        legend_html = '<div class="gazette-section-title">구성요소</div><div class="gazette-legend">'
-        for i, c in enumerate(legend_colors, 1):
-            legend_html += f'<div class="gazette-legend-item"><span class="gazette-legend-dot" style="background:{c}"></span>구성요소 {i}</div>'
-        legend_html += "</div>"
-        st.markdown(legend_html, unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -256,11 +237,11 @@ with tab2:
         unsafe_allow_html=True,
     )
     claim1_text = (
-        "트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화(semantic segmentation) 및 "
-        "깊이 완성(depth completion)을 위한 컨볼루션 신경망(convolutional neural network)을 트레이닝시키기 위한 "
+        '<span style="background-color: #fff59d;">트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화(semantic segmentation) 및 '
+        "깊이 완성(depth completion)을 위한 컨볼루션 신경망(convolutional neural network)을 트레이닝시키기 위한</span> "
         "컴퓨터 구현된 방법으로서, 상기 방법은: 상기 트레이닝 세트로부터 이미지 쌍을 수신하는 단계; "
-        "상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
+        "<span style=\"background-color: #c8e6c9;\">상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계</span>; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
         "상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법."
     )
     with st.expander("1. 청구항 1  접기", expanded=True):
-        st.write(claim1_text) 
+        st.markdown(claim1_text, unsafe_allow_html=True) 
