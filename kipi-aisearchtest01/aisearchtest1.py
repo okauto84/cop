@@ -8,20 +8,16 @@ from pathlib import Path
 # 화면 넓게 쓰기
 st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 
-# CSS: 상단 여백 축소(Streamlit 헤더로 잘림 방지), 시인성, 구분 라인, 우측 사이드바
+# CSS: 헤더 아래로 메인 화면 내려서 탭 클릭 가능하게, 시인성, 구분 라인, 우측 사이드바
 st.markdown("""
     <style>
-    /* 메인 화면 상단 잘림 방지: 상단 여백 축소 */
+    /* 메인 화면 전체를 아래로 내려서 Streamlit 헤더에 탭이 가리지 않게 */
     .block-container {
-        padding-top: 0.5rem;
+        padding-top: 3rem;
         padding-bottom: 2rem;
         max-width: 100%;
     }
-    /* Streamlit 기본 상단 툴바·헤더 영역 축소 */
-    header[data-testid="stHeader"] { padding-top: 0; min-height: 0; background: none; }
-    div[data-testid="stToolbar"] { margin-top: 0; padding-top: 0; }
-    /* 메인 콘텐츠가 뷰포트 상단에 더 가깝게 */
-    .main .block-container { padding-top: 0.5rem; }
+    .main .block-container { padding-top: 3rem; }
     div[data-testid="stText"] { font-size: 14px; }
 
     /* 좌측 | 메인 | 우측 사이드바 구분 라인 (세로) */
