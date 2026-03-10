@@ -37,8 +37,8 @@ st.markdown("""
 .compare-box ul { margin: 0; padding-left: 1.25rem; }
 .compare-box li { margin-bottom: 0.5rem; }
 .compare-box .highlight { color: #1565c0; font-weight: 500; }
-/* 좌(공보) 우(AI분석) 컬럼 스크롤 */
-[data-testid="column"] { max-height: 85vh; overflow-y: auto; }
+/* 탭별 스크롤: 탭 패널 내용 영역에 최대 높이 및 세로 스크롤 */
+[data-testid="stTabs"] [data-testid="stVerticalBlock"] { max-height: 75vh; overflow-y: auto; }
 /* 공보 탭 스타일 */
 .gazette-doc-tabs { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e0e0e0; }
 .gazette-doc-tabs span { padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
@@ -71,11 +71,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 좌측: 공보 | 우측: AI분석 (동시 표시)
-left_col, right_col = st.columns(2)
+tab1, tab2 = st.tabs(["AI분석", "공보"])
 
-# ========== 우측: AI분석 ==========
-with right_col:
+with tab1:
     st.markdown("### 💡 발명의 3요소 (AI 요약)")
     st.markdown("")  # 간격
 
@@ -178,8 +176,7 @@ with right_col:
             unsafe_allow_html=True,
         )
 
-# ========== 좌측: 공보 ==========
-with left_col:
+with tab2:
     # 스크롤 따라다니는 구성요소 범례 위젯 (오른쪽 고정)
     legend_colors = [
         ("#ffeb3b", "구성요소 1"),   # yellow
