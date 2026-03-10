@@ -15,8 +15,38 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 좌측 패널(1), 메인(3), 우측 사이드바(1) 비율로 분할
-left_col, right_col, right_sidebar = st.columns([1, 3, 1])
+# 선택된 문헌(게시글) 인덱스 — 행 선택 시 사이드바에 상세 표시
+if "selected_row_index" not in st.session_state:
+    st.session_state.selected_row_index = None
+
+# 검색 결과 샘플 데이터 (게시판 목록) — 상단 정의로 선택/사이드바에서 공유
+RESULT_DATA = {
+    "순번": [1, 2, 3, 4, 5],
+    "구분": ["등록", "등록", "등록", "취하", "등록"],
+    "CPC분류": ["G06V 20/70\nG06V 20/60", "G06V 10/774\nG06V 10/764", "G06V 20/41\nG06V 10/762", "G06T 7/10\nG06V 20/56", "G06N 3/084\nG06N 3/045"],
+    "발명의 명칭": [
+        "제로샷 시맨틱 분할 장치 및 방법",
+        "소프트 교차-엔트로피 손실을 갖는 시맨틱 분할",
+        "도메인 적응형 의미론적 영상 분할 장치 및 방법",
+        "실시간 픽셀 단위 기반 시맨틱 분할 장치 및 시스템",
+        "시맨틱 분할 모델을 위한 훈련 방법 및 장치, 전자 기기, 저장 매체"
+    ],
+    "출원번호": ["1020210165598", "1020217012976", "1020200176963", "1020210049720", "1020197038767"],
+    "출원일자": ["20211126", "20191010", "20201217", "20210416", "20180727"]
+}
+df_result = pd.DataFrame(RESULT_DATA)
+
+# 선택 행 인덱스 초기화 (아래 dataframe on_select에서 갱신됨)
+if "selected_row_index" not in st.session_state:
+    st.session_state.selected_row_index = None
+
+# 문헌 선택 시에만 우측 사이드바 표시
+_selected = st.session_state.selected_row_index
+if _selected is not None:
+    left_col, right_col, right_sidebar = st.columns([1, 3, 1])
+else:
+    left_col, right_col = st.columns([1, 4])
+    right_sidebar = None
 
 # ==========================================
 # 좌측 패널: 검색 조건 및 구성요소
@@ -110,30 +140,22 @@ with right_col:
         # 보기 옵션
         st.selectbox("보기 옵션", ["50 건씩 보기", "100 건씩 보기", "200 건씩 보기"], label_visibility="collapsed", key="view_opt")
 
-        # 샘플 데이터프레임 생성
-        data = {
-            "순번": [1, 2, 3, 4, 5],
-            "구분": ["등록", "등록", "등록", "취하", "등록"],
-            "CPC분류": ["G06V 20/70\nG06V 20/60", "G06V 10/774\nG06V 10/764", "G06V 20/41\nG06V 10/762", "G06T 7/10\nG06V 20/56", "G06N 3/084\nG06N 3/045"],
-            "발명의 명칭": [
-                "제로샷 시맨틱 분할 장치 및 방법",
-                "소프트 교차-엔트로피 손실을 갖는 시맨틱 분할",
-                "도메인 적응형 의미론적 영상 분할 장치 및 방법",
-                "실시간 픽셀 단위 기반 시맨틱 분할 장치 및 시스템",
-                "시맨틱 분할 모델을 위한 훈련 방법 및 장치, 전자 기기, 저장 매체"
-            ],
-            "출원번호": ["1020210165598", "1020217012976", "1020200176963", "1020210049720", "1020197038767"],
-            "출원일자": ["20211126", "20191010", "20201217", "20210416", "20180727"]
-        }
-        df = pd.DataFrame(data)
-
-        # 데이터프레임 출력
-        st.dataframe(
-            df,
+        # 게시판(검색 결과) — 행 클릭 시 선택되며 우측 사이드바에 상세 표시
+        event = st.dataframe(
+            df_result,
+            key="result_table",
+            selection_mode="single-row",
+            on_select="rerun",
             use_container_width=True,
             hide_index=True,
             height=600
         )
+        if event and getattr(event, "selection", None):
+            if event.selection.rows:
+                st.session_state.selected_row_index = event.selection.rows[0]
+            else:
+                st.session_state.selected_row_index = None
+        st.caption("행을 클릭하면 우측에 선택 문헌 상세가 표시됩니다.")
 
         # 하단 페이징 (UI 모방)
         page_col1, page_col2, page_col3, page_col4 = st.columns([8, 0.5, 0.5, 0.5])
@@ -147,13 +169,23 @@ with right_col:
             st.button("›")
 
 # ==========================================
-# 우측 사이드바
+# 우측 사이드바 (문헌 선택 시에만 표시)
 # ==========================================
-with right_sidebar:
-    st.markdown("**📌 사이드바**")
-    st.divider()
-    st.selectbox("정렬", ["관련도순", "출원일순", "등록일순"], label_visibility="collapsed", key="sort_opt")
-    st.caption("검색 결과 정렬 기준")
-    st.divider()
-    st.button("📥 내보내기", use_container_width=True, key="export_btn")
-    st.button("📋 클립보드", use_container_width=True, key="clipboard_btn")
+if right_sidebar is not None and st.session_state.selected_row_index is not None:
+    row = df_result.iloc[st.session_state.selected_row_index]
+    with right_sidebar:
+        st.markdown("**📌 선택 문헌 상세**")
+        st.divider()
+        st.markdown("**출원번호**")
+        st.write(row["출원번호"])
+        st.markdown("**발명의 명칭**")
+        st.caption(row["발명의 명칭"])
+        st.markdown("**구분**")
+        st.write(row["구분"])
+        st.markdown("**CPC분류**")
+        st.caption(row["CPC분류"].replace("\n", " "))
+        st.markdown("**출원일자**")
+        st.write(row["출원일자"])
+        st.divider()
+        st.button("📥 내보내기", use_container_width=True, key="export_btn")
+        st.button("📋 클립보드", use_container_width=True, key="clipboard_btn")
