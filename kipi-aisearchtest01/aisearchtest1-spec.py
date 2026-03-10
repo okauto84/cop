@@ -37,10 +37,20 @@ st.markdown("""
 .compare-box ul { margin: 0; padding-left: 1.25rem; }
 .compare-box li { margin-bottom: 0.5rem; }
 .compare-box .highlight { color: #1565c0; font-weight: 500; }
-/* 좌(공보) 우(AI분석) 컬럼 스크롤 및 구분선 */
-[data-testid="column"] { max-height: 85vh; overflow-y: auto; }
-[data-testid="column"]:first-child { border-right: 2px solid #bdbdbd; padding-right: 1rem; }
-[data-testid="column"]:last-child { padding-left: 1rem; }
+/* 좌(공보) 우(AI분석) 컬럼 각각 독립 스크롤바 */
+[data-testid="column"] {
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 200px;
+}
+[data-testid="column"]:first-child {
+    border-right: 2px solid #bdbdbd;
+    padding-right: 1rem;
+}
+[data-testid="column"]:last-child {
+    padding-left: 1rem;
+}
 /* 공보 탭 스타일 */
 .gazette-doc-tabs { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e0e0e0; }
 .gazette-doc-tabs span { padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
