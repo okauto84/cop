@@ -137,7 +137,13 @@ with left_col:
         st.text_input("출원번호", value="1070210165598", label_visibility="collapsed")
         
         # 문장검색 영역
-        st.caption("입력한 문장으로 유사 문서를 찾습니다. AND(&), OR(|) 연산자는 사용할 수 없습니다.")
+        st.text_area(
+            "문장 검색",
+            placeholder="입력한 문장으로 유사 문서를 찾습니다. AND(&), OR(|) 연산자는 사용할 수 없습니다.",
+            height=100,
+            label_visibility="collapsed",
+            key="search_sentence"
+        )
         
         
         
