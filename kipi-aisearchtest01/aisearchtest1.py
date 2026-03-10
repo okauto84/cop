@@ -11,16 +11,22 @@ st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 
 @st.dialog("aisearchtest1-spec.py", width="stretch")
 def show_spec_popup():
-    """테이블 행 선택 시 스펙 파일 내용을 팝업(모달)으로 표시"""
+    """테이블 행 클릭 시 스펙 파일을 실행해 팝업(모달)에 결과 화면 표시"""
     spec_path = Path(__file__).parent / "aisearchtest1-spec.py"
-    if spec_path.exists():
-        try:
-            content = spec_path.read_text(encoding="utf-8")
-            st.code(content, language="python")
-        except Exception as e:
-            st.error(f"파일을 읽을 수 없습니다: {e}")
-    else:
+    if not spec_path.exists():
         st.warning(f"파일을 찾을 수 없습니다: {spec_path}")
+        return
+    _orig = getattr(st, "set_page_config", None)
+    try:
+        spec_content = spec_path.read_text(encoding="utf-8")
+        _spec_globals = {"st": st, "pd": pd, "__name__": "__main__"}
+        st.set_page_config = lambda *a, **k: None
+        exec(compile(spec_content, str(spec_path), "exec"), _spec_globals)
+    except Exception as e:
+        st.error(f"스펙 실행 오류: {e}")
+    finally:
+        if _orig is not None:
+            st.set_page_config = _orig
 
 # CSS: 헤더 아래로 메인 화면 내려서 탭 클릭 가능하게, 시인성, 구분 라인, 우측 사이드바
 st.markdown("""
@@ -209,21 +215,7 @@ with right_col:
     tab_result, tab_info = st.tabs(["1020210165598 검색 ✕", "⌂ INFO"])
 
     with tab_info:
-        spec_path = Path(__file__).parent / "aisearchtest1-spec.py"
-        if spec_path.exists():
-            _orig = getattr(st, "set_page_config", None)
-            try:
-                spec_content = spec_path.read_text(encoding="utf-8")
-                _spec_globals = {"st": st, "pd": pd, "__name__": "__main__"}
-                st.set_page_config = lambda *a, **k: None
-                exec(compile(spec_content, str(spec_path), "exec"), _spec_globals)
-            except Exception as e:
-                st.error(f"스펙 실행 오류: {e}")
-            finally:
-                if _orig is not None:
-                    st.set_page_config = _orig
-        else:
-            st.warning(f"파일을 찾을 수 없습니다: {spec_path}")
+        pass
 
     with tab_result:
         # 게시판(검색 결과) — 행 클릭 시 우측 사이드바 표시 (Streamlit 1.35+)
