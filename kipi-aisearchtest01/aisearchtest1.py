@@ -2,6 +2,7 @@
 
 
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 
 # 화면 넓게 쓰기
@@ -63,44 +64,35 @@ with left_col:
         st.button("🔍 재검색", use_container_width=True, type="primary")
 
     with tab_summary:
-        # HTML & CSS를 활용한 커스텀 카드 UI 구성 (발명의 3요소 AI 요약)
-        summary_html = """
-        <div style="font-family: 'Malgun Gothic', sans-serif; max-width: 600px; padding: 10px;">
-            
-            <div style="color: #1e3a8a; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px;">
-                💡 발명의 3요소 (AI 요약)
-            </div>
-
-            <div style="background-color: #fdf2f2; border: 1.5px solid #fecaca; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
-                <div style="color: #b91c1c; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px;">
-                    ⚠️ 해결과제 <span style="font-size: 0.8em; font-weight: normal;">(Problem)</span>
-                </div>
-                <div style="color: #555555; font-size: 0.9rem; line-height: 1.5;">
-                    창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
-                </div>
-            </div>
-
-            <div style="background-color: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
-                <div style="color: #15803d; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px;">
-                    🎯 발명의 목적 <span style="font-size: 0.8em; font-weight: normal;">(Object)</span>
-                </div>
-                <div style="color: #555555; font-size: 0.9rem; line-height: 1.5;">
-                    베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함.
-                </div>
-            </div>
-
-            <div style="background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
-                <div style="color: #1d4ed8; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px;">
-                    ✨ 발명의 효과 <span style="font-size: 0.8em; font-weight: normal;">(Effect)</span>
-                </div>
-                <div style="color: #555555; font-size: 0.9rem; line-height: 1.5;">
-                    부품 수 절감으로 제조 원가를 낮추며, 완벽한 밀폐를 통해 에어컨의 냉방 효율을 획기적으로 향상시킴.
-                </div>
-            </div>
-
-        </div>
-        """
-        st.markdown(summary_html, unsafe_allow_html=True)
+        # 발명의 3요소 (AI 요약) — HTML 실행 결과만 표시 (코드 미노출)
+        summary_html = (
+            "<div style='font-family: Malgun Gothic, sans-serif; max-width: 600px; padding: 10px;'>"
+            "<div style='color: #1e3a8a; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px;'>"
+            "💡 발명의 3요소 (AI 요약)"
+            "</div>"
+            "<div style='background-color: #fdf2f2; border: 1.5px solid #fecaca; border-radius: 6px; padding: 12px; margin-bottom: 12px;'>"
+            "<div style='color: #b91c1c; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px;'>"
+            "⚠️ 해결과제 <span style=\"font-size: 0.8em; font-weight: normal;\">(Problem)</span>"
+            "</div>"
+            "<div style='color: #555555; font-size: 0.9rem; line-height: 1.5;'>"
+            "창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함."
+            "</div></div>"
+            "<div style='background-color: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 6px; padding: 12px; margin-bottom: 12px;'>"
+            "<div style='color: #15803d; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px;'>"
+            "🎯 발명의 목적 <span style=\"font-size: 0.8em; font-weight: normal;\">(Object)</span>"
+            "</div>"
+            "<div style='color: #555555; font-size: 0.9rem; line-height: 1.5;'>"
+            "베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함."
+            "</div></div>"
+            "<div style='background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 6px; padding: 12px; margin-bottom: 12px;'>"
+            "<div style='color: #1d4ed8; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px;'>"
+            "✨ 발명의 효과 <span style=\"font-size: 0.8em; font-weight: normal;\">(Effect)</span>"
+            "</div>"
+            "<div style='color: #555555; font-size: 0.9rem; line-height: 1.5;'>"
+            "부품 수 절감으로 제조 원가를 낮추며, 완벽한 밀폐를 통해 에어컨의 냉방 효율을 획기적으로 향상시킴."
+            "</div></div></div>"
+        )
+        components.html(summary_html, height=380, scrolling=False)
 
 # ==========================================
 # 우측 패널: 검색 결과 데이터프레임
