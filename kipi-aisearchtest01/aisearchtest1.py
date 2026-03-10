@@ -206,10 +206,19 @@ with left_col:
 # 우측 패널: 검색 결과 데이터프레임
 # ==========================================
 with right_col:
-    tab_result, tab_info = st.tabs(["⌂ INFO", "1020210165598 검색 ✕"])
+    tab_result, tab_info = st.tabs(["1020210165598 검색 ✕", "⌂ INFO"])
 
     with tab_info:
-        st.info("INFO 탭입니다. 필요한 안내 또는 정보를 여기에 표시할 수 있습니다.")
+        st.markdown("**aisearchtest1-spec.py**")
+        spec_path = Path(__file__).parent / "aisearchtest1-spec.py"
+        if spec_path.exists():
+            try:
+                spec_content = spec_path.read_text(encoding="utf-8")
+                st.code(spec_content, language="python")
+            except Exception as e:
+                st.error(f"파일을 읽을 수 없습니다: {e}")
+        else:
+            st.warning(f"파일을 찾을 수 없습니다: {spec_path}")
 
     with tab_result:
         # 게시판(검색 결과) — 행 클릭 시 우측 사이드바 표시 (Streamlit 1.35+)
