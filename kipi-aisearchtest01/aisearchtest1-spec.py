@@ -39,6 +39,30 @@ st.markdown("""
 .compare-box .highlight { color: #1565c0; font-weight: 500; }
 /* 탭별 스크롤: 탭 패널 내용 영역에 최대 높이 및 세로 스크롤 */
 [data-testid="stTabs"] [data-testid="stVerticalBlock"] { max-height: 75vh; overflow-y: auto; }
+/* 공보 탭 스타일 */
+.gazette-doc-tabs { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e0e0e0; }
+.gazette-doc-tabs span { padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
+.gazette-doc-tabs .tab-inactive { background: #f5f5f5; color: #666; }
+.gazette-doc-tabs .tab-active { background: #1565c0; color: white; }
+.gazette-doc-tabs .tab-arrow { margin-left: auto; font-size: 1.2rem; color: #666; }
+.gazette-title-ko { font-size: 1.35rem; font-weight: bold; margin-bottom: 0.35rem; }
+.gazette-title-en { font-size: 0.9rem; color: #555; margin-bottom: 0.75rem; }
+.gazette-tag-row { margin-bottom: 0.5rem; }
+.gazette-tag { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.8rem; margin-right: 0.35rem; margin-bottom: 0.25rem; }
+.gazette-tag-cpc { background: #1976d2; color: white; }
+.gazette-tag-ipc { background: #388e3c; color: white; }
+.gazette-section { background: #fafafa; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; border: 1px solid #eee; }
+.gazette-section-title { font-weight: bold; margin-bottom: 0.75rem; font-size: 1rem; }
+.gazette-bib { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.5rem; font-size: 0.9rem; }
+.gazette-bib-item { display: flex; }
+.gazette-bib-label { min-width: 100px; color: #555; }
+.gazette-legend { font-size: 0.8rem; color: #555; }
+.gazette-legend-item { display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.2rem; }
+.gazette-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+.gazette-claims-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.gazette-claim-btns { font-size: 0.8rem; }
+.gazette-claim-item { margin-bottom: 0.75rem; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #eee; }
+.gazette-claim-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -122,7 +146,7 @@ with tab1:
     )
 
     st.markdown("")  # 간격
-    st.markdown("#### 2. 유사점 및 차이점")
+    st.markdown("### 💡 유사점 및 차이점")
     comp_col1, comp_col2 = st.columns(2)
     with comp_col1:
         st.markdown(
@@ -148,5 +172,95 @@ with tab1:
         )
 
 with tab2:
-    st.header("공보")
-    st.write("공보 탭 내용을 여기에 작성하세요.") 
+    # 상단: 문서 번호 탭 및 네비게이션
+    st.markdown(
+        '<div class="gazette-doc-tabs">'
+        '<span class="tab-inactive">1020227003020</span>'
+        '<span class="tab-active">1020190168468</span>'
+        '<span class="tab-arrow">‹</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    # 제목 영역 + 분류코드 + 구성요소 범례 (가로 배치)
+    title_col, legend_col = st.columns([4, 1])
+    with title_col:
+        st.markdown(
+            '<div class="gazette-title-ko">컨볼루션 신경망을 사용하는 의미적 세그먼트화 및 깊이 완성 방법 및 장치</div>'
+            '<div class="gazette-title-en">METHOD AND APPARATUS FOR SEMANTIC SEGMENTATION AND DEPTH COMPLETION USING A CONVOLUTIONAL NEURAL NETWORK</div>'
+            '<div class="gazette-tag-row">'
+            '<span class="gazette-tag gazette-tag-cpc">G06N 3/08</span>'
+            '<span class="gazette-tag gazette-tag-cpc">G06N 3/045</span>'
+            '<span class="gazette-tag gazette-tag-cpc">G06F 16/55</span>'
+            '<span class="gazette-tag gazette-tag-cpc">G06T 7/11</span>'
+            '</div>'
+            '<div class="gazette-tag-row">'
+            '<span class="gazette-tag gazette-tag-ipc">G06N 3/08</span>'
+            '<span class="gazette-tag gazette-tag-ipc">G06N 3/045</span>'
+            '<span class="gazette-tag gazette-tag-ipc">G06F 16/55</span>'
+            '<span class="gazette-tag gazette-tag-ipc">G06T 7/11</span>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+    with legend_col:
+        legend_colors = ["#ffeb3b", "#f06292", "#66bb6a", "#4dd0e1", "#1976d2", "#ff9800", "#9c27b0", "#aed581"]
+        legend_html = '<div class="gazette-section-title">구성요소</div><div class="gazette-legend">'
+        for i, c in enumerate(legend_colors, 1):
+            legend_html += f'<div class="gazette-legend-item"><span class="gazette-legend-dot" style="background:{c}"></span>구성요소 {i}</div>'
+        legend_html += "</div>"
+        st.markdown(legend_html, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # 서지 정보
+    st.markdown('<div class="gazette-section-title">서지 정보</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="gazette-section">'
+        '<div class="gazette-bib">'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">출원번호</span> 1020190168468</div>'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">출원일</span> 2019.12.17</div>'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">공개번호</span> 1020210073416</div>'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">공개일</span> 2021.06.18</div>'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">공보번호</span> —</div>'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">공보일</span> 2022.03.25</div>'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">등록번호</span> 1023788500000</div>'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">등록일</span> 2022.03.22</div>'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">최종상태</span> 등록결정(일반)</div>'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">등록상태</span> 등록</div>'
+        '<div class="gazette-bib-item"><span class="gazette-bib-label">재심사청구 Y</span> 2020.01.16</div>'
+        '<div class="gazette-bib-item"></div>'
+        '</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    # 초록
+    st.markdown('<div class="gazette-section-title">초록</div>', unsafe_allow_html=True)
+    abstract_text = (
+        "입력 시각적 이미지 및/또는 입력 깊이 이미지로부터 컨볼루션 신경망(CNN)을 사용하여 "
+        "의미적으로 세그먼트화된 이미지 및 깊이 완성 이미지를 생성하는 컴퓨터 구현된 방법이다. "
+        "일 실시예에서, 방법은 트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화 및 "
+        "깊이 완성을 위한 CNN을 트레이닝시키는 단계를 포함한다. 트레이닝된 CNN은 입력 이미지로부터 "
+        "의미적으로 세그먼트화된 이미지 및 깊이 완성 이미지를 생성하는 데 사용될 수 있다."
+    )
+    st.markdown(
+        f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{abstract_text}</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    # 청구항
+    st.markdown(
+        '<div class="gazette-claims-header">'
+        '<span class="gazette-section-title">청구항</span>'
+        '<span class="gazette-claim-btns">모두 접기 &nbsp; 모두 펼치기</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    claim1_text = (
+        "트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화(semantic segmentation) 및 "
+        "깊이 완성(depth completion)을 위한 컨볼루션 신경망(convolutional neural network)을 트레이닝시키기 위한 "
+        "컴퓨터 구현된 방법으로서, 상기 방법은: 상기 트레이닝 세트로부터 이미지 쌍을 수신하는 단계; "
+        "상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
+        "상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법."
+    )
+    with st.expander("1. 청구항 1  접기", expanded=True):
+        st.write(claim1_text) 
