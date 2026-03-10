@@ -223,8 +223,17 @@ with right_col:
             hide_index=True,
             height=600
         )
-        if event and getattr(event, "selection", None) and event.selection.rows:
+        # 테이블 행(체크박스) 선택이 바뀐 경우에만 팝업 오픈 (다른 버튼 클릭 시에는 미동작)
+        if "result_table_last_selection" not in st.session_state:
+            st.session_state.result_table_last_selection = None
+        current_selection = None
+        if event and getattr(event, "selection", None):
+            current_selection = event.selection.rows[0] if event.selection.rows else None
+        if current_selection is not None and current_selection != st.session_state.result_table_last_selection:
+            st.session_state.result_table_last_selection = current_selection
             show_spec_popup()
+        if event and getattr(event, "selection", None) and current_selection is None:
+            st.session_state.result_table_last_selection = None
         st.caption("행을 클릭하면 스펙 팝업이 열립니다.")
 
         # 하단 페이징 (UI 모방)
