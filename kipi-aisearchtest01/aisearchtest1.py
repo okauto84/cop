@@ -151,7 +151,7 @@ with left_col:
         with btn_col1: st.button("🔍 검색", use_container_width=True, key="btn_search")
         with btn_col2: st.button("🔄 초기화", use_container_width=True, key="btn_reset")
         
-        st.divider()
+        st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
         
         # 구성요소관련 영역
         st.markdown("**⚙️ 기술 구성요소**")
@@ -224,7 +224,7 @@ with right_sidebar:
     if _valid:
         row = df_result.iloc[_idx]
         st.markdown("**📌 선택 문헌 상세**")
-        st.divider()
+        st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
         st.markdown("**출원번호**")
         st.write(row["출원번호"])
         st.markdown("**발명의 명칭**")
@@ -235,9 +235,9 @@ with right_sidebar:
         st.caption(row["CPC분류"].replace("\n", " "))
         st.markdown("**출원일자**")
         st.write(row["출원일자"])
-        st.divider()
+        st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
     else:
-        st.divider()
+        st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
     st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
     drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
     if drawing_path.exists():
