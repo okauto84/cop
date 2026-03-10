@@ -12,6 +12,27 @@ st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 @st.dialog("aisearchtest1-spec.py", width="stretch")
 def show_spec_popup():
     """테이블 행 클릭 시 스펙 파일을 실행해 팝업(모달)에 결과 화면 표시"""
+    # 팝업이 열릴 때 스크롤바를 맨 위로 위치시킴
+    try:
+        st.components.v1.html(
+            """
+            <script>
+            (function(){
+                var doc = window.parent.document;
+                function scrollTop() {
+                    var d = doc.querySelector('div[data-testid="stDialog"] div[role="dialog"]');
+                    if (d) d.scrollTop = 0;
+                }
+                scrollTop();
+                setTimeout(scrollTop, 100);
+                setTimeout(scrollTop, 300);
+            })();
+            </script>
+            """,
+            height=0,
+        )
+    except Exception:
+        pass
     spec_path = Path(__file__).parent / "aisearchtest1-spec.py"
     if not spec_path.exists():
         st.warning(f"파일을 찾을 수 없습니다: {spec_path}")
@@ -194,7 +215,7 @@ with left_col:
         # 구성요소관련 영역
         st.markdown("**⚙️ 기술 구성요소**")
         comp_btn_col1, comp_btn_col2 = st.columns(2)
-        with comp_btn_col1: st.button("구성요소추가", use_container_width=True, key="btn_comp_add")
+        with comp_btn_col1: st.button("요소 추가", use_container_width=True, key="btn_comp_add")
         with comp_btn_col2: st.button("청구항", use_container_width=True, key="btn_claim")
         
         # 구성요소 리스트 (체크박스 + 텍스트)
