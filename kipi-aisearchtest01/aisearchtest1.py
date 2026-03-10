@@ -8,11 +8,21 @@ from pathlib import Path
 # 화면 넓게 쓰기
 st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 
-# CSS: 여백, 시인성, 우측 사이드바 슬라이드 인
+# CSS: 여백, 시인성, 우측 사이드바(대표도면 등) 크롬에서 잘리지 않도록
 st.markdown("""
     <style>
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     div[data-testid="stText"] { font-size: 14px; }
+    /* 우측 사이드바: 상단 여백으로 대표도면 제목이 잘리지 않게 */
+    [data-testid="column"]:last-of-type {
+        padding-top: 0.5rem;
+        overflow-y: auto;
+        overflow-x: visible;
+        min-height: 0;
+    }
+    [data-testid="column"]:last-of-type > div {
+        padding-top: 0.25rem;
+    }
     [data-testid="column"]:last-of-type .stMarkdown { animation: slideIn 0.3s ease-out; }
     @keyframes slideIn {
         from { opacity: 0; transform: translateX(20px); }
@@ -186,7 +196,7 @@ with right_col:
 # 우측 사이드바: 대표도면 + 발명의 3요소 (AI 요약)
 # ==========================================
 with right_sidebar:
-    st.markdown("**🖼️ 대표도면**")
+    st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
     drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
     if drawing_path.exists():
         st.image(str(drawing_path), use_container_width=True)
