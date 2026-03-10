@@ -5,7 +5,7 @@ import streamlit as st
 import pandas as pd
 
 # 화면 넓게 쓰기
-st.set_page_config(layout="wide", page_title="문헌검색 시스템")
+st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 
 # CSS를 통한 여백 조정 (시인성 향상)
 st.markdown("""
@@ -23,7 +23,7 @@ left_col, right_col = st.columns([1, 3])
 # ==========================================
 with left_col:
     # 요청하신 '요약정보' 탭 추가
-    tab_search, tab_summary = st.tabs(["문헌검색", "요약정보"])
+    tab_search, tab_summary = st.tabs(["입력 검색", "AI 요약"])
     
     with tab_search:
         # 출원번호 입력
@@ -42,7 +42,7 @@ with left_col:
         st.divider()
         
         # 구성요소관련 영역
-        st.markdown("**⚙️ 구성요소관련**")
+        st.markdown("**⚙️ 기술 구성요소**")
         comp_btn_col1, comp_btn_col2 = st.columns(2)
         with comp_btn_col1: st.button("구성요소추가", use_container_width=True)
         with comp_btn_col2: st.button("청구항", use_container_width=True)
@@ -101,41 +101,47 @@ with left_col:
 # 우측 패널: 검색 결과 데이터프레임
 # ==========================================
 with right_col:
-    # 보기 옵션
-    st.selectbox("보기 옵션", ["50 건씩 보기", "100 건씩 보기", "200 건씩 보기"], label_visibility="collapsed", key="view_opt")
-    
-    # 샘플 데이터프레임 생성
-    data = {
-        "순번": [1, 2, 3, 4, 5],
-        "구분": ["등록", "등록", "등록", "취하", "등록"],
-        "CPC분류": ["G06V 20/70\nG06V 20/60", "G06V 10/774\nG06V 10/764", "G06V 20/41\nG06V 10/762", "G06T 7/10\nG06V 20/56", "G06N 3/084\nG06N 3/045"],
-        "발명의 명칭": [
-            "제로샷 시맨틱 분할 장치 및 방법",
-            "소프트 교차-엔트로피 손실을 갖는 시맨틱 분할",
-            "도메인 적응형 의미론적 영상 분할 장치 및 방법",
-            "실시간 픽셀 단위 기반 시맨틱 분할 장치 및 시스템",
-            "시맨틱 분할 모델을 위한 훈련 방법 및 장치, 전자 기기, 저장 매체"
-        ],
-        "출원번호": ["1020210165598", "1020217012976", "1020200176963", "1020210049720", "1020197038767"],
-        "출원일자": ["20211126", "20191010", "20201217", "20210416", "20180727"]
-    }
-    df = pd.DataFrame(data)
+    tab_info, tab_result = st.tabs(["⌂ INFO", "1020210165598 검색 ✕"])
 
-    # 데이터프레임 출력
-    st.dataframe(
-        df,
-        use_container_width=True,
-        hide_index=True,
-        height=600
-    )
+    with tab_info:
+        st.info("INFO 탭입니다. 필요한 안내 또는 정보를 여기에 표시할 수 있습니다.")
 
-    # 하단 페이징 (UI 모방)
-    page_col1, page_col2, page_col3, page_col4 = st.columns([8, 0.5, 0.5, 0.5])
-    with page_col1:
-        st.caption("총 100 건 중 1 ~ 50")
-    with page_col2:
-        st.button("1")
-    with page_col3:
-        st.button("2")
-    with page_col4:
-        st.button("›")
+    with tab_result:
+        # 보기 옵션
+        st.selectbox("보기 옵션", ["50 건씩 보기", "100 건씩 보기", "200 건씩 보기"], label_visibility="collapsed", key="view_opt")
+
+        # 샘플 데이터프레임 생성
+        data = {
+            "순번": [1, 2, 3, 4, 5],
+            "구분": ["등록", "등록", "등록", "취하", "등록"],
+            "CPC분류": ["G06V 20/70\nG06V 20/60", "G06V 10/774\nG06V 10/764", "G06V 20/41\nG06V 10/762", "G06T 7/10\nG06V 20/56", "G06N 3/084\nG06N 3/045"],
+            "발명의 명칭": [
+                "제로샷 시맨틱 분할 장치 및 방법",
+                "소프트 교차-엔트로피 손실을 갖는 시맨틱 분할",
+                "도메인 적응형 의미론적 영상 분할 장치 및 방법",
+                "실시간 픽셀 단위 기반 시맨틱 분할 장치 및 시스템",
+                "시맨틱 분할 모델을 위한 훈련 방법 및 장치, 전자 기기, 저장 매체"
+            ],
+            "출원번호": ["1020210165598", "1020217012976", "1020200176963", "1020210049720", "1020197038767"],
+            "출원일자": ["20211126", "20191010", "20201217", "20210416", "20180727"]
+        }
+        df = pd.DataFrame(data)
+
+        # 데이터프레임 출력
+        st.dataframe(
+            df,
+            use_container_width=True,
+            hide_index=True,
+            height=600
+        )
+
+        # 하단 페이징 (UI 모방)
+        page_col1, page_col2, page_col3, page_col4 = st.columns([8, 0.5, 0.5, 0.5])
+        with page_col1:
+            st.caption("총 100 건 중 1 ~ 50")
+        with page_col2:
+            st.button("1")
+        with page_col3:
+            st.button("2")
+        with page_col4:
+            st.button("›")
