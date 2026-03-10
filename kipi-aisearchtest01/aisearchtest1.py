@@ -23,7 +23,7 @@ left_col, right_col = st.columns([1, 3])
 # ==========================================
 with left_col:
     # 요청하신 '요약정보' 탭 추가
-    tab_search, tab_summary = st.tabs(["문헌검색(출원번호기준)", "요약정보"])
+    tab_search, tab_summary = st.tabs(["문헌검색", "요약정보"])
     
     with tab_search:
         # 출원번호 입력
@@ -34,24 +34,6 @@ with left_col:
         st.caption("문장검색은 청구항, 초록 등 일부 발췌 문장을 기반으로 유사 문서를 찾습니다. AND(&), OR(|) 연산자는 사용할 수 없습니다.")
         
         st.divider()
-        
-        # 분류관련 영역
-        st.markdown("**🟢 분류관련**")
-        st.write("**추천 CPC**")
-        # Streamlit에서 가로 체크박스를 구현하기 위한 컬럼 분할
-        cpc_cols = st.columns(3)
-        with cpc_cols[0]:
-            st.checkbox("G06T", value=True)
-            st.checkbox("G06F", value=True)
-        with cpc_cols[1]:
-            st.checkbox("G06V", value=True)
-            st.checkbox("Z01A")
-        with cpc_cols[2]:
-            st.checkbox("G06N", value=True)
-            st.checkbox("G06K")
-            
-        st.write("**섹션**")
-        st.radio("섹션선택", ["A", "B", "C", "D", "E", "F", "G", "H"], horizontal=True, label_visibility="collapsed")
         
         btn_col1, btn_col2 = st.columns(2)
         with btn_col1: st.button("🔍 검색", use_container_width=True)
@@ -79,6 +61,46 @@ with left_col:
             with c2: st.info(comp) # 박스 형태로 텍스트 출력
             
         st.button("🔍 재검색", use_container_width=True, type="primary")
+
+    with tab_summary:
+        # HTML & CSS를 활용한 커스텀 카드 UI 구성 (발명의 3요소 AI 요약)
+        summary_html = """
+        <div style="font-family: 'Malgun Gothic', sans-serif; max-width: 600px; padding: 10px;">
+            
+            <div style="color: #1e3a8a; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px;">
+                💡 발명의 3요소 (AI 요약)
+            </div>
+
+            <div style="background-color: #fdf2f2; border: 1.5px solid #fecaca; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+                <div style="color: #b91c1c; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px;">
+                    ⚠️ 해결과제 <span style="font-size: 0.8em; font-weight: normal;">(Problem)</span>
+                </div>
+                <div style="color: #555555; font-size: 0.9rem; line-height: 1.5;">
+                    창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
+                </div>
+            </div>
+
+            <div style="background-color: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+                <div style="color: #15803d; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px;">
+                    🎯 발명의 목적 <span style="font-size: 0.8em; font-weight: normal;">(Object)</span>
+                </div>
+                <div style="color: #555555; font-size: 0.9rem; line-height: 1.5;">
+                    베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함.
+                </div>
+            </div>
+
+            <div style="background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+                <div style="color: #1d4ed8; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px;">
+                    ✨ 발명의 효과 <span style="font-size: 0.8em; font-weight: normal;">(Effect)</span>
+                </div>
+                <div style="color: #555555; font-size: 0.9rem; line-height: 1.5;">
+                    부품 수 절감으로 제조 원가를 낮추며, 완벽한 밀폐를 통해 에어컨의 냉방 효율을 획기적으로 향상시킴.
+                </div>
+            </div>
+
+        </div>
+        """
+        st.markdown(summary_html, unsafe_allow_html=True)
 
 # ==========================================
 # 우측 패널: 검색 결과 데이터프레임
