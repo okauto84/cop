@@ -242,14 +242,20 @@ with left_col:
         '트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화(semantic segmentation) 및 '
         "깊이 완성(depth completion)을 위한 컨볼루션 신경망(convolutional neural network)을 트레이닝시키기 위한 "
         "컴퓨터 구현된 방법으로서, 상기 방법은: 상기 트레이닝 세트로부터 이미지 쌍을 수신하는 단계; "
-        "<span style=\"background-color: #c8e6c9;\">상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계</span>; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
+        "<span style=\"background-color: #f9a825;\">상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계</span>; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
         "상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법."
     )
     claim2_text = (
         "전항의 방법에 있어서, 상기 트레이닝 세트로부터 이미지 쌍을 수신하는 단계는 "
-        "시각적 이미지와 대응하는 깊이 이미지가 정렬된 쌍을 수신하는 단계를 포함하는, 방법."
+        "<span style=\"background-color: #e57373;\">시각적 이미지와 대응하는 깊이 이미지가 정렬된 쌍을 수신하는 단계</span>를 포함하는, 방법."
     )
-    with st.expander("1. 청구항 1", expanded=True):
+    claim3_text = (
+        "상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
+        "<span style=\"background-color: #66bb6a;\">상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법</span>."
+    )
+    with st.expander("청구항 1", expanded=True):
         st.markdown(claim1_text, unsafe_allow_html=True)
-    with st.expander("2. 청구항 2", expanded=True):
+    with st.expander("청구항 2", expanded=True):
         st.markdown(claim2_text, unsafe_allow_html=True)
+    with st.expander("청구항 3", expanded=True):
+        st.markdown(claim3_text, unsafe_allow_html=True)
