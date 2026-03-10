@@ -206,12 +206,6 @@ with tab2:
         '<span class="gazette-tag gazette-tag-cpc">G06N 3/045</span>'
         '<span class="gazette-tag gazette-tag-cpc">G06F 16/55</span>'
         '<span class="gazette-tag gazette-tag-cpc">G06T 7/11</span>'
-        '</div>'
-        '<div class="gazette-tag-row">'
-        '<span class="gazette-tag gazette-tag-ipc">G06N 3/08</span>'
-        '<span class="gazette-tag gazette-tag-ipc">G06N 3/045</span>'
-        '<span class="gazette-tag gazette-tag-ipc">G06F 16/55</span>'
-        '<span class="gazette-tag gazette-tag-ipc">G06T 7/11</span>'
         '</div>',
         unsafe_allow_html=True,
     )
@@ -244,8 +238,8 @@ with tab2:
     abstract_text = (
         "입력 시각적 이미지 및/또는 입력 깊이 이미지로부터 컨볼루션 신경망(CNN)을 사용하여 "
         "의미적으로 세그먼트화된 이미지 및 깊이 완성 이미지를 생성하는 컴퓨터 구현된 방법이다. "
-        "일 실시예에서, 방법은 트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화 및 "
-        "깊이 완성을 위한 CNN을 트레이닝시키는 단계를 포함한다. 트레이닝된 CNN은 입력 이미지로부터 "
+        "일 실시예에서, 방법은 <span style="background-color: #fff59d;">트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화 및 "
+        "깊이 완성을 위한 CNN을 트레이닝시키는 단계</span>를 포함한다. 트레이닝된 CNN은 입력 이미지로부터 "
         "의미적으로 세그먼트화된 이미지 및 깊이 완성 이미지를 생성하는 데 사용될 수 있다."
     )
     st.markdown(
@@ -262,8 +256,8 @@ with tab2:
         unsafe_allow_html=True,
     )
     claim1_text = (
-        '<span style="background-color: #fff59d;">트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화(semantic segmentation) 및 '
-        "깊이 완성(depth completion)을 위한 컨볼루션 신경망(convolutional neural network)을 트레이닝시키기 위한</span> "
+        '트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화(semantic segmentation) 및 '
+        "깊이 완성(depth completion)을 위한 컨볼루션 신경망(convolutional neural network)을 트레이닝시키기 위한 "
         "컴퓨터 구현된 방법으로서, 상기 방법은: 상기 트레이닝 세트로부터 이미지 쌍을 수신하는 단계; "
         "<span style=\"background-color: #c8e6c9;\">상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계</span>; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
         "상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법."
