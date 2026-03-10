@@ -92,6 +92,18 @@ st.markdown("""
     div[data-testid="stDialog"] div[role="dialog"] [data-testid="stCode"] {
         max-height: none !important;
     }
+
+    /* 테이블 행 선택: 체크박스 → 라디오 버튼 모양(원형) */
+    [data-testid="stDataFrame"] input[type="checkbox"],
+    [data-testid="stDataFrame"] [data-testid="stCheckbox"] input {
+        border-radius: 50% !important;
+        width: 16px !important;
+        height: 16px !important;
+        accent-color: #1e3a8a;
+    }
+    [data-testid="stDataFrame"] [data-testid="stCheckbox"] {
+        padding-left: 0;
+    }
     </style>
 """, unsafe_allow_html=True)
 
