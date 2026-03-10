@@ -8,22 +8,42 @@ from pathlib import Path
 # 화면 넓게 쓰기
 st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 
-# CSS: 여백, 시인성, 우측 사이드바(대표도면 등) 크롬에서 잘리지 않도록
+# CSS: 여백, 시인성, 좌/메인/우측·탭 구분 라인, 우측 사이드바
 st.markdown("""
     <style>
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     div[data-testid="stText"] { font-size: 14px; }
-    /* 우측 사이드바: 상단 여백으로 대표도면 제목이 잘리지 않게 */
+
+    /* 좌측 | 메인 | 우측 사이드바 구분 라인 (세로) */
+    [data-testid="column"] {
+        border-right: 1px solid #dee2e6;
+        padding-right: 1rem;
+        padding-left: 0.5rem;
+    }
+    [data-testid="column"]:first-of-type { padding-left: 0; }
     [data-testid="column"]:last-of-type {
+        border-right: none;
+        padding-right: 0;
         padding-top: 0.5rem;
         overflow-y: auto;
         overflow-x: visible;
         min-height: 0;
     }
-    [data-testid="column"]:last-of-type > div {
-        padding-top: 0.25rem;
-    }
+    [data-testid="column"]:last-of-type > div { padding-top: 0.25rem; }
     [data-testid="column"]:last-of-type .stMarkdown { animation: slideIn 0.3s ease-out; }
+
+    /* 탭 구분: 탭 버튼 영역 하단 라인, 탭 내용 영역 테두리 */
+    [data-testid="stTabs"] {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 0 8px 8px;
+        margin-bottom: 8px;
+    }
+    [data-testid="stTabs"] > div:first-child {
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 4px;
+    }
+
     @keyframes slideIn {
         from { opacity: 0; transform: translateX(20px); }
         to { opacity: 1; transform: translateX(0); }
