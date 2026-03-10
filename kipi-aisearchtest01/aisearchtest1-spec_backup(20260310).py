@@ -37,8 +37,20 @@ st.markdown("""
 .compare-box ul { margin: 0; padding-left: 1.25rem; }
 .compare-box li { margin-bottom: 0.5rem; }
 .compare-box .highlight { color: #1565c0; font-weight: 500; }
-/* 탭별 스크롤: 탭 패널 내용 영역에 최대 높이 및 세로 스크롤 */
-[data-testid="stTabs"] [data-testid="stVerticalBlock"] { max-height: 75vh; overflow-y: auto; }
+/* 좌(공보) 우(AI분석) 컬럼 각각 독립 스크롤바 */
+[data-testid="column"] {
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 200px;
+}
+[data-testid="column"]:first-child {
+    border-right: 2px solid #bdbdbd;
+    padding-right: 1rem;
+}
+[data-testid="column"]:last-child {
+    padding-left: 1rem;
+}
 /* 공보 탭 스타일 */
 .gazette-doc-tabs { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e0e0e0; }
 .gazette-doc-tabs span { padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
@@ -56,24 +68,18 @@ st.markdown("""
 .gazette-bib { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.5rem; font-size: 0.9rem; }
 .gazette-bib-item { display: flex; }
 .gazette-bib-label { min-width: 100px; color: #555; }
-.gazette-legend { font-size: 0.8rem; color: #555; }
-.gazette-legend-item { display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.2rem; }
-.gazette-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
 .gazette-claims-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
 .gazette-claim-btns { font-size: 0.8rem; }
 .gazette-claim-item { margin-bottom: 0.75rem; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #eee; }
 .gazette-claim-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-/* 공보 탭 - 스크롤 따라다니는 구성요소 범례 위젯 */
-.gazette-legend-widget { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); z-index: 999; background: #fff; padding: 12px 14px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.12); border: 1px solid #e0e0e0; font-size: 0.8rem; color: #333; }
-.gazette-legend-widget .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.gazette-legend-widget .legend-item:last-child { margin-bottom: 0; }
-.gazette-legend-widget .legend-dot { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
 </style>
 """, unsafe_allow_html=True)
 
-tab1, tab2 = st.tabs(["AI분석", "공보"])
+# 좌측: 공보 | 우측: AI분석 (동시 표시)
+left_col, right_col = st.columns(2)
 
-with tab1:
+# ========== 우측: AI분석 ==========
+with right_col:
     st.markdown("### 💡 발명의 3요소 (AI 요약)")
     st.markdown("")  # 간격
 
@@ -176,28 +182,10 @@ with tab1:
             unsafe_allow_html=True,
         )
 
-with tab2:
-    # 스크롤 따라다니는 구성요소 범례 위젯 (오른쪽 고정)
-    legend_colors = [
-        ("#ffeb3b", "구성요소 1"),   # yellow
-        ("#66bb6a", "구성요소 2"),   # bright green
-        ("#f06292", "구성요소 3"),   # pink
-        ("#4dd0e1", "구성요소 4"),   # cyan
-        ("#ab47bc", "구성요소 5"),   # magenta/purple
-        ("#ff9800", "구성요소 6"),   # orange
-        ("#aed581", "구성요소 7"),   # lime green
-        ("#00897b", "구성요소 8"),   # teal
-    ]
-    legend_items = "".join(
-        f'<div class="legend-item"><span class="legend-dot" style="background:{c}"></span>{label}</div>'
-        for c, label in legend_colors
-    )
-    st.markdown(
-        f'<div class="gazette-legend-widget">{legend_items}</div>',
-        unsafe_allow_html=True,
-    )
-
+# ========== 좌측: 공보 ==========
+with left_col:
     # 제목 영역 + 분류코드
+    st.markdown("### 💡 특허 공보")
     st.markdown(
         '<div class="gazette-title-ko">컨볼루션 신경망을 사용하는 의미적 세그먼트화 및 깊이 완성 방법 및 장치</div>'
         '<div class="gazette-title-en">METHOD AND APPARATUS FOR SEMANTIC SEGMENTATION AND DEPTH COMPLETION USING A CONVOLUTIONAL NEURAL NETWORK</div>'

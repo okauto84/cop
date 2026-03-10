@@ -80,22 +80,20 @@ st.markdown("""
         to { opacity: 1; transform: translateX(0); }
     }
 
-    /* 스펙 팝업(다이얼로그) 2배 이상 크게 */
+    /* 스펙 팝업(다이얼로그): 내용 길이에 따라 세로로 늘어남 */
     div[data-testid="stDialog"] div[role="dialog"] {
         width: 90vw !important;
         max-width: 1200px !important;
-        height: 85vh !important;
         min-height: 600px !important;
+        max-height: 95vh !important;
+        height: auto !important;
+        overflow-y: auto !important;
     }
     div[data-testid="stDialog"] div[role="dialog"] [data-testid="stCode"] {
-        max-height: 75vh !important;
+        max-height: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
-
-# 선택된 문헌(게시글) 인덱스 — 행 선택 시 사이드바에 상세 표시
-if "selected_row_index" not in st.session_state:
-    st.session_state.selected_row_index = None
 
 # 발명의 3요소 (AI 요약) HTML — tab_summary와 right_sidebar에서 공통 사용
 SUMMARY_HTML = """
@@ -148,9 +146,6 @@ RESULT_DATA = {
 df_result = pd.DataFrame(RESULT_DATA)
 # 테이블 표시용: 순번 제거 (체크박스는 data_editor에서 selection_mode 없이 제거)
 df_display = df_result.drop(columns=["순번"]).copy()
-
-if "selected_row_index" not in st.session_state:
-    st.session_state.selected_row_index = None
 
 # 좌측 + 메인 + 우측 사이드바 항상 표시
 left_col, right_col, right_sidebar = st.columns([1, 3, 1])
@@ -228,13 +223,9 @@ with right_col:
             hide_index=True,
             height=600
         )
-        if event and getattr(event, "selection", None):
-            if event.selection.rows:
-                st.session_state.selected_row_index = event.selection.rows[0]
-                show_spec_popup()
-            else:
-                st.session_state.selected_row_index = None
-        st.caption("행을 클릭하면 우측에 선택 문헌 상세가 표시되고, 스펙 팝업이 열립니다.")
+        if event and getattr(event, "selection", None) and event.selection.rows:
+            show_spec_popup()
+        st.caption("행을 클릭하면 스펙 팝업이 열립니다.")
 
         # 하단 페이징 (UI 모방)
         page_col1, page_col2, page_col3, page_col4 = st.columns([8, 0.5, 0.5, 0.5])
@@ -248,28 +239,9 @@ with right_col:
             st.button("›", key="page_next")
 
 # ==========================================
-# 우측 사이드바 (항상 표시): 선택 문헌 상세 + 대표도면 + 발명의 3요소
+# 우측 사이드바 (항상 표시): 대표도면 + 발명의 3요소
 # ==========================================
 with right_sidebar:
-    _idx = st.session_state.selected_row_index
-    _valid = _idx is not None and 0 <= _idx < len(df_result)
-    if _valid:
-        row = df_result.iloc[_idx]
-        st.markdown("**📌 선택 문헌 상세**")
-        st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
-        st.markdown("**출원번호**")
-        st.write(row["출원번호"])
-        st.markdown("**발명의 명칭**")
-        st.caption(row["발명의 명칭"])
-        st.markdown("**구분**")
-        st.write(row["구분"])
-        st.markdown("**CPC분류**")
-        st.caption(row["CPC분류"].replace("\n", " "))
-        st.markdown("**출원일자**")
-        st.write(row["출원일자"])
-        st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
-    else:
-        st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
     st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
     drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
     if drawing_path.exists():
