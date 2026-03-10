@@ -187,9 +187,6 @@ with right_col:
         st.info("INFO 탭입니다. 필요한 안내 또는 정보를 여기에 표시할 수 있습니다.")
 
     with tab_result:
-        # 보기 옵션
-        st.selectbox("보기 옵션", ["50 건씩 보기", "100 건씩 보기", "200 건씩 보기"], label_visibility="collapsed", key="view_opt")
-
         # 게시판(검색 결과) — 행 클릭 시 우측 사이드바 표시 (Streamlit 1.35+)
         event = st.dataframe(
             df_display,
