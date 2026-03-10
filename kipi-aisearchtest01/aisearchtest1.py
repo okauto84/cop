@@ -112,13 +112,16 @@ df_result = pd.DataFrame(RESULT_DATA)
 # 테이블 표시용: 순번 제거 (체크박스는 data_editor에서 selection_mode 없이 제거)
 df_display = df_result.drop(columns=["순번"]).copy()
 
-if "result_table_df" not in st.session_state:
-    st.session_state.result_table_df = df_display.copy()
 if "selected_row_index" not in st.session_state:
     st.session_state.selected_row_index = None
 
-# 좌측 + 메인 + 우측 사이드바 항상 표시
-left_col, right_col, right_sidebar = st.columns([1, 3, 1])
+# 행 선택 시에만 우측 사이드바 표시 (좌측 | 메인 | 우측)
+_selected = st.session_state.selected_row_index
+if _selected is not None:
+    left_col, right_col, right_sidebar = st.columns([1, 3, 1])
+else:
+    left_col, right_col = st.columns([1, 4])
+    right_sidebar = None
 
 # ==========================================
 # 좌측 패널: 검색 조건 및 구성요소
@@ -180,31 +183,22 @@ with right_col:
         # 보기 옵션
         st.selectbox("보기 옵션", ["50 건씩 보기", "100 건씩 보기", "200 건씩 보기"], label_visibility="collapsed", key="view_opt")
 
-        # 게시판(검색 결과) — 순번·체크박스 없음, 구분 선택 시 우측 사이드바 표시
-        구분_옵션 = list(df_display["구분"].unique())
-        column_config = {
-            "구분": st.column_config.SelectboxColumn("구분", options=구분_옵션, required=True),
-            "CPC분류": st.column_config.TextColumn("CPC분류", disabled=True),
-            "발명의 명칭": st.column_config.TextColumn("발명의 명칭", disabled=True),
-            "출원번호": st.column_config.TextColumn("출원번호", disabled=True),
-            "출원일자": st.column_config.TextColumn("출원일자", disabled=True),
-        }
-        edited_df = st.data_editor(
-            st.session_state.result_table_df,
-            column_config=column_config,
-            key="result_editor",
+        # 게시판(검색 결과) — 행 클릭 시 우측 사이드바 표시 (Streamlit 1.35+)
+        event = st.dataframe(
+            df_display,
+            key="result_table",
+            selection_mode="single-row",
+            on_select="rerun",
             use_container_width=True,
             hide_index=True,
             height=600
         )
-        # 구분 셀 선택(변경) 시 해당 행을 선택하고 우측 사이드바 표시
-        prev_df = st.session_state.result_table_df
-        for i in range(len(edited_df)):
-            if i < len(prev_df) and i < len(df_result) and edited_df.iloc[i]["구분"] != prev_df.iloc[i]["구분"]:
-                st.session_state.selected_row_index = i
-                break
-        st.session_state.result_table_df = edited_df.copy()
-        st.caption("테이블에서 '구분'을 선택하면 우측에 해당 문헌 상세가 슬라이드로 표시됩니다.")
+        if event and getattr(event, "selection", None):
+            if event.selection.rows:
+                st.session_state.selected_row_index = event.selection.rows[0]
+            else:
+                st.session_state.selected_row_index = None
+        st.caption("행을 클릭하면 우측에 선택 문헌 상세가 표시됩니다.")
 
         # 하단 페이징 (UI 모방)
         page_col1, page_col2, page_col3, page_col4 = st.columns([8, 0.5, 0.5, 0.5])
@@ -218,15 +212,35 @@ with right_col:
             st.button("›", key="page_next")
 
 # ==========================================
-# 우측 사이드바: 대표도면 + 발명의 3요소 (AI 요약)
+# 우측 사이드바 (행 클릭 시에만 표시): 선택 문헌 상세 + 대표도면 + 발명의 3요소
 # ==========================================
-with right_sidebar:
-    st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
-    drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
-    if drawing_path.exists():
-        st.image(str(drawing_path), use_container_width=True)
-    else:
-        st.caption("`./data/drawing.jpg` 파일을 추가하면 대표도면이 표시됩니다.")
-    st.divider()
-    st.markdown("**발명의 3요소 (AI 요약)**")
-    st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
+if right_sidebar is not None and st.session_state.selected_row_index is not None:
+    _idx = st.session_state.selected_row_index
+    if 0 <= _idx < len(df_result):
+        row = df_result.iloc[_idx]
+        with right_sidebar:
+            st.markdown("**📌 선택 문헌 상세**")
+            st.divider()
+            st.markdown("**출원번호**")
+            st.write(row["출원번호"])
+            st.markdown("**발명의 명칭**")
+            st.caption(row["발명의 명칭"])
+            st.markdown("**구분**")
+            st.write(row["구분"])
+            st.markdown("**CPC분류**")
+            st.caption(row["CPC분류"].replace("\n", " "))
+            st.markdown("**출원일자**")
+            st.write(row["출원일자"])
+            st.divider()
+            st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
+            drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
+            if drawing_path.exists():
+                st.image(str(drawing_path), use_container_width=True)
+            else:
+                st.caption("`./data/drawing.jpg` 파일을 추가하면 대표도면이 표시됩니다.")
+            st.divider()
+            st.markdown("**발명의 3요소 (AI 요약)**")
+            st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
+            if st.button("✕ 사이드바 닫기", use_container_width=True, key="close_sidebar_btn"):
+                st.session_state.selected_row_index = None
+                st.rerun()
