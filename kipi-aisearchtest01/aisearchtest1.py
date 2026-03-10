@@ -8,6 +8,20 @@ from pathlib import Path
 # 화면 넓게 쓰기
 st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 
+
+@st.dialog("aisearchtest1-spec.py")
+def show_spec_popup():
+    """테이블 행 선택 시 스펙 파일 내용을 팝업(모달)으로 표시"""
+    spec_path = Path(__file__).parent / "aisearchtest1-spec.py"
+    if spec_path.exists():
+        try:
+            content = spec_path.read_text(encoding="utf-8")
+            st.code(content, language="python")
+        except Exception as e:
+            st.error(f"파일을 읽을 수 없습니다: {e}")
+    else:
+        st.warning(f"파일을 찾을 수 없습니다: {spec_path}")
+
 # CSS: 헤더 아래로 메인 화면 내려서 탭 클릭 가능하게, 시인성, 구분 라인, 우측 사이드바
 st.markdown("""
     <style>
@@ -129,7 +143,7 @@ left_col, right_col, right_sidebar = st.columns([1, 3, 1])
 # ==========================================
 with left_col:
     # 요청하신 '요약정보' 탭 추가
-    tab_search, tab_summary = st.tabs(["입력 검색", "AI 요약"])
+    tab_search, tab_summary = st.tabs(["대상 검색", "대상 AI요약"])
     
     with tab_search:
         # 출원번호 입력
@@ -200,9 +214,10 @@ with right_col:
         if event and getattr(event, "selection", None):
             if event.selection.rows:
                 st.session_state.selected_row_index = event.selection.rows[0]
+                show_spec_popup()
             else:
                 st.session_state.selected_row_index = None
-        st.caption("행을 클릭하면 우측에 선택 문헌 상세가 표시됩니다.")
+        st.caption("행을 클릭하면 우측에 선택 문헌 상세가 표시되고, 스펙 팝업이 열립니다.")
 
         # 하단 페이징 (UI 모방)
         page_col1, page_col2, page_col3, page_col4 = st.columns([8, 0.5, 0.5, 0.5])
