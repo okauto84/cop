@@ -28,6 +28,9 @@ st.markdown("""
 .tag-partial { background-color: #f9a825; }
 .tag-diff { background-color: #e57373; }
 .tag-same { background-color: #66bb6a; }
+.tag-link { text-decoration: none; color: inherit; cursor: pointer; display: inline-block; }
+.tag-link:hover { opacity: 0.9; }
+[id^="focus-"] { scroll-margin-top: 2rem; }
 .compare-box { border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; background: #fafafa; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: left; font-size: 0.9rem; line-height: 1.6; }
 .compare-box.common { border-left: 4px solid #66bb6a; }
 .compare-box.diff { border-left: 4px solid #ffb74d; }
@@ -129,25 +132,25 @@ with right_col:
         <tr>
         <td><span class="comp-name">베이스팬(100)</span><span class="comp-desc">양측면에 가이드공(170)이 관통 형성됨</span></td>
         <td><span class="comp-name">베리어(73)</span><span class="comp-desc">양단에 실내측을 향해 연장된 단부측판(75) 구비</span></td>
-        <td><span class="tag tag-partial">일부동일</span></td>
+        <td><a href="#focus-partial" class="tag-link"><span class="tag tag-partial">일부동일</span></a></td>
         <td>본체 구조물에 결합 기능을 통합한 점은 유사하나, 관통공 vs 측판 구조의 형태적 차이 존재</td>
         </tr>
         <tr>
         <td><span class="comp-name">상측캐비넷(650)</span><span class="comp-desc">삽입채널(662) 및 삽입가이드편(664) 형성</span></td>
         <td><span class="comp-name">측면브라켓(80)</span><span class="comp-desc">절곡된 스프링고정부(81)가 일체로 성형됨</span></td>
-        <td><span class="tag tag-diff">차이</span></td>
+        <td><a href="#focus-diff" class="tag-link"><span class="tag tag-diff">차이</span></a></td>
         <td>슬라이딩 안내를 위한 레일 채널 구조와 스냅 결합을 위한 개별 절곡부의 물리적 형상 차이</td>
         </tr>
         <tr>
         <td><span class="comp-name">커텐프레임(710)</span><span class="comp-desc">가이드공 및 단차부에 삽입되어 슬라이딩됨</span></td>
         <td><span class="comp-name">전면패널(95)</span><span class="comp-desc">체결스프링(99)을 통해 본체에 고정됨</span></td>
-        <td><span class="tag tag-diff">차이</span></td>
+        <td><a href="#focus-diff" class="tag-link"><span class="tag tag-diff">차이</span></a></td>
         <td>가동형 부품의 길이 조절(Sliding) 방식과 고정형 외장재의 단순 결합(Snap) 방식의 차이</td>
         </tr>
         <tr>
         <td><span class="comp-name">탈거방지턱(718)</span><span class="comp-desc">탄성채널(719)에 의한 임의 이탈 방지</span></td>
         <td><span class="comp-name">체결스프링(99)</span><span class="comp-desc">안착부(99c)와 걸림부(99d)로 탈거 방지</span></td>
-        <td><span class="tag tag-same">실질적동일</span></td>
+        <td><a href="#focus-same" class="tag-link"><span class="tag tag-same">실질적동일</span></a></td>
         <td>재료의 탄성 변형을 이용하여 결합 후 역방향 이탈을 방지하는 기구적 메커니즘이 매우 유사함</td>
         </tr>
         </tbody>
@@ -227,7 +230,7 @@ with left_col:
         "입력 시각적 이미지 및/또는 입력 깊이 이미지로부터 컨볼루션 신경망(CNN)을 사용하여 "
         "의미적으로 세그먼트화된 이미지 및 깊이 완성 이미지를 생성하는 컴퓨터 구현된 방법이다. "
         "일 실시예에서, 방법은"
-        "<span style=\"background-color: #fff59d;\">트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화 및 깊이 완성을 위한 CNN을 트레이닝시키는 단계</span>를 포함한다."
+        "<span id=\"focus-same\" style=\"background-color: #66bb6a;\">트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화 및 깊이 완성을 위한 CNN을 트레이닝시키는 단계</span>를 포함한다."
         "트레이닝된 CNN은 입력 이미지로부터 "
         "의미적으로 세그먼트화된 이미지 및 깊이 완성 이미지를 생성하는 데 사용될 수 있다."
     )
@@ -242,16 +245,16 @@ with left_col:
         '트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화(semantic segmentation) 및 '
         "깊이 완성(depth completion)을 위한 컨볼루션 신경망(convolutional neural network)을 트레이닝시키기 위한 "
         "컴퓨터 구현된 방법으로서, 상기 방법은: 상기 트레이닝 세트로부터 이미지 쌍을 수신하는 단계; "
-        "<span style=\"background-color: #f9a825;\">상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계</span>; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
+        "<span id=\"focus-partial\" style=\"background-color: #f9a825;\">상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계</span>; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
         "상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법."
     )
     claim2_text = (
         "전항의 방법에 있어서, 상기 트레이닝 세트로부터 이미지 쌍을 수신하는 단계는 "
-        "<span style=\"background-color: #e57373;\">시각적 이미지와 대응하는 깊이 이미지가 정렬된 쌍을 수신하는 단계</span>를 포함하는, 방법."
+        "<span id=\"focus-diff\" style=\"background-color: #e57373;\">시각적 이미지와 대응하는 깊이 이미지가 정렬된 쌍을 수신하는 단계</span>를 포함하는, 방법."
     )
     claim3_text = (
         "상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
-        "<span style=\"background-color: #66bb6a;\">상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법</span>."
+        "<span id=\"focus-same-claim3\" style=\"background-color: #66bb6a;\">상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법</span>."
     )
     with st.expander("청구항 1", expanded=True):
         st.markdown(claim1_text, unsafe_allow_html=True)
