@@ -185,6 +185,7 @@ with right_col:
 # ========== 좌측: 공보 ==========
 with left_col:
     # 제목 영역 + 분류코드
+    st.markdown("### 💡 특허 공보")
     st.markdown(
         '<div class="gazette-title-ko">컨볼루션 신경망을 사용하는 의미적 세그먼트화 및 깊이 완성 방법 및 장치</div>'
         '<div class="gazette-title-en">METHOD AND APPARATUS FOR SEMANTIC SEGMENTATION AND DEPTH COMPLETION USING A CONVOLUTIONAL NEURAL NETWORK</div>'
