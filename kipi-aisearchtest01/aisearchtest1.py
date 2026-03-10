@@ -232,12 +232,8 @@ with right_sidebar:
         st.caption(row["CPC분류"].replace("\n", " "))
         st.markdown("**출원일자**")
         st.write(row["출원일자"])
-        if st.button("✕ 선택 해제", use_container_width=True, key="close_sidebar_btn"):
-            st.session_state.selected_row_index = None
-            st.rerun()
         st.divider()
     else:
-        st.caption("테이블에서 행을 선택하면 문헌 상세가 여기에 표시됩니다.")
         st.divider()
     st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
     drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
