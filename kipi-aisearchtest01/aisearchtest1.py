@@ -48,13 +48,8 @@ if "result_table_df" not in st.session_state:
 if "selected_row_index" not in st.session_state:
     st.session_state.selected_row_index = None
 
-# 구분 선택 시 우측 사이드바 슬라이드 표시 (좌측+메인+우측)
-_selected = st.session_state.selected_row_index
-if _selected is not None:
-    left_col, right_col, right_sidebar = st.columns([1, 3, 1])
-else:
-    left_col, right_col = st.columns([1, 4])
-    right_sidebar = None
+# 좌측 + 메인 + 우측 사이드바 항상 표시
+left_col, right_col, right_sidebar = st.columns([1, 3, 1])
 
 # ==========================================
 # 좌측 패널: 검색 조건 및 구성요소
@@ -65,25 +60,25 @@ with left_col:
     
     with tab_search:
         # 출원번호 입력
+        st.markdown("**⚙️ 심사 대상 건 입력**")
         st.text_input("출원번호", value="1070210165598", label_visibility="collapsed")
         
         # 문장검색 영역
-        st.radio("검색구분", ["문장검색"], label_visibility="collapsed")
-        st.caption("문장검색은 청구항, 초록 등 일부 발췌 문장을 기반으로 유사 문서를 찾습니다. AND(&), OR(|) 연산자는 사용할 수 없습니다.")
+        st.caption("입력한 문장으로 유사 문서를 찾습니다. AND(&), OR(|) 연산자는 사용할 수 없습니다.")
         
         
         
         btn_col1, btn_col2 = st.columns(2)
-        with btn_col1: st.button("🔍 검색", use_container_width=True)
-        with btn_col2: st.button("🔄 초기화", use_container_width=True)
+        with btn_col1: st.button("🔍 검색", use_container_width=True, key="btn_search")
+        with btn_col2: st.button("🔄 초기화", use_container_width=True, key="btn_reset")
         
         st.divider()
         
         # 구성요소관련 영역
         st.markdown("**⚙️ 기술 구성요소**")
         comp_btn_col1, comp_btn_col2 = st.columns(2)
-        with comp_btn_col1: st.button("구성요소추가", use_container_width=True)
-        with comp_btn_col2: st.button("청구항", use_container_width=True)
+        with comp_btn_col1: st.button("구성요소추가", use_container_width=True, key="btn_comp_add")
+        with comp_btn_col2: st.button("청구항", use_container_width=True, key="btn_claim")
         
         # 구성요소 리스트 (체크박스 + 텍스트)
         components = [
@@ -98,7 +93,7 @@ with left_col:
             with c1: st.checkbox("", value=True, key=f"comp_{i}")
             with c2: st.info(comp) # 박스 형태로 텍스트 출력
             
-        st.button("🔍 재검색", use_container_width=True, type="primary")
+        st.button("🔍 재검색", use_container_width=True, type="primary", key="btn_research")
 
     with tab_summary:
         # 발명의 3요소 (AI 요약) — 그림과 동일한 카드 UI
@@ -168,10 +163,10 @@ with right_col:
         # 구분 셀 선택(변경) 시 해당 행을 선택하고 우측 사이드바 표시
         prev_df = st.session_state.result_table_df
         for i in range(len(edited_df)):
-            if i < len(prev_df) and edited_df.iloc[i]["구분"] != prev_df.iloc[i]["구분"]:
+            if i < len(prev_df) and i < len(df_result) and edited_df.iloc[i]["구분"] != prev_df.iloc[i]["구분"]:
                 st.session_state.selected_row_index = i
                 break
-        st.session_state.result_table_df = edited_df
+        st.session_state.result_table_df = edited_df.copy()
         st.caption("테이블에서 '구분'을 선택하면 우측에 해당 문헌 상세가 슬라이드로 표시됩니다.")
 
         # 하단 페이징 (UI 모방)
@@ -179,20 +174,23 @@ with right_col:
         with page_col1:
             st.caption("총 100 건 중 1 ~ 50")
         with page_col2:
-            st.button("1")
+            st.button("1", key="page_1")
         with page_col3:
-            st.button("2")
+            st.button("2", key="page_2")
         with page_col4:
-            st.button("›")
+            st.button("›", key="page_next")
 
 # ==========================================
-# 우측 사이드바 (문헌 선택 시에만 표시)
+# 우측 사이드바 (항상 표시, 선택 시 해당 문헌 상세)
 # ==========================================
-if right_sidebar is not None and st.session_state.selected_row_index is not None:
-    row = df_result.iloc[st.session_state.selected_row_index]
-    with right_sidebar:
-        st.markdown("**📌 선택 문헌 상세**")
-        st.divider()
+with right_sidebar:
+    st.markdown("**📌 사이드바**")
+    st.divider()
+    _idx = st.session_state.selected_row_index
+    _valid = _idx is not None and 0 <= _idx < len(df_result)
+    if _valid:
+        row = df_result.iloc[_idx]
+        st.markdown("**선택 문헌 상세**")
         st.markdown("**출원번호**")
         st.write(row["출원번호"])
         st.markdown("**발명의 명칭**")
@@ -203,9 +201,14 @@ if right_sidebar is not None and st.session_state.selected_row_index is not None
         st.caption(row["CPC분류"].replace("\n", " "))
         st.markdown("**출원일자**")
         st.write(row["출원일자"])
-        st.divider()
-        st.button("📥 내보내기", use_container_width=True, key="export_btn")
-        st.button("📋 클립보드", use_container_width=True, key="clipboard_btn")
-        if st.button("✕ 사이드바 닫기", use_container_width=True, key="close_sidebar_btn"):
+        if st.button("✕ 선택 해제", use_container_width=True, key="close_sidebar_btn"):
             st.session_state.selected_row_index = None
             st.rerun()
+    if not _valid:
+        st.caption("테이블에서 '구분'을 선택하면 해당 문헌 상세가 여기에 표시됩니다.")
+    st.divider()
+    st.selectbox("정렬", ["관련도순", "출원일순", "등록일순"], label_visibility="collapsed", key="sort_opt")
+    st.caption("검색 결과 정렬 기준")
+    st.divider()
+    st.button("📥 내보내기", use_container_width=True, key="export_btn")
+    st.button("📋 클립보드", use_container_width=True, key="clipboard_btn")
