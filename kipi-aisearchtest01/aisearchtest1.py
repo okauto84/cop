@@ -21,15 +21,20 @@ st.markdown("""
         padding-left: 0.5rem;
     }
     [data-testid="column"]:first-of-type { padding-left: 0; }
+    /* 우측 사이드바: 고정 높이 + 스크롤바 */
     [data-testid="column"]:last-of-type {
         border-right: none;
         padding-right: 0;
         padding-top: 0.5rem;
+        max-height: calc(100vh - 120px);
         overflow-y: auto;
         overflow-x: visible;
-        min-height: 0;
+        min-height: 200px;
     }
-    [data-testid="column"]:last-of-type > div { padding-top: 0.25rem; }
+    [data-testid="column"]:last-of-type > div {
+        padding-top: 0.25rem;
+        max-height: inherit;
+    }
     [data-testid="column"]:last-of-type .stMarkdown { animation: slideIn 0.3s ease-out; }
 
     /* 탭 구분: 탭 버튼 영역 하단 라인, 탭 내용 영역 테두리 */
