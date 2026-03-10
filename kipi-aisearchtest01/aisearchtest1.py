@@ -7,11 +7,16 @@ import pandas as pd
 # 화면 넓게 쓰기
 st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 
-# CSS를 통한 여백 조정 (시인성 향상)
+# CSS: 여백, 시인성, 우측 사이드바 슬라이드 인
 st.markdown("""
     <style>
     .block-container { padding-top: 2rem; padding-bottom: 2rem; }
     div[data-testid="stText"] { font-size: 14px; }
+    [data-testid="column"]:last-of-type .stMarkdown { animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -35,12 +40,15 @@ RESULT_DATA = {
     "출원일자": ["20211126", "20191010", "20201217", "20210416", "20180727"]
 }
 df_result = pd.DataFrame(RESULT_DATA)
+# 테이블 표시용: 순번 제거 (체크박스는 data_editor에서 selection_mode 없이 제거)
+df_display = df_result.drop(columns=["순번"]).copy()
 
-# 선택 행 인덱스 초기화 (아래 dataframe on_select에서 갱신됨)
+if "result_table_df" not in st.session_state:
+    st.session_state.result_table_df = df_display.copy()
 if "selected_row_index" not in st.session_state:
     st.session_state.selected_row_index = None
 
-# 문헌 선택 시에만 우측 사이드바 표시
+# 구분 선택 시 우측 사이드바 슬라이드 표시 (좌측+메인+우측)
 _selected = st.session_state.selected_row_index
 if _selected is not None:
     left_col, right_col, right_sidebar = st.columns([1, 3, 1])
@@ -140,22 +148,31 @@ with right_col:
         # 보기 옵션
         st.selectbox("보기 옵션", ["50 건씩 보기", "100 건씩 보기", "200 건씩 보기"], label_visibility="collapsed", key="view_opt")
 
-        # 게시판(검색 결과) — 행 클릭 시 선택되며 우측 사이드바에 상세 표시
-        event = st.dataframe(
-            df_result,
-            key="result_table",
-            selection_mode="single-row",
-            on_select="rerun",
+        # 게시판(검색 결과) — 순번·체크박스 없음, 구분 선택 시 우측 사이드바 표시
+        구분_옵션 = list(df_display["구분"].unique())
+        column_config = {
+            "구분": st.column_config.SelectboxColumn("구분", options=구분_옵션, required=True),
+            "CPC분류": st.column_config.TextColumn("CPC분류", disabled=True),
+            "발명의 명칭": st.column_config.TextColumn("발명의 명칭", disabled=True),
+            "출원번호": st.column_config.TextColumn("출원번호", disabled=True),
+            "출원일자": st.column_config.TextColumn("출원일자", disabled=True),
+        }
+        edited_df = st.data_editor(
+            st.session_state.result_table_df,
+            column_config=column_config,
+            key="result_editor",
             use_container_width=True,
             hide_index=True,
             height=600
         )
-        if event and getattr(event, "selection", None):
-            if event.selection.rows:
-                st.session_state.selected_row_index = event.selection.rows[0]
-            else:
-                st.session_state.selected_row_index = None
-        st.caption("행을 클릭하면 우측에 선택 문헌 상세가 표시됩니다.")
+        # 구분 셀 선택(변경) 시 해당 행을 선택하고 우측 사이드바 표시
+        prev_df = st.session_state.result_table_df
+        for i in range(len(edited_df)):
+            if i < len(prev_df) and edited_df.iloc[i]["구분"] != prev_df.iloc[i]["구분"]:
+                st.session_state.selected_row_index = i
+                break
+        st.session_state.result_table_df = edited_df
+        st.caption("테이블에서 '구분'을 선택하면 우측에 해당 문헌 상세가 슬라이드로 표시됩니다.")
 
         # 하단 페이징 (UI 모방)
         page_col1, page_col2, page_col3, page_col4 = st.columns([8, 0.5, 0.5, 0.5])
@@ -189,3 +206,6 @@ if right_sidebar is not None and st.session_state.selected_row_index is not None
         st.divider()
         st.button("📥 내보내기", use_container_width=True, key="export_btn")
         st.button("📋 클립보드", use_container_width=True, key="clipboard_btn")
+        if st.button("✕ 사이드바 닫기", use_container_width=True, key="close_sidebar_btn"):
+            st.session_state.selected_row_index = None
+            st.rerun()
