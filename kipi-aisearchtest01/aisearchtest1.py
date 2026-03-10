@@ -3,6 +3,7 @@
 
 import streamlit as st
 import pandas as pd
+from pathlib import Path
 
 # 화면 넓게 쓰기
 st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
@@ -23,6 +24,39 @@ st.markdown("""
 # 선택된 문헌(게시글) 인덱스 — 행 선택 시 사이드바에 상세 표시
 if "selected_row_index" not in st.session_state:
     st.session_state.selected_row_index = None
+
+# 발명의 3요소 (AI 요약) HTML — tab_summary와 right_sidebar에서 공통 사용
+SUMMARY_HTML = """
+<div style="font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; max-width: 600px;">
+    <div style="color: #1e3a8a; font-size: 1.15rem; font-weight: bold; margin-bottom: 16px;">
+        💡 발명의 3요소 (AI 요약)
+    </div>
+    <div style="background-color: #fdf2f2; border: 1.5px solid #fecaca; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
+        <div style="color: #b91c1c; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
+            ⚠️ 해결과제 <span style="font-size: 0.8em; font-weight: normal;">(Problem)</span>
+        </div>
+        <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
+            창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
+        </div>
+    </div>
+    <div style="background-color: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
+        <div style="color: #15803d; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
+            🎯 발명의 목적 <span style="font-size: 0.8em; font-weight: normal;">(Object)</span>
+        </div>
+        <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
+            베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함.
+        </div>
+    </div>
+    <div style="background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
+        <div style="color: #1d4ed8; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
+            ✨ 발명의 효과 <span style="font-size: 0.8em; font-weight: normal;">(Effect)</span>
+        </div>
+        <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
+            부품 수 절감으로 제조 원가를 낮추며, 완벽한 밀폐를 통해 에어컨의 냉방 효율을 획기적으로 향상시킴.
+        </div>
+    </div>
+</div>
+"""
 
 # 검색 결과 샘플 데이터 (게시판 목록) — 상단 정의로 선택/사이드바에서 공유
 RESULT_DATA = {
@@ -96,39 +130,7 @@ with left_col:
         st.button("🔍 재검색", use_container_width=True, type="primary", key="btn_research")
 
     with tab_summary:
-        # 발명의 3요소 (AI 요약) — 그림과 동일한 카드 UI
-        summary_html = """
-<div style="font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; max-width: 600px;">
-    <div style="color: #1e3a8a; font-size: 1.15rem; font-weight: bold; margin-bottom: 16px;">
-        💡 발명의 3요소 (AI 요약)
-    </div>
-    <div style="background-color: #fdf2f2; border: 1.5px solid #fecaca; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
-        <div style="color: #b91c1c; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
-            ⚠️ 해결과제 <span style="font-size: 0.8em; font-weight: normal;">(Problem)</span>
-        </div>
-        <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
-            창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
-        </div>
-    </div>
-    <div style="background-color: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
-        <div style="color: #15803d; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
-            🎯 발명의 목적 <span style="font-size: 0.8em; font-weight: normal;">(Object)</span>
-        </div>
-        <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
-            베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함.
-        </div>
-    </div>
-    <div style="background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
-        <div style="color: #1d4ed8; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
-            ✨ 발명의 효과 <span style="font-size: 0.8em; font-weight: normal;">(Effect)</span>
-        </div>
-        <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
-            부품 수 절감으로 제조 원가를 낮추며, 완벽한 밀폐를 통해 에어컨의 냉방 효율을 획기적으로 향상시킴.
-        </div>
-    </div>
-</div>
-"""
-        st.markdown(summary_html, unsafe_allow_html=True)
+        st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
 
 # ==========================================
 # 우측 패널: 검색 결과 데이터프레임
@@ -181,34 +183,15 @@ with right_col:
             st.button("›", key="page_next")
 
 # ==========================================
-# 우측 사이드바 (항상 표시, 선택 시 해당 문헌 상세)
+# 우측 사이드바: 대표도면 + 발명의 3요소 (AI 요약)
 # ==========================================
 with right_sidebar:
-    st.markdown("**📌 사이드바**")
+    st.markdown("**🖼️ 대표도면**")
+    drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
+    if drawing_path.exists():
+        st.image(str(drawing_path), use_container_width=True)
+    else:
+        st.caption("`./data/drawing.jpg` 파일을 추가하면 대표도면이 표시됩니다.")
     st.divider()
-    _idx = st.session_state.selected_row_index
-    _valid = _idx is not None and 0 <= _idx < len(df_result)
-    if _valid:
-        row = df_result.iloc[_idx]
-        st.markdown("**선택 문헌 상세**")
-        st.markdown("**출원번호**")
-        st.write(row["출원번호"])
-        st.markdown("**발명의 명칭**")
-        st.caption(row["발명의 명칭"])
-        st.markdown("**구분**")
-        st.write(row["구분"])
-        st.markdown("**CPC분류**")
-        st.caption(row["CPC분류"].replace("\n", " "))
-        st.markdown("**출원일자**")
-        st.write(row["출원일자"])
-        if st.button("✕ 선택 해제", use_container_width=True, key="close_sidebar_btn"):
-            st.session_state.selected_row_index = None
-            st.rerun()
-    if not _valid:
-        st.caption("테이블에서 '구분'을 선택하면 해당 문헌 상세가 여기에 표시됩니다.")
-    st.divider()
-    st.selectbox("정렬", ["관련도순", "출원일순", "등록일순"], label_visibility="collapsed", key="sort_opt")
-    st.caption("검색 결과 정렬 기준")
-    st.divider()
-    st.button("📥 내보내기", use_container_width=True, key="export_btn")
-    st.button("📋 클립보드", use_container_width=True, key="clipboard_btn")
+    st.markdown("**발명의 3요소 (AI 요약)**")
+    st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
