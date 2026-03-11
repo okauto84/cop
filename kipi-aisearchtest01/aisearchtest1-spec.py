@@ -31,6 +31,14 @@ st.markdown("""
 .tag-link { text-decoration: none; color: inherit; cursor: pointer; display: inline-block; }
 .tag-link:hover { opacity: 0.9; }
 [id^="focus-"] { scroll-margin-top: 2rem; }
+@keyframes focus-blink {
+    0%, 40% { opacity: 1; }
+    20% { opacity: 0.25; }
+    100% { opacity: 1; }
+}
+[id^="focus-"].focus-blink {
+    animation: focus-blink 0.2s ease-in-out 3;
+}
 .compare-box { border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; background: #fafafa; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: left; font-size: 0.9rem; line-height: 1.6; }
 .compare-box.common { border-left: 4px solid #66bb6a; }
 .compare-box.diff { border-left: 4px solid #ffb74d; }
@@ -262,3 +270,30 @@ with left_col:
         st.markdown(claim2_text, unsafe_allow_html=True)
     with st.expander("청구항 3", expanded=True):
         st.markdown(claim3_text, unsafe_allow_html=True)
+
+# 관련도 링크 클릭 시 포커스 이동 후 하이라이트 3회 깜박임
+st.components.v1.html(
+    """
+    <script>
+    (function(){
+        var win = window.parent;
+        var doc = win.document;
+        function runBlink(){
+            var hash = win.location.hash;
+            if (!hash || hash.indexOf("#focus-") !== 0) return;
+            var el = doc.querySelector(hash);
+            if (!el) return;
+            el.classList.remove("focus-blink");
+            el.offsetHeight;
+            el.classList.add("focus-blink");
+            setTimeout(function(){ el.classList.remove("focus-blink"); }, 700);
+        }
+        win.addEventListener("hashchange", runBlink);
+        if (win.location.hash && win.location.hash.indexOf("#focus-") === 0) {
+            setTimeout(runBlink, 150);
+        }
+    })();
+    </script>
+    """,
+    height=0,
+)

@@ -267,7 +267,7 @@ with right_col:
             show_spec_popup()
         if event and getattr(event, "selection", None) and current_selection is None:
             st.session_state.result_table_last_selection = None
-        st.caption("행을 클릭하면 스펙 팝업이 열립니다.")
+        st.caption("행의 체크박스를 클릭하면 상세화면이 팝업으로 열립니다.")
 
         # 하단 페이징 (UI 모방)
         page_col1, page_col2, page_col3, page_col4 = st.columns([8, 0.5, 0.5, 0.5])
