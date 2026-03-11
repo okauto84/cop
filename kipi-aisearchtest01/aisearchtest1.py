@@ -216,7 +216,7 @@ with left_col:
         st.markdown("**⚙️ 기술 구성요소**")
         comp_btn_col1, comp_btn_col2 = st.columns(2)
         with comp_btn_col1: st.button("요소 추가", use_container_width=True, key="btn_comp_add")
-        with comp_btn_col2: st.button("청구항", use_container_width=True, key="btn_claim")
+        with comp_btn_col2: st.button("청구항 보기", use_container_width=True, key="btn_claim")
         
         # 구성요소 리스트 (체크박스 + 텍스트)
         components = [
