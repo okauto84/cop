@@ -163,13 +163,13 @@ with right_col:
           <tr>
             <td style="background-color: #FEE7E7;">
               <div class="ai-summary-block">
-                <div class="block-title">⚠️ 해결과제 (Problem)</div>
+                <div class="block-title">⚠️ 해결 과제 및 목적 (Problem)</div>
                 창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
               </div>
             </td>
             <td style="background-color: #E7FEE7;">
               <div class="ai-summary-block">
-                <div class="block-title">🎯 발명의 목적 (Object)</div>
+                <div class="block-title">🎯 해결 수단 (Object)</div>
                 베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함.
               </div>
             </td>

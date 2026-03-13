@@ -192,7 +192,7 @@ SUMMARY_HTML = """
     </div>
     <div style="background-color: #fdf2f2; border: 1.5px solid #fecaca; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
         <div style="color: #b91c1c; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
-            ⚠️ 해결과제, 목적 <span style="font-size: 0.8em; font-weight: normal;">(Problem)</span>
+            ⚠️ 해결 과제 및 목적 <span style="font-size: 0.8em; font-weight: normal;">(Problem)</span>
         </div>
         <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
             창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
