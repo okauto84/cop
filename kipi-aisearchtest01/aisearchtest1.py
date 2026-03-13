@@ -164,17 +164,17 @@ SUMMARY_HTML = """
 # 검색 결과 샘플 데이터 (게시판 목록) — 상단 정의로 선택/사이드바에서 공유
 RESULT_DATA = {
     "순번": [1, 2, 3, 4, 5],
-    "구분": ["등록", "등록", "등록", "취하", "등록"],
-    "CPC분류": ["G06V 20/70\nG06V 20/60", "G06V 10/774\nG06V 10/764", "G06V 20/41\nG06V 10/762", "G06T 7/10\nG06V 20/56", "G06N 3/084\nG06N 3/045"],
+    "구분": ["거절", "등록", "소멸", "등록", "거절"],
+    "CPC분류": ["C02F 1/4691\nC02F 2201/46", "C02F 1/46109\nC02F 1/469", "C02F 1/46109\nC02F 1/4691", "C25B 11/02\nC02F 1/4691", "C25B 11/043\nC25B 11/071"],
     "발명의 명칭": [
-        "제로샷 시맨틱 분할 장치 및 방법",
-        "소프트 교차-엔트로피 손실을 갖는 시맨틱 분할",
-        "도메인 적응형 의미론적 영상 분할 장치 및 방법",
-        "실시간 픽셀 단위 기반 시맨틱 분할 장치 및 시스템",
-        "시맨틱 분할 모델을 위한 훈련 방법 및 장치, 전자 기기, 저장 매체"
+        "흐름 축전식 탈염 전극 및 모듈의 제조방법",
+        "일체형 축전탈이온 및 전극 및 제조방법",
+        "축전식 탈염전극용 탄소복합체 및 이의 제조방법",
+        "유로 일체형 축전식 탈염전극 및 이의 제조방법",
+        "축전식 전기탈염용 단위셀 및 이의 제조방법"
     ],
-    "출원번호": ["1020210165598", "1020217012976", "1020200176963", "1020210049720", "1020197038767"],
-    "출원일자": ["20211126", "20191010", "20201217", "20210416", "20180727"]
+    "출원번호": ["1020150049250", "1020130133733", "1020100119911", "1020150043127", "1020130080991"],
+    "출원일자": ["20150407", "20131105", "20101129", "20150327", "20130710"]
 }
 df_result = pd.DataFrame(RESULT_DATA)
 # 테이블 표시용: 순번 제거 (체크박스는 data_editor에서 selection_mode 없이 제거)
@@ -204,11 +204,10 @@ with left_col:
             key="search_sentence"
         )
         
-        
-        
         btn_col1, btn_col2 = st.columns(2)
-        with btn_col1: st.button("🔍 검색", use_container_width=True, key="btn_search")
+        with btn_col1: st.button("🔍 요소 추출", use_container_width=True, key="btn_search")
         with btn_col2: st.button("🔄 초기화", use_container_width=True, key="btn_reset")
+        
         
         st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
         
@@ -220,9 +219,9 @@ with left_col:
         
         # 구성요소 리스트 (체크박스 + 텍스트)
         components = [
-            "입력 이미지를 입력받아 신경망 연산을 통해 비주얼 특징맵을 출력하는 비주얼 인코더",
-            "신경망 연산을 통해 클래스별 프로토타입 벡터를 출력하는 시맨틱 인코더",
-            "상기 비주얼 특징맵의 픽셀별 채널 벡터를 비교하여 상기 비주얼 특징맵..."
+            "흐름전극기반 축전식 탈염을 위한 슬러리 탄소 적극을 제조하는 방법",
+            "집전체와 음이온교환막을 포함하는 양극유로를 준비하는 단계",
+            "상기 양극유로의 집전체와 전기적으로 분리된 집전체 및 양이온..."
         ]
         
         
@@ -231,7 +230,7 @@ with left_col:
             with c1: st.checkbox("", value=True, key=f"comp_{i}")
             with c2: st.info(comp) # 박스 형태로 텍스트 출력
             
-        st.button("🔍 재검색", use_container_width=True, type="primary", key="btn_research")
+        st.button("🔍 검색", use_container_width=True, type="primary", key="btn_research")
 
     with tab_summary:
         st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
@@ -240,7 +239,7 @@ with left_col:
 # 우측 패널: 검색 결과 데이터프레임
 # ==========================================
 with right_col:
-    tab_result, tab_info = st.tabs(["1020210165598 검색 ✕", "⌂ INFO"])
+    tab_result, tab_info = st.tabs(["1020200091668 검색 결과 ✕", "⌂ INFO"])
 
     with tab_info:
         pass
