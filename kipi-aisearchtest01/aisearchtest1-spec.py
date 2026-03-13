@@ -80,12 +80,12 @@ div[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"] {
     min-width: 0;
     -webkit-overflow-scrolling: touch;
 }
-/* 좌측 컬럼: 구분선 */
+/* 좌측 컬럼: 구분선 없음 */
 section[data-testid="stHorizontalBlock"]:first-of-type > div:first-child,
 div[data-testid="stHorizontalBlock"]:first-of-type > div:first-child,
 section[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-of-type,
 div[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-of-type {
-    border-right: 2px solid #bdbdbd;
+    border-right: none;
     padding-right: 1rem;
 }
 /* 우측 컬럼 */
