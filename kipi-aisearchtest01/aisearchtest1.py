@@ -125,6 +125,29 @@ st.markdown("""
     [data-testid="stDataFrame"] [data-testid="stCheckbox"] {
         padding-left: 0;
     }
+
+    /* 청구항 패널: 항별 슬라이드 인 (오른쪽에서 천천히 등장) */
+    .claims-panel {
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        padding-top: 0.5rem;
+    }
+    .claims-panel .claim-item {
+        opacity: 0;
+        animation: claimSlideIn 0.6s ease-out forwards;
+    }
+    .claims-panel .claim-item:nth-child(1) { animation-delay: 0.1s; }
+    .claims-panel .claim-item:nth-child(2) { animation-delay: 0.3s; }
+    .claims-panel .claim-item:nth-child(3) { animation-delay: 0.5s; }
+    .claims-panel .claim-item:nth-child(4) { animation-delay: 0.7s; }
+    .claims-panel .claim-item:nth-child(5) { animation-delay: 0.9s; }
+    .claims-panel .claim-item:nth-child(6) { animation-delay: 1.1s; }
+    .claims-panel .claim-item:nth-child(7) { animation-delay: 1.3s; }
+    .claims-panel .claim-item:nth-child(8) { animation-delay: 1.5s; }
+    @keyframes claimSlideIn {
+        from { opacity: 0; transform: translateX(24px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -161,6 +184,23 @@ SUMMARY_HTML = """
 </div>
 """
 
+# 청구항 패널 표시 여부 (청구항 보기 버튼 토글)
+if "claims_visible" not in st.session_state:
+    st.session_state.claims_visible = False
+
+
+def toggle_claims():
+    st.session_state.claims_visible = not st.session_state.claims_visible
+
+
+# 청구항 샘플 데이터 (항별)
+CLAIMS_DATA = [
+    ("청구항 1", "흐름전극기반 축전식 탈염을 위한 슬러리 탄소 양극을 제조하는 방법에 있어서, 집전체와 음이온교환막을 포함하는 양극유로를 준비하는 단계와; 상기 양극유로의 집전체와 전기적으로 분리된 집전체 및 양이온교환막을 포함하는 음극유로를 준비하는 단계와; 상기 양극유로와 상기 음극유로를 적층하여 유로 일체형 전극을 형성하는 단계를 포함하는 것을 특징으로 하는 흐름전극기반 축전식 탈염을 위한 슬러리 탄소 양극의 제조방법."),
+    ("청구항 2", "제1항에 있어서, 상기 양극유로를 준비하는 단계는 상기 집전체 상에 음이온교환막을 코팅하거나 라미네이션하는 단계를 포함하는 것을 특징으로 하는 방법."),
+    ("청구항 3", "제1항에 있어서, 상기 음극유로를 준비하는 단계는 상기 집전체 상에 양이온교환막을 코팅하거나 라미네이션하는 단계를 포함하는 것을 특징으로 하는 방법."),
+    ("청구항 4", "제1항 내지 제3항 중 어느 한 항에 있어서, 상기 유로 일체형 전극은 롤-투-롤 공정으로 형성되는 것을 특징으로 하는 방법."),
+]
+
 # 검색 결과 샘플 데이터 (게시판 목록) — 상단 정의로 선택/사이드바에서 공유
 RESULT_DATA = {
     "순번": [1, 2, 3, 4, 5],
@@ -180,8 +220,11 @@ df_result = pd.DataFrame(RESULT_DATA)
 # 테이블 표시용: 순번 제거 (체크박스는 data_editor에서 selection_mode 없이 제거)
 df_display = df_result.drop(columns=["순번"]).copy()
 
-# 좌측 + 메인 + 우측 사이드바 항상 표시
-left_col, right_col, right_sidebar = st.columns([1, 3, 1])
+# 좌측 | 청구항(토글) | 메인 | 우측 사이드바 — 청구항 보기 시 메인 구역 축소
+if st.session_state.claims_visible:
+    left_col, claims_col, right_col, right_sidebar = st.columns([1, 1, 2, 1])
+else:
+    left_col, claims_col, right_col, right_sidebar = st.columns([1, 0.01, 3, 1])
 
 # ==========================================
 # 좌측 패널: 검색 조건 및 구성요소
@@ -193,7 +236,7 @@ with left_col:
     with tab_search:
         # 출원번호 입력
         st.markdown("**⚙️ 심사 대상 건 입력**")
-        st.text_input("출원번호", value="1070210165598", label_visibility="collapsed")
+        st.text_input("출원번호", value="1020200091668", label_visibility="collapsed")
         
         # 문장검색 영역
         st.text_area(
@@ -215,7 +258,7 @@ with left_col:
         st.markdown("**⚙️ 기술 구성요소**")
         comp_btn_col1, comp_btn_col2 = st.columns(2)
         with comp_btn_col1: st.button("요소 추가", use_container_width=True, key="btn_comp_add")
-        with comp_btn_col2: st.button("청구항 보기", use_container_width=True, key="btn_claim")
+        with comp_btn_col2: st.button("청구항 보기", use_container_width=True, key="btn_claim", on_click=toggle_claims)
         
         # 구성요소 리스트 (체크박스 + 텍스트)
         components = [
@@ -234,6 +277,25 @@ with left_col:
 
     with tab_summary:
         st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
+
+# ==========================================
+# 청구항 패널 (좌측 탭 오른쪽, 토글 시에만 표시)
+# ==========================================
+with claims_col:
+    if st.session_state.claims_visible:
+        claims_items_html = "".join(
+            f'<div class="claim-item" style="margin-bottom: 14px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; line-height: 1.55;">'
+            f'<div style="color: #1e3a8a; font-weight: bold; margin-bottom: 6px;">{title}</div>'
+            f'<div style="color: #374151;">{text}</div></div>'
+            for title, text in CLAIMS_DATA
+        )
+        st.markdown(
+            f'<div class="claims-panel">'
+            f'<div style="color: #1e3a8a; font-weight: bold; margin-bottom: 10px; font-size: 0.95rem;">📋 청구항</div>'
+            f'{claims_items_html}'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
 
 # ==========================================
 # 우측 패널: 검색 결과 데이터프레임
