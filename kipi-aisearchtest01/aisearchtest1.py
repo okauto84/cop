@@ -181,11 +181,11 @@ st.markdown("""
 SUMMARY_HTML = """
 <div style="font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; max-width: 600px;">
     <div style="color: #1e3a8a; font-size: 1.15rem; font-weight: bold; margin-bottom: 16px;">
-        💡 발명의 3요소 (AI 요약)
+        💡 발명의 3요소
     </div>
     <div style="background-color: #fdf2f2; border: 1.5px solid #fecaca; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
         <div style="color: #b91c1c; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
-            ⚠️ 해결과제 <span style="font-size: 0.8em; font-weight: normal;">(Problem)</span>
+            ⚠️ 해결과제, 목적 <span style="font-size: 0.8em; font-weight: normal;">(Problem)</span>
         </div>
         <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
             창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
@@ -193,7 +193,7 @@ SUMMARY_HTML = """
     </div>
     <div style="background-color: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
         <div style="color: #15803d; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
-            🎯 발명의 목적 <span style="font-size: 0.8em; font-weight: normal;">(Object)</span>
+            🎯 해결 수단 <span style="font-size: 0.8em; font-weight: normal;">(Object)</span>
         </div>
         <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
             베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함.
@@ -295,7 +295,12 @@ with left_col:
             st.session_state[f"comp_{i}"] = comp
         c1, c2 = st.columns([1, 9])
         with c1: st.checkbox("", value=True, key=f"comp_cb_{i}")
-        with c2: st.text_input("구성요소", key=f"comp_{i}", placeholder="구성요소 입력...", label_visibility="collapsed")
+        with c2:
+            # 처음 3개는 내용이 보이도록 st.info, 그 이후는 입력 필드
+            if i < 3:
+                st.info(st.session_state[f"comp_{i}"] or comp)
+            else:
+                st.text_input("구성요소", key=f"comp_{i}", placeholder="구성요소 입력...", label_visibility="collapsed")
     
     st.button("🔍 검색", use_container_width=True, type="primary", key="btn_research")
 
