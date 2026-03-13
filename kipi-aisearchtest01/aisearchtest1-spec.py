@@ -48,9 +48,29 @@ st.markdown("""
 .compare-box ul { margin: 0; padding-left: 1.25rem; }
 .compare-box li { margin-bottom: 0.5rem; }
 .compare-box .highlight { color: #1565c0; font-weight: 500; }
-/* 좌(공보) 우(AI분석) 컬럼 각각 독립 스크롤바 */
-/* 컬럼 영역: 고정 높이(85vh), 스크롤은 컬럼 자체에 적용 */
-[data-testid="column"] {
+/* 좌(공보) 우(AI분석) 컬럼 각각 독립 스크롤 (Streamlit 1.35.0+ 구조) */
+/* 1.35+ 가로 블록: 최상위 2단 레이아웃만 높이 제한 */
+section[data-testid="stHorizontalBlock"]:first-of-type,
+div[data-testid="stHorizontalBlock"]:first-of-type {
+    max-height: 85vh !important;
+    min-height: 0;
+    display: flex !important;
+    flex-direction: row;
+}
+/* 1.35+ 첫 번째 가로 블록 직계 컬럼만 독립 스크롤 (좌/우 2개) */
+section[data-testid="stHorizontalBlock"]:first-of-type > div,
+div[data-testid="stHorizontalBlock"]:first-of-type > div {
+    max-height: 85vh !important;
+    min-height: 0;
+    flex: 1 1 0;
+    min-width: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+}
+/* 컬럼에 data-testid="column"이 있는 경우 (1.35+ 호환) */
+section[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"],
+div[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"] {
     max-height: 85vh !important;
     height: 85vh !important;
     overflow-y: auto !important;
@@ -60,22 +80,20 @@ st.markdown("""
     min-width: 0;
     -webkit-overflow-scrolling: touch;
 }
-[data-testid="column"]:first-child {
+/* 좌측 컬럼: 구분선 */
+section[data-testid="stHorizontalBlock"]:first-of-type > div:first-child,
+div[data-testid="stHorizontalBlock"]:first-of-type > div:first-child,
+section[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-of-type,
+div[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:first-of-type {
     border-right: 2px solid #bdbdbd;
     padding-right: 1rem;
 }
-[data-testid="column"]:last-child {
+/* 우측 컬럼 */
+section[data-testid="stHorizontalBlock"]:first-of-type > div:last-child,
+div[data-testid="stHorizontalBlock"]:first-of-type > div:last-child,
+section[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-of-type,
+div[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-of-type {
     padding-left: 1rem;
-}
-/* Streamlit 가로 블록: 높이 제한으로 컬럼이 뷰포트 안에 묶이도록 */
-section[data-testid="stHorizontalBlock"],
-div[data-testid="stHorizontalBlock"] {
-    max-height: 85vh !important;
-}
-section[data-testid="stHorizontalBlock"] > div,
-div[data-testid="stHorizontalBlock"] > div {
-    max-height: 85vh;
-    min-height: 0;
 }
 /* 공보 탭 스타일 */
 .gazette-doc-tabs { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e0e0e0; }
