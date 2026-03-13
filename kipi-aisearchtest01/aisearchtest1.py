@@ -65,7 +65,7 @@ st.markdown("""
     [data-testid="column"] {
         border-right: 1px solid #dee2e6;
         padding-right: 0.35rem;
-        padding-left: 0.35rem;
+        padding-left: 0.1rem;
     }
     [data-testid="column"]:first-of-type { padding-left: 0; padding-right: 0.35rem; }
     /* 우측 사이드바: 고정 높이 + 스크롤바 */
