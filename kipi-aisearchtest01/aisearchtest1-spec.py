@@ -22,11 +22,12 @@ div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
     display: flex;
     flex-direction: column;
     width: 100%;
+    height: 100%;
     min-width: 0;
     min-height: 0;
     box-sizing: border-box;
     border-radius: 8px;
-    padding: 0.2rem 0.5rem;
+    padding: 0.5rem 0.75rem;
     margin-bottom: 0;
     text-align: left;
     font-size: 0.9rem;
