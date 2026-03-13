@@ -181,18 +181,6 @@ st.markdown("""
     .claims-tab-panel { display: none; max-height: calc(100vh - 180px); overflow-y: auto; position: relative; z-index: 0; }
     #claimstab-claim:checked ~ #panel-claim,
     #claimstab-summary:checked ~ #panel-summary { display: block; }
-    /* 우측 대표도면/발명의 3요소 패널: 오른쪽에서 왼쪽으로 슬라이드 인 */
-    .right-panel-slide {
-        position: relative;
-        z-index: 1;
-        max-height: calc(100vh - 120px);
-        overflow: hidden;
-        animation: rightPanelSlideIn 0.5s ease-out forwards;
-    }
-    @keyframes rightPanelSlideIn {
-        from { opacity: 0; transform: translateX(100%); pointer-events: none; }
-        to { opacity: 1; transform: translateX(0); pointer-events: auto; }
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -233,16 +221,10 @@ SUMMARY_HTML = """
 if "claims_visible" not in st.session_state:
     st.session_state.claims_visible = False
 
-if "sidebar_visible" not in st.session_state:
-    st.session_state.sidebar_visible = False
-
 
 def toggle_claims():
     st.session_state.claims_visible = not st.session_state.claims_visible
 
-
-def show_sidebar():
-    st.session_state.sidebar_visible = True
 
 # 기술 구성요소 목록 (요소 추가 시 마지막에 빈칸 추가)
 DEFAULT_COMPONENTS = [
@@ -285,15 +267,11 @@ df_result = pd.DataFrame(RESULT_DATA)
 # 테이블 표시용: 순번 제거 (체크박스는 data_editor에서 selection_mode 없이 제거)
 df_display = df_result.drop(columns=["순번"]).copy()
 
-# 좌측 | 대상 보기(토글) | 메인 | 우측 사이드바 — 대상/우측 패널 표시 여부에 따라 폭 조정
-if st.session_state.claims_visible and st.session_state.sidebar_visible:
+# 좌측 | 대상 보기(토글) | 메인 | 우측 사이드바 — 대상 보기 시 메인 구역 축소
+if st.session_state.claims_visible:
     left_col, claims_col, right_col, right_sidebar = st.columns([1, 1, 2, 1])
-elif st.session_state.claims_visible and not st.session_state.sidebar_visible:
-    left_col, claims_col, right_col, right_sidebar = st.columns([1, 1, 3, 0.01])
-elif (not st.session_state.claims_visible) and st.session_state.sidebar_visible:
-    left_col, claims_col, right_col, right_sidebar = st.columns([1, 0.01, 2, 1])
 else:
-    left_col, claims_col, right_col, right_sidebar = st.columns([1, 0.01, 3, 0.01])
+    left_col, claims_col, right_col, right_sidebar = st.columns([1, 0.01, 3, 1])
 
 # ==========================================
 # 좌측 패널: 검색 조건 및 구성요소
@@ -328,7 +306,7 @@ with left_col:
         with c1: st.checkbox("", value=True, key=f"comp_cb_{i}")
         with c2: st.text_area("구성요소", key=f"comp_{i}", placeholder="구성요소 입력...", label_visibility="collapsed", height=90)
     
-    st.button("🔍 검색", use_container_width=True, type="primary", key="btn_research", on_click=show_sidebar)
+    st.button("🔍 검색", use_container_width=True, type="primary", key="btn_research")
 
 # ==========================================
 # 대상 보기 패널 (좌측 오른쪽, 토글 시 슬라이드) — 청구항 / 대상 AI요약 탭
@@ -411,23 +389,14 @@ with right_col:
             st.button("›", key="page_next")
 
 # ==========================================
-# 우측 사이드바 (검색 후 표시): 대표도면 + 발명의 3요소
+# 우측 사이드바 (항상 표시): 대표도면 + 발명의 3요소
 # ==========================================
 with right_sidebar:
-    if st.session_state.sidebar_visible:
-        st.markdown(
-            '<div class="right-panel-slide">',
-            unsafe_allow_html=True,
-        )
-        st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
-        drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
-        if drawing_path.exists():
-            st.image(str(drawing_path), use_container_width=True)
-        else:
-            st.caption("`./data/drawing.jpg` 파일을 추가하면 대표도면이 표시됩니다.")
-        
-        st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
-        st.markdown(
-            '</div>',
-            unsafe_allow_html=True,
-        )
+    st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
+    drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
+    if drawing_path.exists():
+        st.image(str(drawing_path), use_container_width=True)
+    else:
+        st.caption("`./data/drawing.jpg` 파일을 추가하면 대표도면이 표시됩니다.")
+    
+    st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
