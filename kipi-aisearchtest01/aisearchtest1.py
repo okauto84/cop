@@ -267,17 +267,13 @@ with left_col:
         label_visibility="collapsed",
         key="search_sentence"
     )
-    
-    btn_col1, btn_col2 = st.columns(2)
-    with btn_col1: st.button("🔍 요소 추출", use_container_width=True, key="btn_search")
-    with btn_col2: st.button("🔄 초기화", use_container_width=True, key="btn_reset")
-    
+        
     st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
     
     st.markdown("**⚙️ 기술 구성요소**")
     comp_btn_col1, comp_btn_col2 = st.columns(2)
     with comp_btn_col1: st.button("요소 추가", use_container_width=True, key="btn_comp_add")
-    with comp_btn_col2: st.button("대상 보기", use_container_width=True, key="btn_claim", on_click=toggle_claims)
+    with comp_btn_col2: st.button("보기 >>", use_container_width=True, key="btn_claim", on_click=toggle_claims)
     
     components = [
         "흐름전극기반 축전식 탈염을 위한 슬러리 탄소 적극을 제조하는 방법",
