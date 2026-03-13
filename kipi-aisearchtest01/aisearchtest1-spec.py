@@ -6,18 +6,29 @@ import pandas as pd
 # AI분석 탭 - 발명 3요소 블록 스타일
 st.markdown("""
 <style>
+/* 발명의 3요소 블록: 가로·세로 균형 배치 */
 .ai-summary-block {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     border-radius: 8px;
-    padding: 0.65rem 1rem;
+    padding: 0.75rem 1rem;
     margin-bottom: 0.6rem;
     text-align: left;
     font-size: 0.9rem;
-    line-height: 1.45;
+    line-height: 1.5;
+    min-height: 6rem;
+    height: auto;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 .ai-summary-block .block-title {
     font-weight: bold;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.4rem;
     font-size: 0.95rem;
+    line-height: 1.3;
+    white-space: normal;
 }
 .claim-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
 .claim-table th, .claim-table td { border: 1px solid #ddd; padding: 0.75rem 1rem; text-align: left; vertical-align: top; }
