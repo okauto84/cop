@@ -72,7 +72,7 @@ div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
     animation: focus-blink 0.2s ease-in-out 3;
 }
 .compare-box { border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.6rem; background: #fafafa; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: left; font-size: 0.85rem; line-height: 1.5; }
-.compare-box.common { border-left: 4px solid #66bb6a; }
+.compare-box.common { border-left: 4px solid #66bb6a; border-right: 4px solid #66bb6a; }
 .compare-box.diff { border-left: 4px solid #ffb74d; }
 .compare-box-title { font-weight: bold; margin-bottom: 0.5rem; font-size: 0.95rem; }
 .compare-box.common .compare-box-title { color: #2e7d32; }
@@ -232,7 +232,7 @@ with right_col:
     st.markdown("")  # 간격
     st.markdown("### 💡 종합 의견")
     st.markdown(
-        '<div class="compare-box common" style="border-left-color: #1565c0;">'
+        '<div class="compare-box common" style="border-left-color: #1565c0; border-right-color: #1565c0;">'
         '<div style="font-size: 0.9rem; line-height: 1.7;">'
         '구성요소 대비표에 따르면, 출원발명과 인용발명은 '
         '<span class="highlight">탈거방지턱(718)과 체결스프링(99)</span>에서 재료의 탄성 변형을 활용한 '
