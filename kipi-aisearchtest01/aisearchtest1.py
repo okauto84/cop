@@ -150,6 +150,22 @@ st.markdown("""
         font-size: 13px;
         line-height: 1.55;
     }
+    /* 대상 보기 패널 내 탭 (청구항 / 대상 AI요약) — CSS만으로 전환 */
+    .claims-panel-tabs { max-height: inherit; display: flex; flex-direction: column; }
+    .claims-tab-radio { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
+    .claims-tab-headers { display: flex; border-bottom: 1px solid #dee2e6; margin-bottom: 6px; gap: 0; }
+    .claims-tab-btn {
+        padding: 8px 14px; border: none; background: transparent; cursor: pointer;
+        font-size: 14px; color: #6b7280; border-bottom: 2px solid transparent;
+    }
+    .claims-tab-btn:hover { color: #1e3a8a; }
+    #claimstab-claim:checked ~ .claims-tab-headers label[for="claimstab-claim"],
+    #claimstab-summary:checked ~ .claims-tab-headers label[for="claimstab-summary"] {
+        color: #1e3a8a; font-weight: 600; border-bottom-color: #1e3a8a;
+    }
+    .claims-tab-panel { display: none; max-height: calc(100vh - 180px); overflow-y: auto; }
+    #claimstab-claim:checked ~ #panel-claim,
+    #claimstab-summary:checked ~ #panel-summary { display: block; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -186,7 +202,7 @@ SUMMARY_HTML = """
 </div>
 """
 
-# 청구항 패널 표시 여부 (청구항 보기 버튼 토글)
+# 대상 보기 패널 표시 여부 (대상 보기 버튼 토글)
 if "claims_visible" not in st.session_state:
     st.session_state.claims_visible = False
 
@@ -222,7 +238,7 @@ df_result = pd.DataFrame(RESULT_DATA)
 # 테이블 표시용: 순번 제거 (체크박스는 data_editor에서 selection_mode 없이 제거)
 df_display = df_result.drop(columns=["순번"]).copy()
 
-# 좌측 | 청구항(토글) | 메인 | 우측 사이드바 — 청구항 보기 시 메인 구역 축소
+# 좌측 | 대상 보기(토글) | 메인 | 우측 사이드바 — 대상 보기 시 메인 구역 축소
 if st.session_state.claims_visible:
     left_col, claims_col, right_col, right_sidebar = st.columns([1, 1, 2, 1])
 else:
@@ -232,56 +248,44 @@ else:
 # 좌측 패널: 검색 조건 및 구성요소
 # ==========================================
 with left_col:
-    # 요청하신 '요약정보' 탭 추가
-    tab_search, tab_summary = st.tabs(["대상 검색", "대상 AI요약"])
+    # 대상 검색 (기존 '대상 AI요약' 탭은 슬라이드 패널로 이전)
+    st.markdown("**⚙️ 심사 대상 건 입력**")
+    st.text_input("출원번호", value="1020200091668", label_visibility="collapsed")
     
-    with tab_search:
-        # 출원번호 입력
-        st.markdown("**⚙️ 심사 대상 건 입력**")
-        st.text_input("출원번호", value="1020200091668", label_visibility="collapsed")
-        
-        # 문장검색 영역
-        st.text_area(
-            "문장 검색",
-            placeholder="입력한 문장으로 유사 문서를 찾습니다. AND(&), OR(|) 연산자는 사용할 수 없습니다.",
-            height=100,
-            label_visibility="collapsed",
-            key="search_sentence"
-        )
-        
-        btn_col1, btn_col2 = st.columns(2)
-        with btn_col1: st.button("🔍 요소 추출", use_container_width=True, key="btn_search")
-        with btn_col2: st.button("🔄 초기화", use_container_width=True, key="btn_reset")
-        
-        
-        st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
-        
-        # 구성요소관련 영역
-        st.markdown("**⚙️ 기술 구성요소**")
-        comp_btn_col1, comp_btn_col2 = st.columns(2)
-        with comp_btn_col1: st.button("요소 추가", use_container_width=True, key="btn_comp_add")
-        with comp_btn_col2: st.button("청구항 보기", use_container_width=True, key="btn_claim", on_click=toggle_claims)
-        
-        # 구성요소 리스트 (체크박스 + 텍스트)
-        components = [
-            "흐름전극기반 축전식 탈염을 위한 슬러리 탄소 적극을 제조하는 방법",
-            "집전체와 음이온교환막을 포함하는 양극유로를 준비하는 단계",
-            "상기 양극유로의 집전체와 전기적으로 분리된 집전체 및 양이온..."
-        ]
-        
-        
-        for i, comp in enumerate(components):
-            c1, c2 = st.columns([1, 9])
-            with c1: st.checkbox("", value=True, key=f"comp_{i}")
-            with c2: st.info(comp) # 박스 형태로 텍스트 출력
-            
-        st.button("🔍 검색", use_container_width=True, type="primary", key="btn_research")
-
-    with tab_summary:
-        st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
+    st.text_area(
+        "문장 검색",
+        placeholder="입력한 문장으로 유사 문서를 찾습니다. AND(&), OR(|) 연산자는 사용할 수 없습니다.",
+        height=100,
+        label_visibility="collapsed",
+        key="search_sentence"
+    )
+    
+    btn_col1, btn_col2 = st.columns(2)
+    with btn_col1: st.button("🔍 요소 추출", use_container_width=True, key="btn_search")
+    with btn_col2: st.button("🔄 초기화", use_container_width=True, key="btn_reset")
+    
+    st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
+    
+    st.markdown("**⚙️ 기술 구성요소**")
+    comp_btn_col1, comp_btn_col2 = st.columns(2)
+    with comp_btn_col1: st.button("요소 추가", use_container_width=True, key="btn_comp_add")
+    with comp_btn_col2: st.button("대상 보기", use_container_width=True, key="btn_claim", on_click=toggle_claims)
+    
+    components = [
+        "흐름전극기반 축전식 탈염을 위한 슬러리 탄소 적극을 제조하는 방법",
+        "집전체와 음이온교환막을 포함하는 양극유로를 준비하는 단계",
+        "상기 양극유로의 집전체와 전기적으로 분리된 집전체 및 양이온..."
+    ]
+    
+    for i, comp in enumerate(components):
+        c1, c2 = st.columns([1, 9])
+        with c1: st.checkbox("", value=True, key=f"comp_{i}")
+        with c2: st.info(comp)
+    
+    st.button("🔍 검색", use_container_width=True, type="primary", key="btn_research")
 
 # ==========================================
-# 청구항 패널 (좌측 탭 오른쪽, 토글 시에만 표시)
+# 대상 보기 패널 (좌측 오른쪽, 토글 시 슬라이드) — 청구항 / 대상 AI요약 탭
 # ==========================================
 with claims_col:
     if st.session_state.claims_visible:
@@ -292,11 +296,19 @@ with claims_col:
             for title, text in CLAIMS_DATA
         )
         st.markdown(
-            f'<div class="claims-panel-slide">'
-            f'<div class="claims-panel">'
-            f'<div style="color: #1e3a8a; font-weight: bold; margin-bottom: 10px; font-size: 0.95rem;">📋 청구항</div>'
-            f'{claims_items_html}'
-            f'</div></div>',
+            '<div class="claims-panel-slide">'
+            '<div class="claims-panel-tabs">'
+            '<input type="radio" name="claimstab" id="claimstab-claim" class="claims-tab-radio" checked>'
+            '<input type="radio" name="claimstab" id="claimstab-summary" class="claims-tab-radio">'
+            '<div class="claims-tab-headers">'
+            '<label for="claimstab-claim" class="claims-tab-btn">청구항</label>'
+            '<label for="claimstab-summary" class="claims-tab-btn">대상 AI요약</label>'
+            '</div>'
+            '<div id="panel-claim" class="claims-tab-panel">'
+            '<div class="claims-panel">' + claims_items_html + '</div>'
+            '</div>'
+            '<div id="panel-summary" class="claims-tab-panel">' + SUMMARY_HTML + '</div>'
+            '</div></div>',
             unsafe_allow_html=True,
         )
 
