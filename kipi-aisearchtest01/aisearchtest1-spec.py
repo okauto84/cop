@@ -41,6 +41,16 @@ div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
     line-height: 1.3;
     white-space: normal;
 }
+.ai-summary-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0.5rem;
+    table-layout: fixed;
+}
+.ai-summary-table td {
+    vertical-align: top;
+    padding: 0;
+}
 .claim-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
 .claim-table th, .claim-table td { border: 1px solid #ddd; padding: 0.75rem 1rem; text-align: left; vertical-align: top; }
 .claim-table th { background-color: #f5f5f5; font-weight: bold; }
@@ -147,34 +157,33 @@ left_col, right_col = st.columns(2)
 # ========== 우측: AI분석 ==========
 with right_col:
     st.markdown("### 💡 발명의 3요소 (AI 요약)")
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.markdown(
-            '<div class="ai-summary-block" style="background-color: #FEE7E7;">'
-            '<div class="block-title" style="color: #c62828;">⚠️ 해결과제 (Problem)</div>'
-            "창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함."
-            "</div>",
-            unsafe_allow_html=True,
-        )
-
-    with col2:
-        st.markdown(
-            '<div class="ai-summary-block" style="background-color: #E7FEE7;">'
-            '<div class="block-title" style="color: #2e7d32;">🎯 발명의 목적 (Object)</div>'
-            "베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함."
-            "</div>",
-            unsafe_allow_html=True,
-        )
-
-    with col3:
-        st.markdown(
-            '<div class="ai-summary-block" style="background-color: #E7EEFE;">'
-            '<div class="block-title" style="color: #1565c0;">⭐ 발명의 효과 (Effect)</div>'
-            "부품 수 절감으로 제조 원가를 낮추며, 완벽한 밀폐를 통해 에어컨의 냉방 효율을 획기적으로 향상시킴."
-            "</div>",
-            unsafe_allow_html=True,
-        )
+    st.markdown(
+        """
+        <table class="ai-summary-table">
+          <tr>
+            <td style="background-color: #FEE7E7;">
+              <div class="ai-summary-block">
+                <div class="block-title">⚠️ 해결과제 (Problem)</div>
+                창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
+              </div>
+            </td>
+            <td style="background-color: #E7FEE7;">
+              <div class="ai-summary-block">
+                <div class="block-title">🎯 발명의 목적 (Object)</div>
+                베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함.
+              </div>
+            </td>
+            <td style="background-color: #E7EEFE;">
+              <div class="ai-summary-block">
+                <div class="block-title">⭐ 발명의 효과 (Effect)</div>
+                부품 수 절감으로 제조 원가를 낮추며, 완벽한 밀폐를 통해 에어컨의 냉방 효율을 획기적으로 향상시킴.
+              </div>
+            </td>
+          </tr>
+        </table>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown("---")
     st.markdown("### 💡 구성요소 대비표 (Claim Analysis Table)")
