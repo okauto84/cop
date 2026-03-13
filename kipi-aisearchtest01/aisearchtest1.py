@@ -61,13 +61,13 @@ st.markdown("""
     .main .block-container { padding-top: 3rem; }
     div[data-testid="stText"] { font-size: 14px; }
 
-    /* 좌측 | 메인 | 우측 사이드바 구분 라인 (세로) */
+    /* 좌측 | 메인 | 우측 사이드바 구분 라인 (세로), 좌·메인 간격 축소 */
     [data-testid="column"] {
         border-right: 1px solid #dee2e6;
-        padding-right: 1rem;
-        padding-left: 0.5rem;
+        padding-right: 0.35rem;
+        padding-left: 0.35rem;
     }
-    [data-testid="column"]:first-of-type { padding-left: 0; }
+    [data-testid="column"]:first-of-type { padding-left: 0; padding-right: 0.35rem; }
     /* 우측 사이드바: 고정 높이 + 스크롤바 */
     [data-testid="column"]:last-of-type {
         border-right: none;
@@ -133,7 +133,7 @@ st.markdown("""
         animation: panelSlideIn 0.5s ease-out forwards;
     }
     @keyframes panelSlideIn {
-        from { opacity: 0; transform: translateX(100%); }
+        from { opacity: 0; transform: translateX(-100%); }
         to { opacity: 1; transform: translateX(0); }
     }
     .claims-panel {
