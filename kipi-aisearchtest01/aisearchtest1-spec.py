@@ -244,29 +244,28 @@ with left_col:
 
     st.markdown("---")
 
-    # 서지 정보
-    st.markdown('<div class="gazette-section-title">서지 정보</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="gazette-section">'
-        '<div class="gazette-bib">'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">출원번호</span> 1020190168468</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">출원일</span> 2019.12.17</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">공개번호</span> 1020210073416</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">공개일</span> 2021.06.18</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">공보번호</span> —</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">공보일</span> 2022.03.25</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">등록번호</span> 1023788500000</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">등록일</span> 2022.03.22</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">최종상태</span> 등록결정(일반)</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">등록상태</span> 등록</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">재심사청구 Y</span> 2020.01.16</div>'
-        '<div class="gazette-bib-item"></div>'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
+    # 서지 정보 (접기/펼치기 카드)
+    with st.expander("📋 서지 정보", expanded=True):
+        st.markdown(
+            '<div class="gazette-section">'
+            '<div class="gazette-bib">'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">출원번호</span> 1020190168468</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">출원일</span> 2019.12.17</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">공개번호</span> 1020210073416</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">공개일</span> 2021.06.18</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">공보번호</span> —</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">공보일</span> 2022.03.25</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">등록번호</span> 1023788500000</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">등록일</span> 2022.03.22</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">최종상태</span> 등록결정(일반)</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">등록상태</span> 등록</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">재심사청구 Y</span> 2020.01.16</div>'
+            '<div class="gazette-bib-item"></div>'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
 
-    # 초록
-    st.markdown('<div class="gazette-section-title">초록</div>', unsafe_allow_html=True)
+    # 초록 (접기/펼치기 카드)
     abstract_text = (
         "입력 시각적 이미지 및/또는 입력 깊이 이미지로부터 컨볼루션 신경망(CNN)을 사용하여 "
         "의미적으로 세그먼트화된 이미지 및 깊이 완성 이미지를 생성하는 컴퓨터 구현된 방법이다. "
@@ -275,13 +274,13 @@ with left_col:
         "트레이닝된 CNN은 입력 이미지로부터 "
         "의미적으로 세그먼트화된 이미지 및 깊이 완성 이미지를 생성하는 데 사용될 수 있다."
     )
-    st.markdown(
-        f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{abstract_text}</div></div>',
-        unsafe_allow_html=True,
-    )
+    with st.expander("📄 초록", expanded=True):
+        st.markdown(
+            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{abstract_text}</div></div>',
+            unsafe_allow_html=True,
+        )
 
-    # 청구항 (초기: 청구항 1, 2 모두 펼침)
-    st.markdown("**청구항**")
+    # 청구항 (접기/펼치기 카드, 내부에 청구항 1·2·3 각각 expander)
     claim1_text = (
         '트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화(semantic segmentation) 및 '
         "깊이 완성(depth completion)을 위한 컨볼루션 신경망(convolutional neural network)을 트레이닝시키기 위한 "
@@ -297,130 +296,131 @@ with left_col:
         "상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
         "<span id=\"focus-same-claim3\" style=\"background-color: #66bb6a;\">상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법</span>."
     )
-    with st.expander("청구항 1", expanded=True):
-        st.markdown(claim1_text, unsafe_allow_html=True)
-    with st.expander("청구항 2", expanded=True):
-        st.markdown(claim2_text, unsafe_allow_html=True)
-    with st.expander("청구항 3", expanded=True):
-        st.markdown(claim3_text, unsafe_allow_html=True)
+    with st.expander("📌 청구항", expanded=True):
+        with st.expander("청구항 1", expanded=True):
+            st.markdown(claim1_text, unsafe_allow_html=True)
+        with st.expander("청구항 2", expanded=True):
+            st.markdown(claim2_text, unsafe_allow_html=True)
+        with st.expander("청구항 3", expanded=True):
+            st.markdown(claim3_text, unsafe_allow_html=True)
 
-    # 기술분야
-    st.markdown('<div class="gazette-section-title">기술분야</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="gazette-section">'
-        '<div style="font-size: 0.95rem; line-height: 1.6;">'
-        '본 발명은 컨볼루션 신경망(CNN)을 사용하여 입력 이미지로부터 의미적 세그먼트화(semantic segmentation) 및 '
-        '깊이 완성(depth completion)을 수행하는 방법 및 장치에 관한 것이다. '
-        '보다 상세하게는, 시각적 이미지 및/또는 깊이 이미지를 입력받아 딥러닝 기반으로 의미 영역을 분할하고 '
-        '희소(sparse) 깊이 데이터를 조밀(dense) 깊이 맵으로 완성하는 컴퓨터 구현 기술에 관한 것이다.'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
+    # 기술분야 (접기/펼치기 카드)
+    with st.expander("🔬 기술분야", expanded=False):
+        st.markdown(
+            '<div class="gazette-section">'
+            '<div style="font-size: 0.95rem; line-height: 1.6;">'
+            '본 발명은 컨볼루션 신경망(CNN)을 사용하여 입력 이미지로부터 의미적 세그먼트화(semantic segmentation) 및 '
+            '깊이 완성(depth completion)을 수행하는 방법 및 장치에 관한 것이다. '
+            '보다 상세하게는, 시각적 이미지 및/또는 깊이 이미지를 입력받아 딥러닝 기반으로 의미 영역을 분할하고 '
+            '희소(sparse) 깊이 데이터를 조밀(dense) 깊이 맵으로 완성하는 컴퓨터 구현 기술에 관한 것이다.'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
 
-    # 배경기술
-    st.markdown('<div class="gazette-section-title">배경기술</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="gazette-section">'
-        '<div style="font-size: 0.95rem; line-height: 1.6;">'
-        '자율 주행, 로봇 비전, 증강/가상 현실 등에서는 장면의 의미적 이해와 정확한 깊이 정보가 필수적이다. '
-        '의미적 세그먼트화는 픽셀 단위로 객체 클래스를 분류하는 기술이며, 깊이 완성은 LiDAR 등으로 얻은 '
-        '희소 깊이를 전체 화면에 대한 조밀 깊이 맵으로 보완하는 기술이다. '
-        '종래에는 두 과제를 별도 네트워크로 처리하여 계산 비용이 크고, 시각 정보와 깊이 정보 간의 일관성이 '
-        '보장되지 않는 문제가 있었다. 또한 트레이닝 시 시각 이미지와 깊이 이미지의 정렬(alignment)이 '
-        '불완전한 경우 성능이 저하되는 한계가 있었다.'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
+    # 배경기술 (접기/펼치기 카드)
+    with st.expander("📖 배경기술", expanded=False):
+        st.markdown(
+            '<div class="gazette-section">'
+            '<div style="font-size: 0.95rem; line-height: 1.6;">'
+            '자율 주행, 로봇 비전, 증강/가상 현실 등에서는 장면의 의미적 이해와 정확한 깊이 정보가 필수적이다. '
+            '의미적 세그먼트화는 픽셀 단위로 객체 클래스를 분류하는 기술이며, 깊이 완성은 LiDAR 등으로 얻은 '
+            '희소 깊이를 전체 화면에 대한 조밀 깊이 맵으로 보완하는 기술이다. '
+            '종래에는 두 과제를 별도 네트워크로 처리하여 계산 비용이 크고, 시각 정보와 깊이 정보 간의 일관성이 '
+            '보장되지 않는 문제가 있었다. 또한 트레이닝 시 시각 이미지와 깊이 이미지의 정렬(alignment)이 '
+            '불완전한 경우 성능이 저하되는 한계가 있었다.'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
 
-    # 해결하려는 과제
-    st.markdown('<div class="gazette-section-title">해결하려는 과제</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="gazette-section">'
-        '<div style="font-size: 0.95rem; line-height: 1.6;">'
-        '본 발명이 해결하려는 과제는, 단일 CNN으로 의미적 세그먼트화와 깊이 완성을 동시에 수행하여 '
-        '계산 효율을 높이고 두 출력 간의 일관성을 확보하는 것이다. 또한 트레이닝 단계에서 '
-        '시각적 이미지와 대응하는 깊이 이미지가 정렬된 이미지 쌍을 사용함으로써 학습 안정성과 '
-        '추론 정확도를 향상시키는 방법 및 장치를 제공하는 것이다.'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
+    # 해결하려는 과제 (접기/펼치기 카드)
+    with st.expander("🎯 해결하려는 과제", expanded=False):
+        st.markdown(
+            '<div class="gazette-section">'
+            '<div style="font-size: 0.95rem; line-height: 1.6;">'
+            '본 발명이 해결하려는 과제는, 단일 CNN으로 의미적 세그먼트화와 깊이 완성을 동시에 수행하여 '
+            '계산 효율을 높이고 두 출력 간의 일관성을 확보하는 것이다. 또한 트레이닝 단계에서 '
+            '시각적 이미지와 대응하는 깊이 이미지가 정렬된 이미지 쌍을 사용함으로써 학습 안정성과 '
+            '추론 정확도를 향상시키는 방법 및 장치를 제공하는 것이다.'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
 
-    # 과제의 해결 수단
-    st.markdown('<div class="gazette-section-title">과제의 해결 수단</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="gazette-section">'
-        '<div style="font-size: 0.95rem; line-height: 1.6;">'
-        '상기 과제를 해결하기 위하여, 본 발명은 트레이닝 세트의 이미지 쌍(시각 이미지 및 대응 깊이 이미지)을 '
-        '사용하여 의미적 세그먼트화 및 깊이 완성을 위한 CNN을 트레이닝시키는 컴퓨터 구현 방법을 제공한다. '
-        '방법은 트레이닝 세트로부터 이미지 쌍을 수신하는 단계, 해당 이미지 쌍에 기초하여 CNN을 트레이닝시키는 단계, '
-        '및 트레이닝된 CNN을 저장하는 단계를 포함한다. 일 실시예에서 이미지 쌍 수신 단계는 '
-        '시각적 이미지와 대응하는 깊이 이미지가 정렬된 쌍을 수신하는 것을 포함하여, '
-        '공동 학습(joint learning)을 통한 성능 향상을 도모한다.'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
+    # 과제의 해결 수단 (접기/펼치기 카드)
+    with st.expander("⚙️ 과제의 해결 수단", expanded=False):
+        st.markdown(
+            '<div class="gazette-section">'
+            '<div style="font-size: 0.95rem; line-height: 1.6;">'
+            '상기 과제를 해결하기 위하여, 본 발명은 트레이닝 세트의 이미지 쌍(시각 이미지 및 대응 깊이 이미지)을 '
+            '사용하여 의미적 세그먼트화 및 깊이 완성을 위한 CNN을 트레이닝시키는 컴퓨터 구현 방법을 제공한다. '
+            '방법은 트레이닝 세트로부터 이미지 쌍을 수신하는 단계, 해당 이미지 쌍에 기초하여 CNN을 트레이닝시키는 단계, '
+            '및 트레이닝된 CNN을 저장하는 단계를 포함한다. 일 실시예에서 이미지 쌍 수신 단계는 '
+            '시각적 이미지와 대응하는 깊이 이미지가 정렬된 쌍을 수신하는 것을 포함하여, '
+            '공동 학습(joint learning)을 통한 성능 향상을 도모한다.'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
 
-    # 발명의 효과
-    st.markdown('<div class="gazette-section-title">발명의 효과</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="gazette-section">'
-        '<div style="font-size: 0.95rem; line-height: 1.6;">'
-        '본 발명에 따르면, (1) 하나의 CNN으로 의미적 세그먼트화와 깊이 완성을 동시에 수행함으로써 '
-        '계산량 및 메모리 사용을 절감할 수 있고, (2) 공동 학습을 통해 두 태스크 간 일관된 특징 표현을 '
-        '얻어 정확도가 향상되며, (3) 정렬된 이미지 쌍을 이용한 트레이닝으로 추론 시 더 안정적인 '
-        '세그먼트 및 깊이 결과를 제공할 수 있다.'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
+    # 발명의 효과 (접기/펼치기 카드)
+    with st.expander("⭐ 발명의 효과", expanded=False):
+        st.markdown(
+            '<div class="gazette-section">'
+            '<div style="font-size: 0.95rem; line-height: 1.6;">'
+            '본 발명에 따르면, (1) 하나의 CNN으로 의미적 세그먼트화와 깊이 완성을 동시에 수행함으로써 '
+            '계산량 및 메모리 사용을 절감할 수 있고, (2) 공동 학습을 통해 두 태스크 간 일관된 특징 표현을 '
+            '얻어 정확도가 향상되며, (3) 정렬된 이미지 쌍을 이용한 트레이닝으로 추론 시 더 안정적인 '
+            '세그먼트 및 깊이 결과를 제공할 수 있다.'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
 
-    # 도면의 간단한 설명
-    st.markdown('<div class="gazette-section-title">도면의 간단한 설명</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="gazette-section">'
-        '<div style="font-size: 0.95rem; line-height: 1.6;">'
-        '<strong>도 1</strong>은 본 발명의 일 실시예에 따른 의미적 세그먼트화 및 깊이 완성 방법의 전체 흐름을 나타내는 블록도이다.<br>'
-        '<strong>도 2</strong>는 CNN 트레이닝 단계에서 사용되는 이미지 쌍 및 레이블 구조를 개략적으로 나타낸 도면이다.<br>'
-        '<strong>도 3</strong>은 추론 단계에서 입력 이미지로부터 세그먼트 맵 및 깊이 완성 맵을 생성하는 장치 구성을 나타낸 도면이다.<br>'
-        '<strong>도 4</strong>는 실시예에 따른 처리 장치의 하드웨어 구성 예를 나타낸 블록도이다.'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
+    # 도면의 간단한 설명 (접기/펼치기 카드)
+    with st.expander("🖼️ 도면의 간단한 설명", expanded=False):
+        st.markdown(
+            '<div class="gazette-section">'
+            '<div style="font-size: 0.95rem; line-height: 1.6;">'
+            '<strong>도 1</strong>은 본 발명의 일 실시예에 따른 의미적 세그먼트화 및 깊이 완성 방법의 전체 흐름을 나타내는 블록도이다.<br>'
+            '<strong>도 2</strong>는 CNN 트레이닝 단계에서 사용되는 이미지 쌍 및 레이블 구조를 개략적으로 나타낸 도면이다.<br>'
+            '<strong>도 3</strong>은 추론 단계에서 입력 이미지로부터 세그먼트 맵 및 깊이 완성 맵을 생성하는 장치 구성을 나타낸 도면이다.<br>'
+            '<strong>도 4</strong>는 실시예에 따른 처리 장치의 하드웨어 구성 예를 나타낸 블록도이다.'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
 
-    # 발명을 실시하기 위한 구체적인 내용
-    st.markdown('<div class="gazette-section-title">발명을 실시하기 위한 구체적인 내용</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="gazette-section">'
-        '<div style="font-size: 0.95rem; line-height: 1.6;">'
-        '이하, 첨부 도면을 참조하여 본 발명의 실시예를 상세히 설명한다. 도 1에 따르면, 트레이닝 세트는 '
-        '시각적 이미지와 대응하는 깊이 이미지(및 필요시 세그먼트/깊이 레이블)로 구성된 이미지 쌍들을 포함한다. '
-        '트레이닝 단계에서는 이 쌍들을 입력으로 하여 CNN의 파라미터가 갱신되며, 손실 함수는 세그먼트 오차와 '
-        '깊이 오차를 결합한 다중 태스크 손실일 수 있다. 트레이닝이 완료된 CNN은 저장 매체에 저장되고, '
-        '추론 시(도 3) 새로운 시각 이미지 및/또는 희소 깊이 이미지를 입력받아 의미적 세그먼트 맵과 '
-        '조밀 깊이 완성 맵을 출력한다. 정렬된 이미지 쌍을 사용함으로써 두 모달리티 간의 대응 관계가 '
-        '학습에 반영되어 성능이 향상된다. 도 4의 처리 장치(예: CPU, GPU, 메모리)는 상기 방법을 '
-        '실행하기 위한 프로그램을 저장하고 실행한다.'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
+    # 발명을 실시하기 위한 구체적인 내용 (접기/펼치기 카드)
+    with st.expander("📝 발명을 실시하기 위한 구체적인 내용", expanded=False):
+        st.markdown(
+            '<div class="gazette-section">'
+            '<div style="font-size: 0.95rem; line-height: 1.6;">'
+            '이하, 첨부 도면을 참조하여 본 발명의 실시예를 상세히 설명한다. 도 1에 따르면, 트레이닝 세트는 '
+            '시각적 이미지와 대응하는 깊이 이미지(및 필요시 세그먼트/깊이 레이블)로 구성된 이미지 쌍들을 포함한다. '
+            '트레이닝 단계에서는 이 쌍들을 입력으로 하여 CNN의 파라미터가 갱신되며, 손실 함수는 세그먼트 오차와 '
+            '깊이 오차를 결합한 다중 태스크 손실일 수 있다. 트레이닝이 완료된 CNN은 저장 매체에 저장되고, '
+            '추론 시(도 3) 새로운 시각 이미지 및/또는 희소 깊이 이미지를 입력받아 의미적 세그먼트 맵과 '
+            '조밀 깊이 완성 맵을 출력한다. 정렬된 이미지 쌍을 사용함으로써 두 모달리티 간의 대응 관계가 '
+            '학습에 반영되어 성능이 향상된다. 도 4의 처리 장치(예: CPU, GPU, 메모리)는 상기 방법을 '
+            '실행하기 위한 프로그램을 저장하고 실행한다.'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
 
-    # 부호의 설명
-    st.markdown('<div class="gazette-section-title">부호의 설명</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="gazette-section">'
-        '<div class="gazette-bib" style="grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem;">'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">100</span> 트레이닝 세트</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">110</span> 이미지 쌍</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">120</span> 시각적 이미지</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">130</span> 깊이 이미지</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">200</span> CNN(컨볼루션 신경망)</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">210</span> 인코더</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">220</span> 디코더(세그먼트)</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">230</span> 디코더(깊이 완성)</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">300</span> 처리 장치</div>'
-        '<div class="gazette-bib-item"><span class="gazette-bib-label">310</span> 저장 매체</div>'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
+    # 부호의 설명 (접기/펼치기 카드)
+    with st.expander("🔢 부호의 설명", expanded=False):
+        st.markdown(
+            '<div class="gazette-section">'
+            '<div class="gazette-bib" style="grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem;">'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">100</span> 트레이닝 세트</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">110</span> 이미지 쌍</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">120</span> 시각적 이미지</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">130</span> 깊이 이미지</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">200</span> CNN(컨볼루션 신경망)</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">210</span> 인코더</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">220</span> 디코더(세그먼트)</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">230</span> 디코더(깊이 완성)</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">300</span> 처리 장치</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">310</span> 저장 매체</div>'
+            '</div></div>',
+            unsafe_allow_html=True,
+        )
 
 # 관련도 링크 클릭 시 포커스 이동 후 하이라이트 3회 깜박임
 st.components.v1.html(
