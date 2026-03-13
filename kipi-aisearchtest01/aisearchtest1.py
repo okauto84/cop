@@ -294,7 +294,9 @@ with left_col:
     st.markdown("**⚙️ 기술 구성요소**")
     comp_btn_col1, comp_btn_col2 = st.columns(2)
     with comp_btn_col1: st.button("추가", use_container_width=True, key="btn_comp_add", on_click=add_component)
-    with comp_btn_col2: st.button("보기 ▶", use_container_width=True, key="btn_claim", on_click=toggle_claims)
+    toggle_label = "접기 ◀" if st.session_state.claims_visible else "보기 ▶"
+    with comp_btn_col2:
+        st.button(toggle_label, use_container_width=True, key="btn_claim", on_click=toggle_claims)
     
     components = st.session_state.components
     for i, comp in enumerate(components):
