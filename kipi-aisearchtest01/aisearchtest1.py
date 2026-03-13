@@ -126,15 +126,17 @@ st.markdown("""
         padding-left: 0;
     }
 
-    /* 청구항 패널: 화면 전체가 슬라이드로 등장, 청구항 context도 동일한 슬라이드에 함께 노출 */
+    /* 청구항 패널: 화면 전체가 슬라이드로 등장, 레이어 순서 명확히 해 첫 클릭부터 탭 전환 동작 */
     .claims-panel-slide {
+        position: relative;
+        z-index: 1;
         max-height: calc(100vh - 120px);
         overflow: hidden;
         animation: panelSlideIn 0.5s ease-out forwards;
     }
     @keyframes panelSlideIn {
-        from { opacity: 0; transform: translateX(-100%); }
-        to { opacity: 1; transform: translateX(0); }
+        from { opacity: 0; transform: translateX(-100%); pointer-events: none; }
+        to { opacity: 1; transform: translateX(0); pointer-events: auto; }
     }
     .claims-panel {
         max-height: inherit;
@@ -158,20 +160,25 @@ st.markdown("""
         border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
     }
     .claims-panel .claim-extract-btn:hover { background: #1e40af; }
-    /* 대상 보기 패널 내 탭 (청구항 / 대상 AI요약) — CSS만으로 전환 */
-    .claims-panel-tabs { max-height: inherit; display: flex; flex-direction: column; }
+    /* 대상 보기 패널 내 탭 (청구항 / 대상 AI요약) — 탭 버튼이 항상 최상층에서 클릭되도록 */
+    .claims-panel-tabs { max-height: inherit; display: flex; flex-direction: column; position: relative; z-index: 1; }
     .claims-tab-radio { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
-    .claims-tab-headers { display: flex; border-bottom: 1px solid #dee2e6; margin-bottom: 6px; gap: 0; }
+    .claims-tab-headers {
+        display: flex; border-bottom: 1px solid #dee2e6; margin-bottom: 6px; gap: 0;
+        position: relative; z-index: 10; flex-shrink: 0;
+    }
     .claims-tab-btn {
+        position: relative; z-index: 11;
         padding: 8px 14px; border: none; background: transparent; cursor: pointer;
         font-size: 14px; color: #6b7280; border-bottom: 2px solid transparent;
+        pointer-events: auto;
     }
     .claims-tab-btn:hover { color: #1e3a8a; }
     #claimstab-claim:checked ~ .claims-tab-headers label[for="claimstab-claim"],
     #claimstab-summary:checked ~ .claims-tab-headers label[for="claimstab-summary"] {
         color: #1e3a8a; font-weight: 600; border-bottom-color: #1e3a8a;
     }
-    .claims-tab-panel { display: none; max-height: calc(100vh - 180px); overflow-y: auto; }
+    .claims-tab-panel { display: none; max-height: calc(100vh - 180px); overflow-y: auto; position: relative; z-index: 0; }
     #claimstab-claim:checked ~ #panel-claim,
     #claimstab-summary:checked ~ #panel-summary { display: block; }
     </style>
