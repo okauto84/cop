@@ -204,7 +204,6 @@ with right_col:
     st.markdown("### 💡 종합 의견")
     st.markdown(
         '<div class="compare-box common" style="border-left-color: #1565c0;">'
-        '<div class="compare-box-title">📋 구성요소 대비표 종합 요약</div>'
         '<div style="font-size: 0.9rem; line-height: 1.7;">'
         '구성요소 대비표를 종합하면, 출원발명과 인용발명은 <span class="highlight">탈거방지턱(718)과 체결스프링(99)</span>에서 '
         '재료의 탄성 변형을 이용한 이탈 방지 메커니즘이 실질적으로 동일하고, '
