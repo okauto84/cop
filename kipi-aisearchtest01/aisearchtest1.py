@@ -193,15 +193,21 @@ st.markdown("""
         from { opacity: 0; transform: translateX(100%); pointer-events: none; }
         to { opacity: 1; transform: translateX(0); pointer-events: auto; }
     }
-    /* 우측 패널 닫기 버튼: 정사각형 + 중앙 정렬 X */
+    /* 우측 패널 닫기 X: 버튼 테두리 제거, 텍스트처럼 보이도록 */
     .right-panel-slide .stButton > button {
-        width: 26px !important;
-        height: 26px !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
         padding: 0 !important;
+        min-width: auto !important;
+        height: auto !important;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 6px;
+        font-weight: 700 !important;
+        font-size: 16px !important;
+        color: #374151 !important;
+        cursor: pointer;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -446,7 +452,7 @@ with right_sidebar:
                 unsafe_allow_html=True,
             )
         with header_col2:
-            st.button("✕", key="btn_close_sidebar", on_click=hide_sidebar)
+            st.button("X", key="btn_close_sidebar", on_click=hide_sidebar)
         drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
         if drawing_path.exists():
             st.image(str(drawing_path), use_container_width=True)
