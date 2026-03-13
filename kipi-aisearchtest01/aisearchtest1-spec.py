@@ -49,11 +49,16 @@ st.markdown("""
 .compare-box li { margin-bottom: 0.5rem; }
 .compare-box .highlight { color: #1565c0; font-weight: 500; }
 /* 좌(공보) 우(AI분석) 컬럼 각각 독립 스크롤바 */
+/* 컬럼 영역: 고정 높이(85vh), 스크롤은 컬럼 자체에 적용 */
 [data-testid="column"] {
-    max-height: 85vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+    max-height: 85vh !important;
+    height: 85vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     min-height: 200px;
+    flex: 1 1 0;
+    min-width: 0;
+    -webkit-overflow-scrolling: touch;
 }
 [data-testid="column"]:first-child {
     border-right: 2px solid #bdbdbd;
@@ -61,6 +66,16 @@ st.markdown("""
 }
 [data-testid="column"]:last-child {
     padding-left: 1rem;
+}
+/* Streamlit 가로 블록: 높이 제한으로 컬럼이 뷰포트 안에 묶이도록 */
+section[data-testid="stHorizontalBlock"],
+div[data-testid="stHorizontalBlock"] {
+    max-height: 85vh !important;
+}
+section[data-testid="stHorizontalBlock"] > div,
+div[data-testid="stHorizontalBlock"] > div {
+    max-height: 85vh;
+    min-height: 0;
 }
 /* 공보 탭 스타일 */
 .gazette-doc-tabs { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e0e0e0; }
