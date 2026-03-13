@@ -305,7 +305,7 @@ with left_col:
             st.markdown(claim3_text, unsafe_allow_html=True)
 
     # 기술분야 (접기/펼치기 카드)
-    with st.expander("🔬 기술분야", expanded=False):
+    with st.expander("🔬 기술분야", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
@@ -318,7 +318,7 @@ with left_col:
         )
 
     # 배경기술 (접기/펼치기 카드)
-    with st.expander("📖 배경기술", expanded=False):
+    with st.expander("📖 배경기술", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
@@ -333,7 +333,7 @@ with left_col:
         )
 
     # 해결하려는 과제 (접기/펼치기 카드)
-    with st.expander("🎯 해결하려는 과제", expanded=False):
+    with st.expander("🎯 해결하려는 과제", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
@@ -346,7 +346,7 @@ with left_col:
         )
 
     # 과제의 해결 수단 (접기/펼치기 카드)
-    with st.expander("⚙️ 과제의 해결 수단", expanded=False):
+    with st.expander("⚙️ 과제의 해결 수단", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
@@ -361,7 +361,7 @@ with left_col:
         )
 
     # 발명의 효과 (접기/펼치기 카드)
-    with st.expander("⭐ 발명의 효과", expanded=False):
+    with st.expander("⭐ 발명의 효과", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
@@ -374,7 +374,7 @@ with left_col:
         )
 
     # 도면의 간단한 설명 (접기/펼치기 카드)
-    with st.expander("🖼️ 도면의 간단한 설명", expanded=False):
+    with st.expander("🖼️ 도면의 간단한 설명", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
@@ -387,7 +387,7 @@ with left_col:
         )
 
     # 발명을 실시하기 위한 구체적인 내용 (접기/펼치기 카드)
-    with st.expander("📝 발명을 실시하기 위한 구체적인 내용", expanded=False):
+    with st.expander("📝 발명을 실시하기 위한 구체적인 내용", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
@@ -404,7 +404,7 @@ with left_col:
         )
 
     # 부호의 설명 (접기/펼치기 카드)
-    with st.expander("🔢 부호의 설명", expanded=False):
+    with st.expander("🔢 부호의 설명", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div class="gazette-bib" style="grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem;">'
