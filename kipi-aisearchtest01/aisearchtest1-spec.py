@@ -8,16 +8,16 @@ st.markdown("""
 <style>
 .ai-summary-block {
     border-radius: 8px;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1rem;
+    padding: 0.65rem 1rem;
+    margin-bottom: 0.6rem;
     text-align: left;
-    font-size: 0.95rem;
-    line-height: 1.5;
+    font-size: 0.9rem;
+    line-height: 1.45;
 }
 .ai-summary-block .block-title {
     font-weight: bold;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
 }
 .claim-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
 .claim-table th, .claim-table td { border: 1px solid #ddd; padding: 0.75rem 1rem; text-align: left; vertical-align: top; }
@@ -39,20 +39,20 @@ st.markdown("""
 [id^="focus-"].focus-blink {
     animation: focus-blink 0.2s ease-in-out 3;
 }
-.compare-box { border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; background: #fafafa; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: left; font-size: 0.9rem; line-height: 1.6; }
+.compare-box { border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.6rem; background: #fafafa; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: left; font-size: 0.85rem; line-height: 1.5; }
 .compare-box.common { border-left: 4px solid #66bb6a; }
 .compare-box.diff { border-left: 4px solid #ffb74d; }
-.compare-box-title { font-weight: bold; margin-bottom: 0.75rem; font-size: 1rem; }
+.compare-box-title { font-weight: bold; margin-bottom: 0.5rem; font-size: 0.95rem; }
 .compare-box.common .compare-box-title { color: #2e7d32; }
 .compare-box.diff .compare-box-title { color: #e65100; }
 .compare-box ul { margin: 0; padding-left: 1.25rem; }
 .compare-box li { margin-bottom: 0.5rem; }
 .compare-box .highlight { color: #1565c0; font-weight: 500; }
-/* 좌(공보) 우(AI분석) 컬럼 각각 독립 스크롤 (Streamlit 1.35.0+ 구조) */
-/* 1.35+ 가로 블록: 최상위 2단 레이아웃만 높이 제한 */
+/* 좌(공보) 우(AI분석) 컬럼 각각 독립 스크롤 (Streamlit 1.35.0+ 구조) - 팝업 세로에 맞춤 */
+/* 1.35+ 가로 블록: 최상위 2단 레이아웃만 높이 제한 (75vh로 축소해 팝업 내 스크롤 방지) */
 section[data-testid="stHorizontalBlock"]:first-of-type,
 div[data-testid="stHorizontalBlock"]:first-of-type {
-    max-height: 85vh !important;
+    max-height: 75vh !important;
     min-height: 0;
     display: flex !important;
     flex-direction: row;
@@ -60,7 +60,7 @@ div[data-testid="stHorizontalBlock"]:first-of-type {
 /* 1.35+ 첫 번째 가로 블록 직계 컬럼만 독립 스크롤 (좌/우 2개) */
 section[data-testid="stHorizontalBlock"]:first-of-type > div,
 div[data-testid="stHorizontalBlock"]:first-of-type > div {
-    max-height: 85vh !important;
+    max-height: 75vh !important;
     min-height: 0;
     flex: 1 1 0;
     min-width: 0;
@@ -71,11 +71,11 @@ div[data-testid="stHorizontalBlock"]:first-of-type > div {
 /* 컬럼에 data-testid="column"이 있는 경우 (1.35+ 호환) */
 section[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"],
 div[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"] {
-    max-height: 85vh !important;
-    height: 85vh !important;
+    max-height: 75vh !important;
+    height: 75vh !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    min-height: 200px;
+    min-height: 160px;
     flex: 1 1 0;
     min-width: 0;
     -webkit-overflow-scrolling: touch;
@@ -96,25 +96,25 @@ div[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-o
     padding-left: 1rem;
 }
 /* 공보 탭 스타일 */
-.gazette-doc-tabs { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e0e0e0; }
+.gazette-doc-tabs { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e0e0e0; }
 .gazette-doc-tabs span { padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
 .gazette-doc-tabs .tab-inactive { background: #f5f5f5; color: #666; }
 .gazette-doc-tabs .tab-active { background: #1565c0; color: white; }
 .gazette-doc-tabs .tab-arrow { margin-left: auto; font-size: 1.2rem; color: #666; }
-.gazette-title-ko { font-size: 1.35rem; font-weight: bold; margin-bottom: 0.35rem; }
-.gazette-title-en { font-size: 0.9rem; color: #555; margin-bottom: 0.75rem; }
+.gazette-title-ko { font-size: 1.2rem; font-weight: bold; margin-bottom: 0.25rem; }
+.gazette-title-en { font-size: 0.85rem; color: #555; margin-bottom: 0.5rem; }
 .gazette-tag-row { margin-bottom: 0.5rem; }
 .gazette-tag { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.8rem; margin-right: 0.35rem; margin-bottom: 0.25rem; }
 .gazette-tag-cpc { background: #1976d2; color: white; }
 .gazette-tag-ipc { background: #388e3c; color: white; }
-.gazette-section { background: #fafafa; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; border: 1px solid #eee; }
-.gazette-section-title { font-weight: bold; margin-bottom: 0.75rem; font-size: 1rem; }
+.gazette-section { background: #fafafa; border-radius: 8px; padding: 0.65rem 1rem; margin-bottom: 0.6rem; border: 1px solid #eee; }
+.gazette-section-title { font-weight: bold; margin-bottom: 0.5rem; font-size: 0.95rem; }
 .gazette-bib { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.5rem; font-size: 0.9rem; }
 .gazette-bib-item { display: flex; }
 .gazette-bib-label { min-width: 100px; color: #555; }
 .gazette-claims-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
 .gazette-claim-btns { font-size: 0.8rem; }
-.gazette-claim-item { margin-bottom: 0.75rem; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #eee; }
+.gazette-claim-item { margin-bottom: 0.5rem; padding: 0.5rem; background: white; border-radius: 6px; border: 1px solid #eee; }
 .gazette-claim-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
 </style>
 """, unsafe_allow_html=True)

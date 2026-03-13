@@ -101,12 +101,12 @@ st.markdown("""
         to { opacity: 1; transform: translateX(0); }
     }
 
-    /* 스펙 팝업(다이얼로그): 내용 길이에 따라 세로로 늘어남, 가로 5cm 확장 */
+    /* 스펙 팝업(다이얼로그): 세로는 뷰포트에 맞춤, 가로 5cm 확장, 전체 스크롤 최소화 */
     div[data-testid="stDialog"] div[role="dialog"] {
         width: calc(90vw + 5cm) !important;
         max-width: calc(1200px + 5cm) !important;
-        min-height: 600px !important;
-        max-height: 95vh !important;
+        min-height: 400px !important;
+        max-height: 90vh !important;
         height: auto !important;
         overflow-y: auto !important;
     }
