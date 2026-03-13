@@ -21,8 +21,8 @@ div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
     display: block;
     width: 100%;
     min-width: 0;
+    /* 텍스트 길이에 맞춰 세로로 자유롭게 늘어남 */
     height: auto !important;
-    min-height: 0;
     box-sizing: border-box;
     border-radius: 8px;
     padding: 0.5rem 0.65rem;
