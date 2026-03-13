@@ -244,6 +244,10 @@ def toggle_claims():
 def show_sidebar():
     st.session_state.sidebar_visible = True
 
+
+def hide_sidebar():
+    st.session_state.sidebar_visible = False
+
 # 기술 구성요소 목록 (요소 추가 시 마지막에 빈칸 추가)
 DEFAULT_COMPONENTS = [
     "흐름전극기반 축전식 탈염을 위한 슬러리 탄소 적극을 제조하는 방법",
@@ -425,7 +429,14 @@ with right_sidebar:
             '<div class="right-panel-slide">',
             unsafe_allow_html=True,
         )
-        st.markdown('<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>', unsafe_allow_html=True)
+        header_col1, header_col2 = st.columns([8, 1])
+        with header_col1:
+            st.markdown(
+                '<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>',
+                unsafe_allow_html=True,
+            )
+        with header_col2:
+            st.button("✕", key="btn_close_sidebar", on_click=hide_sidebar)
         drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
         if drawing_path.exists():
             st.image(str(drawing_path), use_container_width=True)
