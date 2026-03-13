@@ -241,7 +241,8 @@ if "claims_visible" not in st.session_state:
     st.session_state.claims_visible = False
 
 if "sidebar_visible" not in st.session_state:
-    st.session_state.sidebar_visible = False
+    # 최초 진입 시부터 우측 대표도면/발명의 3요소 영역이 열려 있도록 기본값을 True로 설정
+    st.session_state.sidebar_visible = True
 
 
 def toggle_claims():
