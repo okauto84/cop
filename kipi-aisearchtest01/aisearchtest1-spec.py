@@ -6,29 +6,41 @@ import pandas as pd
 # AI분석 탭 - 발명 3요소 블록 스타일
 st.markdown("""
 <style>
-/* 발명의 3요소 블록: 가로·세로 균형 배치 */
+/* 발명의 3요소 블록: 세로 스크롤 없이 동적 확장, 항목 간격 축소 */
+section[data-testid="stHorizontalBlock"]:has(.ai-summary-block),
+div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
+    align-items: stretch;
+    gap: 0.25rem;
+}
+[data-testid="column"]:has(.ai-summary-block) {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0;
+}
 .ai-summary-block {
-    display: block;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     min-width: 0;
+    min-height: 0;
     box-sizing: border-box;
     border-radius: 8px;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0;
     text-align: left;
     font-size: 0.9rem;
-    line-height: 1.5;
-    min-height: 6rem;
-    height: auto;
+    line-height: 1.45;
     word-break: keep-all;
     overflow-wrap: break-word;
 }
 .ai-summary-block .block-title {
     font-weight: bold;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.25rem;
     font-size: 0.95rem;
     line-height: 1.3;
     white-space: normal;
+    flex-shrink: 0;
 }
 .claim-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
 .claim-table th, .claim-table td { border: 1px solid #ddd; padding: 0.75rem 1rem; text-align: left; vertical-align: top; }
@@ -136,8 +148,6 @@ left_col, right_col = st.columns(2)
 # ========== 우측: AI분석 ==========
 with right_col:
     st.markdown("### 💡 발명의 3요소 (AI 요약)")
-    st.markdown("")  # 간격
-
     col1, col2, col3 = st.columns(3)
 
     with col1:
