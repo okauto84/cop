@@ -452,7 +452,33 @@ with right_sidebar:
                 unsafe_allow_html=True,
             )
         with header_col2:
-            st.button("X", key="btn_close_sidebar", on_click=hide_sidebar)
+            st.markdown(
+                """
+                <div class="right-panel-close"
+                     style="text-align: right; cursor: pointer; font-weight: 700;
+                            font-size: 16px; color: #374151;">
+                    X
+                </div>
+                <script>
+                (function () {
+                    const doc = window.parent.document;
+                    doc.addEventListener('click', function (e) {
+                        const target = e.target;
+                        if (target && target.closest('.right-panel-close')) {
+                            const panel = target.closest('[data-testid="column"]');
+                            if (panel) {
+                                const slide = panel.querySelector('.right-panel-slide');
+                                if (slide) {
+                                    slide.style.display = 'none';
+                                }
+                            }
+                        }
+                    });
+                })();
+                </script>
+                """,
+                unsafe_allow_html=True,
+            )
         drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
         if drawing_path.exists():
             st.image(str(drawing_path), use_container_width=True)
