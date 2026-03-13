@@ -193,21 +193,12 @@ st.markdown("""
         from { opacity: 0; transform: translateX(100%); pointer-events: none; }
         to { opacity: 1; transform: translateX(0); pointer-events: auto; }
     }
-    /* 우측 패널 닫기 X: 버튼 테두리 제거, 텍스트처럼 보이도록 */
+    /* 우측 패널 닫기 버튼: 가로로 조금 넓은 X 버튼 */
     .right-panel-slide .stButton > button {
-        background-color: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        min-width: auto !important;
-        height: auto !important;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        min-width: 40px !important;
+        padding: 0.1rem 0.4rem !important;
         font-weight: 700 !important;
-        font-size: 16px !important;
-        color: #374151 !important;
-        cursor: pointer;
+        font-size: 15px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -445,40 +436,14 @@ with right_sidebar:
             '<div class="right-panel-slide">',
             unsafe_allow_html=True,
         )
-        header_col1, header_col2 = st.columns([8, 0.4])
+        header_col1, header_col2 = st.columns([8, 0.6])
         with header_col1:
             st.markdown(
                 '<div style="padding-top: 6px; margin-bottom: 4px;"><strong>🖼️ 대표도면</strong></div>',
                 unsafe_allow_html=True,
             )
         with header_col2:
-            st.markdown(
-                """
-                <div class="right-panel-close"
-                     style="text-align: right; cursor: pointer; font-weight: 700;
-                            font-size: 16px; color: #374151;">
-                    X
-                </div>
-                <script>
-                (function () {
-                    const doc = window.parent.document;
-                    doc.addEventListener('click', function (e) {
-                        const target = e.target;
-                        if (target && target.closest('.right-panel-close')) {
-                            const panel = target.closest('[data-testid="column"]');
-                            if (panel) {
-                                const slide = panel.querySelector('.right-panel-slide');
-                                if (slide) {
-                                    slide.style.display = 'none';
-                                }
-                            }
-                        }
-                    });
-                })();
-                </script>
-                """,
-                unsafe_allow_html=True,
-            )
+            st.button("X", key="btn_close_sidebar", on_click=hide_sidebar, use_container_width=True)
         drawing_path = Path(__file__).parent / "data" / "drawing.jpg"
         if drawing_path.exists():
             st.image(str(drawing_path), use_container_width=True)
