@@ -126,27 +126,29 @@ st.markdown("""
         padding-left: 0;
     }
 
-    /* 청구항 패널: 항별 슬라이드 인 (오른쪽에서 천천히 등장) */
-    .claims-panel {
+    /* 청구항 패널: 화면 전체가 슬라이드로 등장, 청구항 context도 동일한 슬라이드에 함께 노출 */
+    .claims-panel-slide {
         max-height: calc(100vh - 120px);
+        overflow: hidden;
+        animation: panelSlideIn 0.5s ease-out forwards;
+    }
+    @keyframes panelSlideIn {
+        from { opacity: 0; transform: translateX(100%); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .claims-panel {
+        max-height: inherit;
         overflow-y: auto;
         padding-top: 0.5rem;
     }
     .claims-panel .claim-item {
-        opacity: 0;
-        animation: claimSlideIn 0.6s ease-out forwards;
-    }
-    .claims-panel .claim-item:nth-child(1) { animation-delay: 0.1s; }
-    .claims-panel .claim-item:nth-child(2) { animation-delay: 0.3s; }
-    .claims-panel .claim-item:nth-child(3) { animation-delay: 0.5s; }
-    .claims-panel .claim-item:nth-child(4) { animation-delay: 0.7s; }
-    .claims-panel .claim-item:nth-child(5) { animation-delay: 0.9s; }
-    .claims-panel .claim-item:nth-child(6) { animation-delay: 1.1s; }
-    .claims-panel .claim-item:nth-child(7) { animation-delay: 1.3s; }
-    .claims-panel .claim-item:nth-child(8) { animation-delay: 1.5s; }
-    @keyframes claimSlideIn {
-        from { opacity: 0; transform: translateX(24px); }
-        to { opacity: 1; transform: translateX(0); }
+        margin-bottom: 14px;
+        padding: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.55;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -284,16 +286,17 @@ with left_col:
 with claims_col:
     if st.session_state.claims_visible:
         claims_items_html = "".join(
-            f'<div class="claim-item" style="margin-bottom: 14px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; line-height: 1.55;">'
+            f'<div class="claim-item">'
             f'<div style="color: #1e3a8a; font-weight: bold; margin-bottom: 6px;">{title}</div>'
             f'<div style="color: #374151;">{text}</div></div>'
             for title, text in CLAIMS_DATA
         )
         st.markdown(
+            f'<div class="claims-panel-slide">'
             f'<div class="claims-panel">'
             f'<div style="color: #1e3a8a; font-weight: bold; margin-bottom: 10px; font-size: 0.95rem;">📋 청구항</div>'
             f'{claims_items_html}'
-            f'</div>',
+            f'</div></div>',
             unsafe_allow_html=True,
         )
 
