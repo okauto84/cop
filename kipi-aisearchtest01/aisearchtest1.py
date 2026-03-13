@@ -295,7 +295,7 @@ with left_col:
             st.session_state[f"comp_{i}"] = comp
         c1, c2 = st.columns([1, 9])
         with c1: st.checkbox("", value=True, key=f"comp_cb_{i}")
-        with c2: st.text_input("구성요소", key=f"comp_{i}", placeholder="구성요소 입력...", label_visibility="collapsed")
+        with c2: st.text_area("구성요소", key=f"comp_{i}", placeholder="구성요소 입력...", label_visibility="collapsed", height=90)
     
     st.button("🔍 검색", use_container_width=True, type="primary", key="btn_research")
 
