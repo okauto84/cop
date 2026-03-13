@@ -286,14 +286,20 @@ df_result = pd.DataFrame(RESULT_DATA)
 df_display = df_result.drop(columns=["순번"]).copy()
 
 # 좌측 | 대상 보기(토글) | 메인 | 우측 사이드바 — 대상/우측 패널 표시 여부에 따라 폭 조정
+# - 최초: 좌측을 조금 더 좁게([0.8, 0.01, 3.2, 0.01])
+# - 우측 사이드바가 열리면 메인 테이블 폭을 함께 줄여 가로 스크롤이 생기지 않도록 비율 조정
 if st.session_state.claims_visible and st.session_state.sidebar_visible:
-    left_col, claims_col, right_col, right_sidebar = st.columns([1, 1, 2, 1])
+    # 좌측 + 대상 패널 + 메인 + 우측(슬라이드)
+    left_col, claims_col, right_col, right_sidebar = st.columns([0.8, 0.9, 2.3, 1])
 elif st.session_state.claims_visible and not st.session_state.sidebar_visible:
-    left_col, claims_col, right_col, right_sidebar = st.columns([1, 1, 3, 0.01])
+    # 좌측 + 대상 패널 + 메인 (우측 최소)
+    left_col, claims_col, right_col, right_sidebar = st.columns([0.8, 0.9, 3.2, 0.01])
 elif (not st.session_state.claims_visible) and st.session_state.sidebar_visible:
-    left_col, claims_col, right_col, right_sidebar = st.columns([1, 0.01, 2, 1])
+    # 좌측 + 메인 + 우측(슬라이드)
+    left_col, claims_col, right_col, right_sidebar = st.columns([0.8, 0.01, 2.3, 1])
 else:
-    left_col, claims_col, right_col, right_sidebar = st.columns([1, 0.01, 3, 0.01])
+    # 기본: 좌측(조금 더 좁게) + 메인 (우측 최소)
+    left_col, claims_col, right_col, right_sidebar = st.columns([0.8, 0.01, 3.2, 0.01])
 
 # ==========================================
 # 좌측 패널: 검색 조건 및 구성요소
