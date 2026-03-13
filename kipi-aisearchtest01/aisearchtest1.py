@@ -295,12 +295,7 @@ with left_col:
             st.session_state[f"comp_{i}"] = comp
         c1, c2 = st.columns([1, 9])
         with c1: st.checkbox("", value=True, key=f"comp_cb_{i}")
-        with c2:
-            # 처음 3개는 내용이 보이도록 st.info, 그 이후는 입력 필드
-            if i < 3:
-                st.info(st.session_state[f"comp_{i}"] or comp)
-            else:
-                st.text_input("구성요소", key=f"comp_{i}", placeholder="구성요소 입력...", label_visibility="collapsed")
+        with c2: st.text_input("구성요소", key=f"comp_{i}", placeholder="구성요소 입력...", label_visibility="collapsed")
     
     st.button("🔍 검색", use_container_width=True, type="primary", key="btn_research")
 
