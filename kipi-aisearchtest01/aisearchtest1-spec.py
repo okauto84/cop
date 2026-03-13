@@ -6,34 +6,33 @@ import pandas as pd
 # AI분석 탭 - 발명 3요소 블록 스타일
 st.markdown("""
 <style>
-/* 발명의 3요소 블록: 세로 스크롤 없이 동적 확장, 항목 간격 축소 */
+/* 발명의 3요소 블록: 스크롤바 없음(내용 높이만 사용), 옆 간격 축소 */
 section[data-testid="stHorizontalBlock"]:has(.ai-summary-block),
 div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
     align-items: stretch;
-    gap: 0.1rem;
+    gap: 0.2rem !important;
 }
 [data-testid="column"]:has(.ai-summary-block) {
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 0;
+    padding-left: 0.2rem !important;
+    padding-right: 0.2rem !important;
+    min-width: 0;
 }
 .ai-summary-block {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
+    display: block;
     width: 100%;
-    height: 100%;
     min-width: 0;
+    height: auto !important;
     min-height: 0;
     box-sizing: border-box;
     border-radius: 8px;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.65rem;
     margin-bottom: 0;
     text-align: left;
     font-size: 0.9rem;
     line-height: 1.45;
     word-break: keep-all;
     overflow-wrap: break-word;
+    overflow: visible !important;
 }
 .ai-summary-block .block-title {
     font-weight: bold;
@@ -41,7 +40,6 @@ div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
     font-size: 0.95rem;
     line-height: 1.3;
     white-space: normal;
-    flex-shrink: 0;
 }
 .claim-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
 .claim-table th, .claim-table td { border: 1px solid #ddd; padding: 0.75rem 1rem; text-align: left; vertical-align: top; }
