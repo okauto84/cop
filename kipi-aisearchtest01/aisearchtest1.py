@@ -315,7 +315,7 @@ with claims_col:
         )
         extract_block = (
             '<div class="claim-extract-wrap">'
-            '<button type="button" class="claim-extract-btn">추출</button>'
+            '<button type="button" class="claim-extract-btn">구성요소 추출</button>'
             '</div>'
         )
         st.markdown(
