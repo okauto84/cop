@@ -10,7 +10,7 @@ st.markdown("""
 section[data-testid="stHorizontalBlock"]:has(.ai-summary-block),
 div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
     align-items: stretch;
-    gap: 0.25rem;
+    gap: 0.1rem;
 }
 [data-testid="column"]:has(.ai-summary-block) {
     display: flex !important;
@@ -26,7 +26,7 @@ div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
     min-height: 0;
     box-sizing: border-box;
     border-radius: 8px;
-    padding: 0.5rem 0.75rem;
+    padding: 0.2rem 0.5rem;
     margin-bottom: 0;
     text-align: left;
     font-size: 0.9rem;
