@@ -219,6 +219,20 @@ def toggle_claims():
     st.session_state.claims_visible = not st.session_state.claims_visible
 
 
+# 기술 구성요소 목록 (요소 추가 시 마지막에 빈칸 추가)
+DEFAULT_COMPONENTS = [
+    "흐름전극기반 축전식 탈염을 위한 슬러리 탄소 적극을 제조하는 방법",
+    "집전체와 음이온교환막을 포함하는 양극유로를 준비하는 단계",
+    "상기 양극유로의 집전체와 전기적으로 분리된 집전체 및 양이온...",
+]
+if "components" not in st.session_state:
+    st.session_state.components = list(DEFAULT_COMPONENTS)
+
+
+def add_component():
+    st.session_state.components.append("")
+
+
 # 청구항 샘플 데이터 (항별)
 CLAIMS_DATA = [
     ("청구항 1", "흐름전극기반 축전식 탈염을 위한 슬러리 탄소 양극을 제조하는 방법에 있어서, 집전체와 음이온교환막을 포함하는 양극유로를 준비하는 단계와; 상기 양극유로의 집전체와 전기적으로 분리된 집전체 및 양이온교환막을 포함하는 음극유로를 준비하는 단계와; 상기 양극유로와 상기 음극유로를 적층하여 유로 일체형 전극을 형성하는 단계를 포함하는 것을 특징으로 하는 흐름전극기반 축전식 탈염을 위한 슬러리 탄소 양극의 제조방법."),
@@ -272,19 +286,16 @@ with left_col:
     
     st.markdown("**⚙️ 기술 구성요소**")
     comp_btn_col1, comp_btn_col2 = st.columns(2)
-    with comp_btn_col1: st.button("요소 추가", use_container_width=True, key="btn_comp_add")
-    with comp_btn_col2: st.button("보기 >>", use_container_width=True, key="btn_claim", on_click=toggle_claims)
+    with comp_btn_col1: st.button("추가", use_container_width=True, key="btn_comp_add", on_click=add_component)
+    with comp_btn_col2: st.button("보기 ▶", use_container_width=True, key="btn_claim", on_click=toggle_claims)
     
-    components = [
-        "흐름전극기반 축전식 탈염을 위한 슬러리 탄소 적극을 제조하는 방법",
-        "집전체와 음이온교환막을 포함하는 양극유로를 준비하는 단계",
-        "상기 양극유로의 집전체와 전기적으로 분리된 집전체 및 양이온..."
-    ]
-    
+    components = st.session_state.components
     for i, comp in enumerate(components):
+        if f"comp_{i}" not in st.session_state:
+            st.session_state[f"comp_{i}"] = comp
         c1, c2 = st.columns([1, 9])
-        with c1: st.checkbox("", value=True, key=f"comp_{i}")
-        with c2: st.info(comp)
+        with c1: st.checkbox("", value=True, key=f"comp_cb_{i}")
+        with c2: st.text_input("구성요소", key=f"comp_{i}", placeholder="구성요소 입력...", label_visibility="collapsed")
     
     st.button("🔍 검색", use_container_width=True, type="primary", key="btn_research")
 
