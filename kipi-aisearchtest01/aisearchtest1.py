@@ -150,6 +150,14 @@ st.markdown("""
         font-size: 13px;
         line-height: 1.55;
     }
+    .claims-panel .claim-item-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; cursor: pointer; }
+    .claims-panel .claim-item-row input[type="checkbox"] { flex-shrink: 0; accent-color: #1e3a8a; }
+    .claims-panel .claim-extract-wrap { margin-top: 14px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+    .claims-panel .claim-extract-btn {
+        width: 100%; padding: 10px 16px; background: #1e3a8a; color: #fff; border: none;
+        border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .claims-panel .claim-extract-btn:hover { background: #1e40af; }
     /* 대상 보기 패널 내 탭 (청구항 / 대상 AI요약) — CSS만으로 전환 */
     .claims-panel-tabs { max-height: inherit; display: flex; flex-direction: column; }
     .claims-tab-radio { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
@@ -291,9 +299,17 @@ with claims_col:
     if st.session_state.claims_visible:
         claims_items_html = "".join(
             f'<div class="claim-item">'
-            f'<div style="color: #1e3a8a; font-weight: bold; margin-bottom: 6px;">{title}</div>'
+            f'<label class="claim-item-row">'
+            f'<input type="checkbox" class="claim-cb" name="claim_selection" value="{i}">'
+            f'<span style="color: #1e3a8a; font-weight: bold;">{title}</span>'
+            f'</label>'
             f'<div style="color: #374151;">{text}</div></div>'
-            for title, text in CLAIMS_DATA
+            for i, (title, text) in enumerate(CLAIMS_DATA)
+        )
+        extract_block = (
+            '<div class="claim-extract-wrap">'
+            '<button type="button" class="claim-extract-btn">추출</button>'
+            '</div>'
         )
         st.markdown(
             '<div class="claims-panel-slide">'
@@ -305,7 +321,7 @@ with claims_col:
             '<label for="claimstab-summary" class="claims-tab-btn">대상 AI요약</label>'
             '</div>'
             '<div id="panel-claim" class="claims-tab-panel">'
-            '<div class="claims-panel">' + claims_items_html + '</div>'
+            '<div class="claims-panel">' + claims_items_html + extract_block + '</div>'
             '</div>'
             '<div id="panel-summary" class="claims-tab-panel">' + SUMMARY_HTML + '</div>'
             '</div></div>',
