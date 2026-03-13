@@ -201,30 +201,22 @@ with right_col:
     )
 
     st.markdown("")  # 간격
-    st.markdown("### 💡 유사점 및 차이점")
-    comp_col1, comp_col2 = st.columns(2)
-    with comp_col1:
-        st.markdown(
-            '<div class="compare-box common">'
-            '<div class="compare-box-title">✓ 유사점 (Commonalities)</div>'
-            '<ul>'
-            '<li>부품 일체화 설계: 두 발명 모두 별도의 체결 부품(나사 등) 없이 본체 구조물 사출 시 결합 기능을 <span class="highlight">일체화</span>하여 공정 단순화를 달성함.</li>'
-            '<li>탄성 결합 원리: 출원발명의 탄성채널과 인용발명의 체결 스프링은 모두 재료의 <span class="highlight">탄성 복원력</span>을 이용한 스냅 핏 (Snap-fit) 방식을 공유함.</li>'
-            '</ul>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-    with comp_col2:
-        st.markdown(
-            '<div class="compare-box diff">'
-            '<div class="compare-box-title">💡 차이점 (Differences)</div>'
-            '<ul>'
-            '<li>운동 및 기구 형태: 출원발명은 이동형 부품을 위한 <span class="highlight">선형 가이드(Sliding)</span> 구조이나, 인용발명은 고정형 부품을 위한 <span class="highlight">점 결합(Point)</span> 구조임.</li>'
-            '<li>기술적 과제: 출원발명은 <span class="highlight">기밀성(냉기 누설 차단)</span> 확보가 핵심이며, 인용발명은 <span class="highlight">부품 호환성(좌우 공용화)</span> 확보에 초점을 맞춤.</li>'
-            '</ul>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
+    st.markdown("### 💡 종합 의견")
+    st.markdown(
+        '<div class="compare-box common" style="border-left-color: #1565c0;">'
+        '<div class="compare-box-title">📋 구성요소 대비표 종합 요약</div>'
+        '<div style="font-size: 0.9rem; line-height: 1.7;">'
+        '구성요소 대비표를 종합하면, 출원발명과 인용발명은 <span class="highlight">탈거방지턱(718)과 체결스프링(99)</span>에서 '
+        '재료의 탄성 변형을 이용한 이탈 방지 메커니즘이 실질적으로 동일하고, '
+        '<span class="highlight">베이스팬(100)과 베리어(73)</span>은 본체 구조물에 결합 기능을 일체화한 점에서 유사하나 '
+        '관통형 가이드공과 단부측판 구조로 인한 형태적 차이가 있다. '
+        '한편 <span class="highlight">상측캐비넷(650)과 측면브라켓(80)</span>은 슬라이딩 안내용 레일·채널 구조와 스냅 결합용 절곡부의 물리적 형상이 다르며, '
+        '<span class="highlight">커텐프레임(710)과 전면패널(95)</span>은 가동형 부품의 선형 슬라이딩 방식과 고정형 외장재의 스냅 결합 방식으로 기능이 구분된다. '
+        '전체적으로 두 발명은 부품 일체화·탄성 결합 원리를 공유하나, 출원발명은 기밀성 확보를 위한 선형 가이드 구조, 인용발명은 부품 호환성을 위한 점 결합 구조라는 기술적 초점에서 차이가 있다.'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
 
 # ========== 좌측: 공보 ==========
 with left_col:
