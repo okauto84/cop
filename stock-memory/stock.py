@@ -5,8 +5,6 @@ from openai import OpenAI
 import time
 import pandas as pd
 import re
-from datetime import datetime
-
 # 페이지 설정
 st.set_page_config(
     page_title="Stock",
@@ -40,24 +38,6 @@ with st.sidebar:
 
 # 메인 화면
 st.markdown("# Stock")
-
-
-def normalize_for_editor(df: pd.DataFrame) -> pd.DataFrame:
-    """data_editor 타입 호환을 위해 컬럼 타입 정규화"""
-    df = df.copy()
-    for col in df.columns:
-        if col == "선택":
-            if df[col].dtype == object or str(df[col].dtype) == "object":
-                df[col] = df[col].astype(str).str.upper().isin(("TRUE", "1", "YES")).fillna(False)
-            df[col] = df[col].astype(bool)
-        elif col == "날짜":
-            df[col] = pd.to_datetime(df[col], errors="coerce")
-        elif col in ("수량", "체결 단가", "수수료", "정산금액"):
-            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-            df[col] = df[col].astype(int if col == "수량" else float)
-        else:
-            df[col] = df[col].astype(str).replace("nan", "").replace("<NA>", "")
-    return df
 
 
 def _sheet_url_to_export_csv(url: str, gid: str = "0") -> str:
@@ -95,148 +75,33 @@ def _read_gsheet(url: str = None) -> pd.DataFrame:
     return pd.DataFrame()
 
 
-def _get_gspread_credentials():
-    """Secrets의 gcp_service_account로 쓰기용 credentials 반환. 없으면 None."""
-    try:
-        sa = st.secrets.get("gcp_service_account", None)
-        if not sa:
-            return None
-        from google.oauth2.service_account import Credentials
-        info = dict(sa)
-        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-        return Credentials.from_service_account_info(info, scopes=scopes)
-    except Exception:
-        return None
-
-
-def _write_gsheet(url: str, df: pd.DataFrame) -> tuple:
-    """표 데이터를 Google Sheet에 덮어쓰기. (성공 여부, 메시지)"""
-    url = (url or "").strip()
-    if not url:
-        return False, "google_sheet_url이 없습니다."
-    creds = _get_gspread_credentials()
-    if creds is None:
-        return False, "secrets에 gcp_service_account를 설정하세요. 서비스 계정 JSON을 넣고, 시트를 해당 이메일과 편집 권한으로 공유하세요."
-    try:
-        import gspread
-        gc = gspread.authorize(creds)
-        sh = gc.open_by_url(url)
-        ws = sh.sheet1
-        save_df = df.drop(columns=["선택"], errors="ignore").copy()
-        if "날짜" in save_df.columns:
-            save_df["날짜"] = pd.to_datetime(save_df["날짜"], errors="coerce").dt.strftime("%Y-%m-%d")
-        data = [save_df.columns.tolist()] + save_df.fillna("").astype(str).values.tolist()
-        ws.clear()
-        ws.update(data, "A1", value_input_option="USER_ENTERED")
-        return True, "Google Sheet에 저장되었습니다."
-    except Exception as e:
-        return False, str(e)
-
-
 # 세션 상태 초기화
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# 테이블 데이터: secrets의 google_sheet_url로 읽어서 표시, 이후 세션에 유지
+# Google Sheet 데이터: secrets의 google_sheet_url로 읽어서 세션에 유지
 if "table_data" not in st.session_state:
     df = _read_gsheet(st.secrets.get("google_sheet_url", ""))
     if df is not None and len(df.columns) > 0:
-        if "선택" not in df.columns:
-            df.insert(0, "선택", False)
         st.session_state.table_data = df
     else:
-        default_cols = ["선택", "날짜", "종목명", "구분", "수량", "체결 단가", "수수료", "정산금액", "메모"]
-        st.session_state.table_data = pd.DataFrame(columns=default_cols)
+        st.session_state.table_data = pd.DataFrame()
 
-# ---------- 테이블 섹션: CSV와 동일한 header/셀 내용, 왼쪽 체크박스 + 행삭제 ----------
-st.markdown("#### 📊 일지")
-
-table_df = normalize_for_editor(st.session_state.table_data)
-column_config = {}
-for col in table_df.columns:
-    if col == "선택":
-        column_config[col] = st.column_config.CheckboxColumn("선택", width="small", help="삭제할 행을 선택하세요.")
-    elif col == "날짜":
-        column_config[col] = st.column_config.DateColumn(col, format="YYYY-MM-DD", step=1)
-    elif col == "구분":
-        column_config[col] = st.column_config.SelectboxColumn(col, options=["", "매수", "매도"], width="small")
-    elif col == "수량":
-        column_config[col] = st.column_config.NumberColumn(col, min_value=0, step=1, format="%d")
-    elif col in ("체결 단가", "수수료", "정산금액"):
-        column_config[col] = st.column_config.NumberColumn(col, min_value=0, format="%d")
+if st.button("google sheet 불러오기"):
+    url = st.secrets.get("google_sheet_url", "")
+    if not url or not str(url).strip():
+        st.error("Streamlit secrets에 google_sheet_url을 설정하세요.")
     else:
-        column_config[col] = st.column_config.TextColumn(col, width="medium")
-
-# 사용자가 셀·행을 직접 수정 가능, 편집 내용은 세션에 유지(메모리 상태로 되돌아가지 않음)
-display_df = st.data_editor(
-    table_df,
-    use_container_width=True,
-    num_rows="dynamic",
-    column_config=column_config,
-    hide_index=True,
-)
-# 편집 결과를 항상 세션에 반영하여 다음 rerun에서도 수정 상태 유지
-st.session_state.table_data = display_df
-
-# 표 아래 버튼: 행 추가, 행 삭제, 저장, google sheet 불러오기 (간격 좁게, 작은 크기)
-col_btn4, col_btn1, col_btn2, col_btn3 = st.columns([1.0, 0.6, 0.6, 0.5])
-
-with col_btn1:
-    if st.button("행 추가"):
-        df = st.session_state.table_data
-        row = {}
-        for c in df.columns:
-            if c == "선택":
-                row[c] = False
-            elif c == "날짜":
-                row[c] = datetime.now().strftime("%Y-%m-%d")
-            elif c == "구분":
-                row[c] = ""
-            elif c in ("수량", "체결 단가", "수수료", "정산금액"):
-                row[c] = 0
-            else:
-                row[c] = ""
-        new_row = pd.DataFrame([row])
-        st.session_state.table_data = pd.concat([df, new_row], ignore_index=True)
-        st.rerun()
-
-with col_btn2:
-    if st.button("행 삭제"):
-        df = st.session_state.table_data
-        if "선택" in df.columns:
-            remaining = df[df["선택"] != True].drop(columns=["선택"], errors="ignore")
-            st.session_state.table_data = remaining.copy()
-            st.session_state.table_data.insert(0, "선택", False)
-            st.success("선택한 행이 삭제되었습니다.")
-        st.rerun()
-
-with col_btn3:
-    if st.button("저장"):
-        url = st.secrets.get("google_sheet_url", "")
-        if not url or not str(url).strip():
-            st.error("Streamlit secrets에 google_sheet_url을 설정하세요.")
+        df = _read_gsheet(url)
+        if df is not None and len(df.columns) > 0:
+            st.session_state.table_data = df
+            st.success("Google Sheet를 불러왔습니다.")
+            st.rerun()
         else:
-            ok, msg = _write_gsheet(url, st.session_state.table_data)
-            if ok:
-                st.success(msg)
-            else:
-                st.error(f"저장 실패: {msg}")
+            st.error("시트를 불러올 수 없습니다. google_sheet_url과 시트 공개(링크로 볼 수 있음) 설정을 확인하세요.")
 
-with col_btn4:
-    if st.button("google sheet 불러오기"):
-        url = st.secrets.get("google_sheet_url", "")
-        if not url or not str(url).strip():
-            st.error("Streamlit secrets에 google_sheet_url을 설정하세요.")
-        else:
-            df = _read_gsheet(url)
-            if df is not None and len(df.columns) > 0:
-                if "선택" not in df.columns:
-                    df.insert(0, "선택", False)
-                st.session_state.table_data = df
-                st.success("Google Sheet를 불러왔습니다.")
-                st.rerun()
-            else:
-                st.error("시트를 불러올 수 없습니다. google_sheet_url과 시트 공개(링크로 볼 수 있음) 설정을 확인하세요.")
+if st.session_state.table_data is not None and len(st.session_state.table_data) > 0:
+    st.dataframe(st.session_state.table_data, use_container_width=True, hide_index=True)
 
 st.markdown("---")
 
