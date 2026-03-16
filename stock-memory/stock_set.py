@@ -263,9 +263,8 @@ if context_total is not None and len(context_total) > 0:
     try:
         raw_df_for_ma = context_raw_range
         if API_KEY and raw_df_for_ma is not None and not raw_df_for_ma.empty:
-            # 이동평균선 관련 컬럼만 간단히 추려 전달 (컬럼 이름에 '이평' 이 포함된 것)
-            ma_cols = [c for c in raw_df_for_ma.columns if "이평" in str(c)]
-            raw_ma_data = raw_df_for_ma[ma_cols].to_dict(orient="records") if ma_cols else raw_df_for_ma.to_dict(orient="records")
+            # RAW data 전체를 그대로 전달
+            raw_ma_data = raw_df_for_ma.to_dict(orient="records")
 
             classification_labels = [
                 "🚀 [정배열] 상승 가속 (최적 매수)",
@@ -277,7 +276,7 @@ if context_total is not None and len(context_total) > 0:
             ]
 
             system_msg = (
-                "너는 주식 차트 전문가이다. 아래 RAW 데이터는 한 종목의 최근 시계열 이동평균선 데이터이다. "
+                "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서 아래 RAW 데이터는 한 종목의 최근 시계열 이동평균선 데이터이다. "
                 "이 데이터를 분석해서, 아래 [분류표] 중에서 현재 구간에 가장 적합한 1개 라벨만 골라라. "
                 "반드시 라벨 전체 문자열 하나만 그대로 반환하고, 다른 설명이나 문장은 절대 쓰지 마라.\n\n"
                 "[분류표]\n- "
