@@ -288,9 +288,9 @@ if prompt := st.chat_input("질문해보세요!"):
     with st.chat_message("assistant"):
         objects_data = st.session_state.get("sheet_objects_json", [])
         system_prompt = (
-            "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세추종 돌파매매를 전문으로 하는 전문 주식 투자자로서, objects JSON을 바탕으로 질문에 답을 하고 조언을 하시오. "
+            "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세추종 돌파매매를 전문으로 하는 전문 주식 투자자로서, objects JSON 데이터를 고려하여 질문에 답변을 하고 조언을 하시오. "
             "아래 [참고 데이터]는 객체 목록이며, 각 객체는 key-value 쌍으로 구성되어 있습니다. "
-            "이 데이터를 이해하고 사용자 질의에 맞게 답변하세요. 데이터가 비어 있으면 그에 맞게 안내하세요.\n\n"
+            "이평 분류, 거래량 분류, 종합 분류 값에 상관없이, 이 데이터를 이해하고 사용자 질의에 맞게 답변하세요. \n\n"
             "[참고 데이터]\n"
             + (json.dumps(objects_data, ensure_ascii=False, indent=2) if objects_data else "(데이터 없음 - 먼저 Google Sheet를 불러오세요.)")
         )
