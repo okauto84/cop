@@ -232,7 +232,7 @@ if context is not None and len(context) > 0:
                     elif k in price_keys and max_price and price_values.get(k) is not None:
                         ratio = max(price_values[k] / max_price, 0)
                         bar_blocks = int(ratio * 30)
-                        bar_color = "#2563eb"
+                        bar_color = "#1f2933"  # 이평/가격도 동일하게 검은색 막대 사용
                     if cell_b_html is None and (k in volume_keys or k in price_keys) and (max_vol or max_price):
                         if (k in volume_keys and volume_values.get(k) is not None) or (k in price_keys and price_values.get(k) is not None):
                             bar_html = (
