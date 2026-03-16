@@ -192,13 +192,13 @@ if context is not None and len(context) > 0:
 
                 # 거래량 막대 비교를 위한 값 수집
                 volume_keys = ["거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
-                volume_values = {}
-                for vk in volume_keys:
-                    volume_values[vk] = _parse_num(obj.get(vk))
-                max_vol = max(
-                    (v for v in volume_values.values() if v is not None),
-                    default=None,
-                )
+                volume_values = {vk: _parse_num(obj.get(vk)) for vk in volume_keys}
+                max_vol = max((v for v in volume_values.values() if v is not None), default=None)
+
+                # 이평/가격 막대 비교를 위한 값 수집
+                price_keys = ["이평(5)", "이평(10)", "이평(20)", "이평(50)", "현재가", "평균단가"]
+                price_values = {pk: _parse_num(obj.get(pk)) for pk in price_keys}
+                max_price = max((v for v in price_values.values() if v is not None), default=None)
 
                 table_rows = []
                 for k, v in obj.items():
@@ -223,22 +223,31 @@ if context is not None and len(context) > 0:
                             elif rate < 0:
                                 row_style = ' style="color:blue;"'
 
-                    # 거래량(현재/10/30/50) 은 막대 그래프 형태로 표현
+                    # 거래량 및 이평/가격 값은 막대 그래프 형태로 표현
+                    cell_b_html = None
                     if k in volume_keys and max_vol and volume_values.get(k) is not None:
                         ratio = max(volume_values[k] / max_vol, 0)
                         bar_blocks = int(ratio * 30)  # 최대 30칸
-                        bar_html = (
-                            '<div style="display:flex;align-items:center;gap:8px;">'
-                            f'<div style="display:inline-block;height:12px;">'
-                            f'{"".join(["<span style=\'display:inline-block;width:4px;height:10px;background-color:#1f2933;margin-right:1px;\'></span>" for _ in range(bar_blocks)])}'
-                            f"</div>"
-                            f'<span style="font-family:monospace;font-size:0.8rem;">{v_esc}</span>'
-                            "</div>"
-                        )
-                        cell_b_html = bar_html
-                    else:
-                        wrap = "<b>{}</b>" if k in bold_keys else "{}"
-                        cell_b_html = wrap.format(v_esc)
+                        bar_color = "#1f2933"
+                    elif k in price_keys and max_price and price_values.get(k) is not None:
+                        ratio = max(price_values[k] / max_price, 0)
+                        bar_blocks = int(ratio * 30)
+                        bar_color = "#2563eb"
+                    if cell_b_html is None and (k in volume_keys or k in price_keys) and (max_vol or max_price):
+                        if (k in volume_keys and volume_values.get(k) is not None) or (k in price_keys and price_values.get(k) is not None):
+                            bar_html = (
+                                '<div style="display:flex;align-items:center;gap:8px;">'
+                                f'<div style="display:inline-block;height:12px;">'
+                                f'{"".join([f"<span style=\'display:inline-block;width:4px;height:10px;background-color:{bar_color};margin-right:1px;\'></span>" for _ in range(bar_blocks)])}'
+                                f"</div>"
+                                f'<span style="font-family:monospace;font-size:0.8rem;">{v_esc}</span>'
+                                "</div>"
+                            )
+                            cell_b_html = bar_html
+
+                    if cell_b_html is None:
+                        wrap_val = "<b>{}</b>" if k in bold_keys else "{}"
+                        cell_b_html = wrap_val.format(v_esc)
 
                     wrap_key = "<b>{}</b>" if k in bold_keys else "{}"
                     cell_a_html = wrap_key.format(k_esc)
