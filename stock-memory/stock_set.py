@@ -363,6 +363,7 @@ if context_total is not None and len(context_total) > 0:
 
             # 프롬프트 내용을 세션에 저장하여 화면 하단에 표시할 수 있도록 함
             st.session_state["classification_system_prompt"] = system_msg
+            st.session_state["classification_user_prompt"] = user_msg
     except Exception:
         # 분류 실패 시 조용히 무시 (이평/거래량 분류 미설정)
         pass
@@ -476,11 +477,17 @@ else:
 
 st.markdown("---")
 
-# 이평/거래량/종합 분류에 사용된 통합 프롬프트 전문 출력
-cls_prompt = st.session_state.get("classification_system_prompt")
-if cls_prompt:
+# 이평/거래량/종합 분류에 사용된 통합 프롬프트 전문 출력 (system + user)
+cls_sys = st.session_state.get("classification_system_prompt")
+cls_usr = st.session_state.get("classification_user_prompt")
+if cls_sys or cls_usr:
     st.markdown("#### 분류 프롬프트 전문")
-    st.text(cls_prompt)
+    if cls_sys:
+        st.markdown("**[system]**")
+        st.text(cls_sys)
+    if cls_usr:
+        st.markdown("**[user] (Objects + RAW 데이터 포함)**")
+        st.text(cls_usr)
 
 st.markdown("---")
 
