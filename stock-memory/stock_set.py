@@ -29,8 +29,8 @@ except:
 
 # 사이드바 제거 후 사용하던 설정값 (메인에서 기본값으로 사용)
 output_method = "실시간 출력"
-model_name = "gpt-5-mini"
-# model_name = "gpt-5.4"
+# model_name = "gpt-5-mini"
+model_name = "gpt-5.4"
 
 # 메인 화면
 st.markdown("### Stock-set")
@@ -293,12 +293,12 @@ if context_total is not None and len(context_total) > 0:
             ]
 
             system_msg = (
-                "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자이다. "
-                "아래 Total 객체 정보(요약 데이터)와 RAW 시계열 데이터(가격, 이동평균선, 거래량, 거래량 평균)를 함께 분석하라. "
+                "당신은 마크 미너비니, 윌리엄 오닐의 수제자로써, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자이다. "
+                "아래 Objects 객체 정보(요약 데이터)와 RAW 시계열 데이터(종가, 이동평균선, 거래량, 거래량 평균)를 함께 분석하라. "
                 "다음 세 가지 분류 값을 각각 하나씩 선택해야 한다.\n\n"
                 "1) 이평 분류: 이동평균선 배열과 추세를 기준으로 아래 [이평 분류표] 중 1개 선택\n"
                 "2) 거래량 분류: 거래량 및 거래량(평균)을 기준으로 아래 [거래량 분류표] 중 1개 선택\n"
-                "3) 종합 분류: 가격, 이평, 거래량, 수익률 등을 모두 고려한 종합 판단으로 [종합 분류표] 중 1개 선택\n\n"
+                "3) 종합 분류: 현재가, 이평, 거래량 등을 모두 고려한 종합 판단으로 [종합 분류표] 중 1개 선택\n\n"
                 "반드시 아래 JSON 형식으로만 답하라.\n"
                 '{\"ma_class\": \"<이평 분류표의 라벨 중 하나>\", '
                 '\"volume_class\": \"<거래량 분류표의 라벨 중 하나>\", '
@@ -316,7 +316,7 @@ if context_total is not None and len(context_total) > 0:
                 "Total_Object": obj,
                 "RAW_Table": raw_ma_data,
             }
-            user_msg = "Total 및 RAW 데이터:\n" + json.dumps(user_payload, ensure_ascii=False, indent=2)
+            user_msg = "Objects 및 RAW 데이터:\n" + json.dumps(user_payload, ensure_ascii=False, indent=2)
 
             resp = client.chat.completions.create(
                 model=model_name,
@@ -362,10 +362,7 @@ if context_total is not None and len(context_total) > 0:
                 obj["종합 분류"] = total_chosen_label
 
             # 프롬프트 내용을 세션에 저장하여 화면 하단에 표시할 수 있도록 함
-            st.session_state["ma_prompt_system"] = ma_system_msg
-            st.session_state["ma_prompt_user"] = ma_user_msg
-            st.session_state["vol_prompt_system"] = vol_system_msg
-            st.session_state["vol_prompt_user"] = vol_user_msg
+            st.session_state["classification_system_prompt"] = system_msg
     except Exception:
         # 분류 실패 시 조용히 무시 (이평/거래량 분류 미설정)
         pass
@@ -375,107 +372,100 @@ if context_total is not None and len(context_total) > 0:
         st.session_state.sheet_objects_total_json = []
     st.session_state.sheet_objects_total_json = sheet_objects_total
 
-    # stock.py 의 Objects 와 동일한 스타일로 Total data 출력
+    # Objects를 단일 표 형식으로 출력 (접고/펼치기 카드 제거)
     if sheet_objects_total:
         st.markdown("#### Objects")
-        for obj in sheet_objects_total:
-            object_name = next(iter(obj.keys()), "") if obj else ""
-            label = object_name or "(빈 객체)"
-            with st.expander(label, expanded=True):
-                bold_keys = {"이평 배열", "이평 분류", "거래량 배열", "거래량 분류", "종합 분류"}
+        obj = sheet_objects_total[0]
+        bold_keys = {"이평 배열", "이평 분류", "거래량 배열", "거래량 분류", "종합 분류"}
 
-                def _parse_num(s):
-                    if s is None or str(s).strip() == "":
-                        return None
-                    try:
-                        return float(str(s).strip().replace(",", ""))
-                    except (ValueError, TypeError):
-                        return None
+        def _parse_num(s):
+            if s is None or str(s).strip() == "":
+                return None
+            try:
+                return float(str(s).strip().replace(",", ""))
+            except (ValueError, TypeError):
+                return None
 
-                # 거래량 막대 비교를 위한 값 수집
-                # 내부 데이터는 '거래량(현재)' 를 기준으로 하고,
-                # 화면에는 '거래량(현재)' / '거래량(1)' 둘 다 막대를 그려줄 수 있도록 처리
-                volume_keys_source = ["거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
-                volume_values_source = {vk: _parse_num(obj.get(vk)) for vk in volume_keys_source}
-                max_vol = max((v for v in volume_values_source.values() if v is not None), default=None)
+        # 거래량 막대 비교를 위한 값 수집
+        volume_keys_source = ["거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
+        volume_values_source = {vk: _parse_num(obj.get(vk)) for vk in volume_keys_source}
+        max_vol = max((v for v in volume_values_source.values() if v is not None), default=None)
 
-                # 이평/가격 막대 비교를 위한 값 수집
-                price_keys = ["이평(5)", "이평(10)", "이평(20)", "이평(50)", "현재가", "평균단가"]
-                price_values = {pk: _parse_num(obj.get(pk)) for pk in price_keys}
-                max_price = max((v for v in price_values.values() if v is not None), default=None)
+        # 이평/가격 막대 비교를 위한 값 수집
+        price_keys = ["이평(5)", "이평(10)", "이평(20)", "이평(50)", "현재가", "평균단가"]
+        price_values = {pk: _parse_num(obj.get(pk)) for pk in price_keys}
+        max_price = max((v for v in price_values.values() if v is not None), default=None)
 
-                table_rows = []
-                for k, v in obj.items():
-                    k_esc = html.escape(str(k))
-                    v_esc = html.escape(str(v))
-                    row_style = ""
-                    if k == "평균단가":
-                        avg_price = _parse_num(v)
-                        curr_price = _parse_num(obj.get("현재가"))
-                        if avg_price is not None and curr_price is not None:
-                            if avg_price > curr_price:
-                                row_style = ' style="color:blue;"'
-                            elif avg_price < curr_price:
-                                row_style = ' style="color:red;"'
-                    elif k == "수익률":
-                        # 화면에는 % 포함 그대로 표시, 색 판단 시에만 % 제거 후 숫자로 파싱
-                        rate_str = str(v).replace("%", "").strip() if v is not None else ""
-                        rate = _parse_num(rate_str) if rate_str else None
-                        if rate is not None:
-                            if rate > 0:
-                                row_style = ' style="color:red;"'
-                            elif rate < 0:
-                                row_style = ' style="color:blue;"'
+        table_rows = []
+        for k, v in obj.items():
+            k_esc = html.escape(str(k))
+            v_esc = html.escape(str(v))
+            row_style = ""
+            if k == "평균단가":
+                avg_price = _parse_num(v)
+                curr_price = _parse_num(obj.get("현재가"))
+                if avg_price is not None and curr_price is not None:
+                    if avg_price > curr_price:
+                        row_style = ' style="color:blue;"'
+                    elif avg_price < curr_price:
+                        row_style = ' style="color:red;"'
+            elif k == "수익률":
+                rate_str = str(v).replace("%", "").strip() if v is not None else ""
+                rate = _parse_num(rate_str) if rate_str else None
+                if rate is not None:
+                    if rate > 0:
+                        row_style = ' style="color:red;"'
+                    elif rate < 0:
+                        row_style = ' style="color:blue;"'
 
-                    # 거래량 및 이평/가격 값은 막대 그래프 형태로 표현
-                    cell_b_html = None
-                    # --- 거래량 막대 ---
-                    src_key_for_volume = None
-                    if k == "거래량(1)":
-                        # '거래량(1)' 은 내부적으로 '거래량(현재)' 값을 사용
-                        src_key_for_volume = "거래량(현재)"
-                    elif k in volume_keys_source:
-                        src_key_for_volume = k
+            cell_b_html = None
+            # --- 거래량 막대 ---
+            src_key_for_volume = None
+            if k == "거래량(1)":
+                src_key_for_volume = "거래량(현재)"
+            elif k in volume_keys_source:
+                src_key_for_volume = k
 
-                    if src_key_for_volume and max_vol and volume_values_source.get(src_key_for_volume) is not None:
-                        ratio = max(volume_values_source[src_key_for_volume] / max_vol, 0)
-                        bar_blocks = int(ratio * 20)  # 최대 20칸
-                        bar_color = "#1f2933"
-                    elif k in price_keys and max_price and price_values.get(k) is not None:
-                        ratio = max(price_values[k] / max_price, 0)
-                        bar_blocks = int(ratio * 20)  # 최대 20칸
-                        bar_color = "#1f2933"  # 이평/가격도 동일하게 검은색 막대 사용
-                    if cell_b_html is None and (src_key_for_volume or k in price_keys) and (max_vol or max_price):
-                        has_volume = src_key_for_volume is not None and volume_values_source.get(src_key_for_volume) is not None
-                        has_price = k in price_keys and price_values.get(k) is not None
-                        if has_volume or has_price:
-                            bar_html = (
-                                '<div style="display:flex;align-items:center;gap:8px;">'
-                                f'<div style="display:inline-block;height:12px;">'
-                                f'{"".join([f"<span style=\'display:inline-block;width:4px;height:10px;background-color:{bar_color};margin-right:1px;\'></span>" for _ in range(bar_blocks)])}'
-                                f"</div>"
-                                f'<span style="font-family:monospace;font-size:0.8rem;">{v_esc}</span>'
-                                "</div>"
-                            )
-                            cell_b_html = bar_html
+            if src_key_for_volume and max_vol and volume_values_source.get(src_key_for_volume) is not None:
+                ratio = max(volume_values_source[src_key_for_volume] / max_vol, 0)
+                bar_blocks = int(ratio * 20)
+                bar_color = "#1f2933"
+            elif k in price_keys and max_price and price_values.get(k) is not None:
+                ratio = max(price_values[k] / max_price, 0)
+                bar_blocks = int(ratio * 20)
+                bar_color = "#1f2933"
 
-                    if cell_b_html is None:
-                        wrap_val = "<b>{}</b>" if k in bold_keys else "{}"
-                        cell_b_html = wrap_val.format(v_esc)
+            if cell_b_html is None and (src_key_for_volume or k in price_keys) and (max_vol or max_price):
+                has_volume = src_key_for_volume is not None and volume_values_source.get(src_key_for_volume) is not None
+                has_price = k in price_keys and price_values.get(k) is not None
+                if has_volume or has_price:
+                    bar_html = (
+                        '<div style="display:flex;align-items:center;gap:8px;">'
+                        f'<div style="display:inline-block;height:12px;">'
+                        f'{"".join([f"<span style=\'display:inline-block;width:4px;height:10px;background-color:{bar_color};margin-right:1px;\'></span>" for _ in range(bar_blocks)])}'
+                        f"</div>"
+                        f'<span style="font-family:monospace;font-size:0.8rem;">{v_esc}</span>'
+                        "</div>"
+                    )
+                    cell_b_html = bar_html
 
-                    wrap_key = "<b>{}</b>" if k in bold_keys else "{}"
-                    cell_a_html = wrap_key.format(k_esc)
-                    table_rows.append(f"<tr{row_style}><td>{cell_a_html}</td><td>{cell_b_html}</td></tr>")
+            if cell_b_html is None:
+                wrap_val = "<b>{}</b>" if k in bold_keys else "{}"
+                cell_b_html = wrap_val.format(v_esc)
 
-                table_html = (
-                    '<div style="font-size:0.8rem;">'
-                    '<table style="width:100%; border-collapse: collapse;">'
-                    "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
-                    "<th style=\"text-align:left; padding:4px 8px;\">value</th></tr></thead>"
-                    "<tbody>" + "".join(table_rows) + "</tbody></table>"
-                    "</div>"
-                )
-                st.markdown(table_html, unsafe_allow_html=True)
+            wrap_key = "<b>{}</b>" if k in bold_keys else "{}"
+            cell_a_html = wrap_key.format(k_esc)
+            table_rows.append(f"<tr{row_style}><td>{cell_a_html}</td><td>{cell_b_html}</td></tr>")
+
+        table_html = (
+            '<div style="font-size:0.8rem;">'
+            '<table style="width:100%; border-collapse: collapse;">'
+            "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
+            "<th style=\"text-align:left; padding:4px 8px;\">value</th></tr></thead>"
+            "<tbody>" + "".join(table_rows) + "</tbody></table>"
+            "</div>"
+        )
+        st.markdown(table_html, unsafe_allow_html=True)
 
     # RAW 시트 A1:F52 DataFrame 출력 (첫 행 A1:F1을 헤더로 사용)
     if context_raw_range is not None and not context_raw_range.empty:
@@ -483,6 +473,14 @@ if context_total is not None and len(context_total) > 0:
         st.dataframe(context_raw_range)
 else:
     st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
+
+st.markdown("---")
+
+# 이평/거래량/종합 분류에 사용된 통합 프롬프트 전문 출력
+cls_prompt = st.session_state.get("classification_system_prompt")
+if cls_prompt:
+    st.markdown("#### 분류 프롬프트 전문")
+    st.text(cls_prompt)
 
 st.markdown("---")
 
