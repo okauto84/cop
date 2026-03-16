@@ -214,6 +214,51 @@ if context_total is not None and len(context_total) > 0:
             continue
         obj[k_str] = v_str
 
+    # ===== 이평 배열 / 거래량 배열 계산 =====
+    def _parse_num_for_ordering(s: str | None):
+        if s is None:
+            return None
+        txt = str(s).strip().replace(",", "")
+        if txt == "":
+            return None
+        try:
+            return float(txt)
+        except (ValueError, TypeError):
+            return None
+
+    # 이평 배열: 현재가, 이평(5), 이평(10), 이평(20), 이평(50) 큰 값 순서
+    price_order_targets = [
+        ("현재가", "현재가"),
+        ("이평(5)", "이평(5)"),
+        ("이평(10)", "이평(10)"),
+        ("이평(20)", "이평(20)"),
+        ("이평(50)", "이평(50)"),
+    ]
+    price_pairs: list[tuple[str, float]] = []
+    for key_name, label in price_order_targets:
+        val = _parse_num_for_ordering(obj.get(key_name))
+        if val is not None:
+            price_pairs.append((label, val))
+    if price_pairs:
+        price_pairs.sort(key=lambda x: x[1], reverse=True)
+        obj["이평 배열"] = " > ".join(label for label, _ in price_pairs)
+
+    # 거래량 배열: 거래량(현재), 거래량(10), 거래량(30), 거래량(50) 큰 값 순서
+    volume_order_targets = [
+        ("거래량(현재)", "거래량(1)"),
+        ("거래량(10)", "거래량(10)"),
+        ("거래량(30)", "거래량(30)"),
+        ("거래량(50)", "거래량(50)"),
+    ]
+    volume_pairs: list[tuple[str, float]] = []
+    for key_name, label in volume_order_targets:
+        val = _parse_num_for_ordering(obj.get(key_name))
+        if val is not None:
+            volume_pairs.append((label, val))
+    if volume_pairs:
+        volume_pairs.sort(key=lambda x: x[1], reverse=True)
+        obj["거래량 배열"] = " > ".join(label for label, _ in volume_pairs)
+
     sheet_objects_total = [obj]
     if "sheet_objects_total_json" not in st.session_state:
         st.session_state.sheet_objects_total_json = []
