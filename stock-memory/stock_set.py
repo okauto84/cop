@@ -243,9 +243,9 @@ if context_total is not None and len(context_total) > 0:
         price_pairs.sort(key=lambda x: x[1], reverse=True)
         obj["이평 배열"] = " > ".join(label for label, _ in price_pairs)
 
-    # 거래량 배열: 거래량(현재), 거래량(10), 거래량(30), 거래량(50) 큰 값 순서
+    # 거래량 배열: 거래량(1), 거래량(10), 거래량(30), 거래량(50) 큰 값 순서
     volume_order_targets = [
-        ("거래량(현재)", "거래량(1)"),
+        ("거래량(1)", "거래량(1)"),
         ("거래량(10)", "거래량(10)"),
         ("거래량(30)", "거래량(30)"),
         ("거래량(50)", "거래량(50)"),
@@ -372,7 +372,8 @@ if context_total is not None and len(context_total) > 0:
                         return None
 
                 # 거래량 막대 비교를 위한 값 수집
-                volume_keys = ["거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
+                # 거래량(1)을 현재 거래량으로 사용
+                volume_keys = ["거래량(1)", "거래량(10)", "거래량(30)", "거래량(50)"]
                 volume_values = {vk: _parse_num(obj.get(vk)) for vk in volume_keys}
                 max_vol = max((v for v in volume_values.values() if v is not None), default=None)
 
