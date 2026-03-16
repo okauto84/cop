@@ -99,6 +99,8 @@ if "sheet_table" not in st.session_state:
     st.session_state.sheet_table = pd.DataFrame()
 if "expand_object_name" not in st.session_state:
     st.session_state.expand_object_name = None
+if "expand_all" not in st.session_state:
+    st.session_state.expand_all = None  # None=개별, True=모두 펼치기, False=모두 접기
 
 # 'google sheet 불러오기' 버튼 옆에 검색 입력 + 검색 버튼
 col_load, col_search, col_btn = st.columns([1, 2, 0.5])
@@ -182,12 +184,30 @@ if context is not None and len(context) > 0:
 
     # 각 object별로 접고 펼 수 있는 형태로 표 형식 출력 (검색 시 해당 object만 펼침)
     if sheet_objects:
-        st.markdown("#### Objects")
+        col_title, col_collapse, col_expand = st.columns([2, 0.5, 0.5])
+        with col_title:
+            st.markdown("#### Objects")
+        with col_collapse:
+            collapse_all_clicked = st.button("모두 접기", key="collapse_all")
+        with col_expand:
+            expand_all_clicked = st.button("모두 펼치기", key="expand_all_btn")
+        if collapse_all_clicked:
+            st.session_state.expand_all = False
+            st.rerun()
+        if expand_all_clicked:
+            st.session_state.expand_all = True
+            st.rerun()
+        expand_all = st.session_state.get("expand_all")
         expand_name = st.session_state.get("expand_object_name")
         for obj in sheet_objects:
             object_name = next(iter(obj.keys()), "") if obj else ""
             label = object_name or "(빈 객체)"
-            expanded = (expand_name is not None and object_name == expand_name)
+            if expand_all is True:
+                expanded = True
+            elif expand_all is False:
+                expanded = False
+            else:
+                expanded = (expand_name is not None and object_name == expand_name)
             with st.expander(label, expanded=expanded):
                 table_df = pd.DataFrame([{"key": k, "value": v} for k, v in obj.items()])
                 st.table(table_df)
