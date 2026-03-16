@@ -243,9 +243,9 @@ if context_total is not None and len(context_total) > 0:
         price_pairs.sort(key=lambda x: x[1], reverse=True)
         obj["이평 배열"] = " > ".join(label for label, _ in price_pairs)
 
-    # 거래량 배열: 거래량(1), 거래량(10), 거래량(30), 거래량(50) 큰 값 순서
+    # 거래량 배열: 거래량(현재), 거래량(10), 거래량(30), 거래량(50) 큰 값 순서
     volume_order_targets = [
-        ("거래량(1)", "거래량(1)"),
+        ("거래량(현재)", "거래량(현재)"),
         ("거래량(10)", "거래량(10)"),
         ("거래량(30)", "거래량(30)"),
         ("거래량(50)", "거래량(50)"),
@@ -372,10 +372,11 @@ if context_total is not None and len(context_total) > 0:
                         return None
 
                 # 거래량 막대 비교를 위한 값 수집
-                # 거래량(1)을 현재 거래량으로 사용
-                volume_keys = ["거래량(1)", "거래량(10)", "거래량(30)", "거래량(50)"]
-                volume_values = {vk: _parse_num(obj.get(vk)) for vk in volume_keys}
-                max_vol = max((v for v in volume_values.values() if v is not None), default=None)
+                # 내부 데이터는 '거래량(현재)' 를 기준으로 하고,
+                # 화면에는 '거래량(현재)' / '거래량(1)' 둘 다 막대를 그려줄 수 있도록 처리
+                volume_keys_source = ["거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
+                volume_values_source = {vk: _parse_num(obj.get(vk)) for vk in volume_keys_source}
+                max_vol = max((v for v in volume_values_source.values() if v is not None), default=None)
 
                 # 이평/가격 막대 비교를 위한 값 수집
                 price_keys = ["이평(5)", "이평(10)", "이평(20)", "이평(50)", "현재가", "평균단가"]
@@ -407,8 +408,16 @@ if context_total is not None and len(context_total) > 0:
 
                     # 거래량 및 이평/가격 값은 막대 그래프 형태로 표현
                     cell_b_html = None
-                    if k in volume_keys and max_vol and volume_values.get(k) is not None:
-                        ratio = max(volume_values[k] / max_vol, 0)
+                    # --- 거래량 막대 ---
+                    src_key_for_volume = None
+                    if k == "거래량(1)":
+                        # '거래량(1)' 은 내부적으로 '거래량(현재)' 값을 사용
+                        src_key_for_volume = "거래량(현재)"
+                    elif k in volume_keys_source:
+                        src_key_for_volume = k
+
+                    if src_key_for_volume and max_vol and volume_values_source.get(src_key_for_volume) is not None:
+                        ratio = max(volume_values_source[src_key_for_volume] / max_vol, 0)
                         bar_blocks = int(ratio * 20)  # 최대 20칸
                         bar_color = "#1f2933"
                     elif k in price_keys and max_price and price_values.get(k) is not None:
