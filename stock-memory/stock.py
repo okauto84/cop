@@ -70,7 +70,8 @@ def _read_gsheet(url: str = None) -> tuple[pd.DataFrame, str]:
     if not export_url:
         return pd.DataFrame(), "URL 형식이 올바르지 않습니다. 예: https://docs.google.com/spreadsheets/d/스프레드시트ID/edit"
     try:
-        df = pd.read_csv(export_url)
+        # header=None: 첫 행부터 데이터로 사용(첫 행이 잘리지 않음)
+        df = pd.read_csv(export_url, header=None)
         if df is not None and len(df.columns) > 0:
             df.columns = df.columns.astype(str).str.strip()
             return df, ""
@@ -121,6 +122,7 @@ def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]
     """연속 empty_rows줄의 빈 행으로 구분된 블록을 별도 object로 파싱. A열=key, B열=value. JSON 형식 리스트 반환."""
     if df is None or len(df) == 0 or df.columns.size < 2:
         return []
+    # 첫 두 컬럼(A열=0, B열=1) 사용
     col_a, col_b = df.columns[0], df.columns[1]
     objects: list[dict] = []
     current: list[tuple[str, str]] = []
@@ -153,11 +155,12 @@ if context is not None and len(context) > 0:
         st.session_state.sheet_objects_json = []
     st.session_state.sheet_objects_json = sheet_objects
 
-    # 각 object별로 표 형식 출력
+    # 각 object별로 표 형식 출력 (Object 명칭 = 해당 블록의 첫 key)
     if sheet_objects:
         st.markdown("#### 구분된 객체 (표)")
-        for i, obj in enumerate(sheet_objects):
-            st.markdown(f"**Object {i + 1}**")
+        for obj in sheet_objects:
+            object_name = next(iter(obj.keys()), "") if obj else ""
+            st.markdown(f"**{object_name}**")
             table_df = pd.DataFrame([{"key": k, "value": v} for k, v in obj.items()])
             st.table(table_df)
 else:
