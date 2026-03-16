@@ -362,12 +362,3 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
-with tab_settings:
-    st.markdown("#### 설정")
-    settings_text = st.text_input("텍스트를 입력하세요", key="settings_text_input", placeholder="설정 관련 텍스트 입력")
-    if st.button("검색", key="settings_search_button"):
-        if settings_text.strip():
-            st.info(f"입력한 텍스트로 검색을 수행합니다: {settings_text}")
-        else:
-            st.warning("검색어를 입력해주세요.")
