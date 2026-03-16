@@ -337,10 +337,11 @@ if context_total is not None and len(context_total) > 0:
                 )
                 st.markdown(table_html, unsafe_allow_html=True)
 
-    # RAW 시트 A2:F53 DataFrame 출력
+    # RAW 시트 A2:F53 JSON 출력
     if context_raw_range is not None and not context_raw_range.empty:
-        st.markdown("#### RAW 시트 DataFrame (A2:F53)")
-        st.dataframe(context_raw_range)
+        st.markdown("#### RAW 시트 JSON (A2:F53)")
+        raw_json = context_raw_range.to_dict(orient="records")
+        st.json(raw_json)
 else:
     st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
 
