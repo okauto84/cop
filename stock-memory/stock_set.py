@@ -294,7 +294,7 @@ if context_total is not None and len(context_total) > 0:
 
             system_msg = (
                 "당신은 마크 미너비니, 윌리엄 오닐의 수제자로써, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자이다. "
-                "아래 Objects 객체 정보(요약 데이터)와 RAW 시계열 데이터(종가, 이동평균선, 거래량, 거래량 평균)를 함께 분석하라. "
+                "아래 Total_Object 객체 정보(요약 데이터)와 RAW_Table 시계열 데이터(종가, 이동평균선, 거래량, 거래량 평균)를 함께 분석하라. "
                 "다음 세 가지 분류 값을 각각 하나씩 선택해야 한다.\n\n"
                 "1) 이평 분류: 이동평균선 배열과 추세를 기준으로 아래 [이평 분류표] 중 1개 선택\n"
                 "2) 거래량 분류: 거래량 및 거래량(평균)을 기준으로 아래 [거래량 분류표] 중 1개 선택\n"
@@ -474,20 +474,6 @@ if context_total is not None and len(context_total) > 0:
         st.dataframe(context_raw_range)
 else:
     st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
-
-st.markdown("---")
-
-# 이평/거래량/종합 분류에 사용된 통합 프롬프트 전문 출력 (system + user)
-cls_sys = st.session_state.get("classification_system_prompt")
-cls_usr = st.session_state.get("classification_user_prompt")
-if cls_sys or cls_usr:
-    st.markdown("#### 분류 프롬프트 전문")
-    if cls_sys:
-        st.markdown("**[system]**")
-        st.text(cls_sys)
-    if cls_usr:
-        st.markdown("**[user] (Objects + RAW 데이터 포함)**")
-        st.text(cls_usr)
 
 st.markdown("---")
 
