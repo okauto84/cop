@@ -91,7 +91,7 @@ tab_interest, tab_settings = st.tabs(["관심", "설정"])
 
 with tab_interest:
     # 메인 화면
-    st.markdown("# test")
+    st.markdown("#### test")
 
     # google sheet 불러오기 버튼 + 검색
     col_load, col_search, col_btn = st.columns([1, 2, 0.5])
@@ -135,37 +135,6 @@ with tab_interest:
 
     # 저장된 테이블 변수 (시트 내용 = context)
     context = st.session_state.sheet_table
-
-
-def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]:
-    """연속 empty_rows줄의 빈 행으로 구분된 블록을 별도 object로 파싱. A열=key, B열=value. JSON 형식 리스트 반환."""
-    if df is None or len(df) == 0 or df.columns.size < 2:
-        return []
-    # 첫 두 컬럼(A열=0, B열=1) 사용
-    col_a, col_b = df.columns[0], df.columns[1]
-    objects: list[dict] = []
-    current: list[tuple[str, str]] = []
-    empty_streak = 0
-
-    for _, row in df.iterrows():
-        a = row[col_a]
-        b = row[col_b]
-        a_str = "" if pd.isna(a) else str(a).strip()
-        b_str = "" if pd.isna(b) else str(b).strip()
-        if a_str == "" and b_str == "":
-            empty_streak += 1
-            if empty_streak >= empty_rows:
-                if current:
-                    objects.append(dict(current))
-                current = []
-        else:
-            empty_streak = 0
-            current.append((a_str, b_str))
-
-    if current:
-        objects.append(dict(current))
-    return objects
-
 
     if context is not None and len(context) > 0:
         # 행 3줄 빈 곳으로 구분 → A열=key, B열=value 객체 리스트(JSON)로 변수 저장
@@ -249,6 +218,36 @@ def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]
 
     # 챗봇 섹션
     st.markdown("#### 💬 위 데이터 기반 질의응답")
+
+
+def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]:
+    """연속 empty_rows줄의 빈 행으로 구분된 블록을 별도 object로 파싱. A열=key, B열=value. JSON 형식 리스트 반환."""
+    if df is None or len(df) == 0 or df.columns.size < 2:
+        return []
+    # 첫 두 컬럼(A열=0, B열=1) 사용
+    col_a, col_b = df.columns[0], df.columns[1]
+    objects: list[dict] = []
+    current: list[tuple[str, str]] = []
+    empty_streak = 0
+
+    for _, row in df.iterrows():
+        a = row[col_a]
+        b = row[col_b]
+        a_str = "" if pd.isna(a) else str(a).strip()
+        b_str = "" if pd.isna(b) else str(b).strip()
+        if a_str == "" and b_str == "":
+            empty_streak += 1
+            if empty_streak >= empty_rows:
+                if current:
+                    objects.append(dict(current))
+                current = []
+        else:
+            empty_streak = 0
+            current.append((a_str, b_str))
+
+    if current:
+        objects.append(dict(current))
+    return objects
 
     # OpenAI API 호출 함수
     def call_openai_api(messages: list) -> str:
