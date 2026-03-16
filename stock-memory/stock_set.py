@@ -207,14 +207,6 @@ if context_total is not None and len(context_total) > 0:
         st.session_state.sheet_objects_total_json = []
     st.session_state.sheet_objects_total_json = sheet_objects_total
 
-    # RAW 시트도 동일하게 파싱
-    sheet_objects_raw = []
-    if context_raw is not None and len(context_raw) > 0:
-        sheet_objects_raw = _parse_sheet_to_objects(context_raw, empty_rows=3)
-    if "sheet_objects_raw_json" not in st.session_state:
-        st.session_state.sheet_objects_raw_json = []
-    st.session_state.sheet_objects_raw_json = sheet_objects_raw
-
     # Total 시트 Objects 출력
     if sheet_objects_total:
         col_title, col_collapse, col_expand = st.columns([2, 0.5, 0.5])
@@ -323,28 +315,6 @@ if context_total is not None and len(context_total) > 0:
                 )
                 st.markdown(table_html, unsafe_allow_html=True)
 
-    # RAW 시트 Objects 출력
-    if sheet_objects_raw:
-        st.markdown("#### RAW 시트 Objects")
-        for obj in sheet_objects_raw:
-            object_name = next(iter(obj.keys()), "") if obj else ""
-            label = object_name or "(빈 객체)"
-            with st.expander(label, expanded=False):
-                rows = []
-                for k, v in obj.items():
-                    k_esc = html.escape(str(k))
-                    v_esc = html.escape(str(v))
-                    rows.append(f"<tr><td>{k_esc}</td><td>{v_esc}</td></tr>")
-                table_html = (
-                    '<div style="font-size:0.8rem;">'
-                    '<table style="width:100%; border-collapse: collapse;">'
-                    "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
-                    "<th style=\"text-align:left; padding:4px 8px;\">value</th></tr></thead>"
-                    "<tbody>" + "".join(rows) + "</tbody></table>"
-                    "</div>"
-                )
-                st.markdown(table_html, unsafe_allow_html=True)
-
     # RAW 시트 A1:F52 DataFrame 출력 (첫 행 A1:F1을 헤더로 사용)
     if context_raw_range is not None and not context_raw_range.empty:
         st.markdown("#### RAW 시트 DataFrame (A1:F52)")
@@ -398,12 +368,10 @@ if prompt := st.chat_input("질문해보세요!"):
 
     # OpenAI API 호출 (objects JSON을 바탕으로 이해·답변하도록 시스템 프롬프트 구성)
     with st.chat_message("assistant"):
-        # Total / RAW 두 시트 데이터를 모두 포함
+        # Total 시트 데이터만 포함
         objects_total = st.session_state.get("sheet_objects_total_json", [])
-        objects_raw = st.session_state.get("sheet_objects_raw_json", [])
         objects_data = {
             "Total": objects_total,
-            "RAW": objects_raw,
         }
         system_prompt = (
             "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서, objects JSON 데이터를 고려하여 질문에 답변을 하고 조언을 하시오. "
