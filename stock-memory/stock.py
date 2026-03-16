@@ -18,6 +18,12 @@ try:
 except:
     API_KEY = ""
 
+# Google Sheet URL (secrets에서 가져오거나 기본값 사용)
+try:
+    google_sheet_url = st.secrets.get("google_sheet_url", "")
+except:
+    google_sheet_url = ""
+
 # 사이드바 설정
 with st.sidebar:
     st.markdown("### 설정")
@@ -54,22 +60,27 @@ def _sheet_url_to_export_csv(url: str) -> str:
     return f"https://docs.google.com/spreadsheets/d/{sid}/export?format=csv&gid=0"
 
 
-def _read_gsheet(url: str = None) -> pd.DataFrame:
-    """공개 Google Sheet URL로 첫 번째 시트(total sheet)만 읽기 (URL은 secrets 또는 인자로 전달)"""
-    u = (url or st.secrets.get("google_sheet_url", "") or "").strip()
+def _read_gsheet(url: str = None) -> tuple[pd.DataFrame, str]:
+    """공개 Google Sheet URL로 첫 번째 시트(total sheet)만 읽기. (DataFrame, 에러메시지) 반환. 성공 시 에러메시지는 ''."""
+    u = (url or "").strip()
     if not u:
-        return pd.DataFrame()
+        return pd.DataFrame(), "google_sheet_url이 비어 있습니다."
     export_url = _sheet_url_to_export_csv(u)
     if not export_url:
-        return pd.DataFrame()
+        return pd.DataFrame(), "URL 형식이 올바르지 않습니다. 예: https://docs.google.com/spreadsheets/d/스프레드시트ID/edit"
     try:
         df = pd.read_csv(export_url)
         if df is not None and len(df.columns) > 0:
             df.columns = df.columns.astype(str).str.strip()
-            return df
-    except Exception:
-        pass
-    return pd.DataFrame()
+            return df, ""
+        return pd.DataFrame(), "시트에 컬럼이 없거나 비어 있습니다."
+    except Exception as e:
+        err = str(e).strip()
+        if "403" in err or "Forbidden" in err or "Access" in err.lower():
+            return pd.DataFrame(), "시트에 대한 접근이 거부되었습니다. 시트를 '링크가 있는 모든 사용자에게 공개'로 설정하세요."
+        if "404" in err or "Not Found" in err:
+            return pd.DataFrame(), "시트를 찾을 수 없습니다. URL과 시트 존재 여부를 확인하세요."
+        return pd.DataFrame(), f"읽기 오류: {err}"
 
 
 # 세션 상태 초기화
@@ -77,23 +88,24 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # Google Sheet URL로 불러와 시트 영역을 테이블(DataFrame)로 변환하여 변수에 저장
-def load_sheet_as_table(url: str) -> pd.DataFrame:
-    """Google Sheet URL을 받아 첫 번째 시트(total sheet)만 table 형태(DataFrame)로 변환해 반환"""
+def load_sheet_as_table(url: str) -> tuple[pd.DataFrame, str]:
+    """Google Sheet URL을 받아 첫 번째 시트(total sheet)만 table 형태(DataFrame)로 변환. (DataFrame, 에러메시지) 반환."""
     return _read_gsheet(url)
 
-# 세션에 저장된 테이블(내용) 초기화 (secrets에 URL이 있으면 최초 1회 로드)
+# 세션에 저장된 테이블(내용) 초기화
 if "sheet_table" not in st.session_state:
-    initial_df = load_sheet_as_table(st.secrets.get("google_sheet_url", ""))
-    st.session_state.sheet_table = initial_df if initial_df is not None and len(initial_df.columns) > 0 else pd.DataFrame()
+    st.session_state.sheet_table = pd.DataFrame()
 
 if st.button("google sheet 불러오기"):
-    url = st.secrets.get("google_sheet_url", "")
-    if not url or not str(url).strip():
+    url = (google_sheet_url or "").strip()
+    if not url:
         st.error("Streamlit secrets에 google_sheet_url을 설정하세요.")
     else:
         # URL로 불러와 table 형태로 변환 후 변수에 저장
-        sheet_table = load_sheet_as_table(url)
-        if sheet_table is not None and len(sheet_table.columns) > 0:
+        sheet_table, err_msg = load_sheet_as_table(url)
+        if err_msg:
+            st.error(f"시트를 불러올 수 없습니다. {err_msg}")
+        elif sheet_table is not None and len(sheet_table.columns) > 0:
             st.session_state.sheet_table = sheet_table
             st.success("Google Sheet를 불러왔습니다.")
             st.rerun()
