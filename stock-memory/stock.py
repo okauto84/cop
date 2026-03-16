@@ -232,7 +232,9 @@ if context is not None and len(context) > 0:
                             elif avg_price < curr_price:
                                 row_style = ' style="color:red;"'
                     elif k == "수익률":
-                        rate = _parse_num(v)
+                        # 화면에는 % 포함 그대로 표시, 색 판단 시에만 % 제거 후 숫자로 파싱
+                        rate_str = str(v).replace("%", "").strip() if v is not None else ""
+                        rate = _parse_num(rate_str) if rate_str else None
                         if rate is not None:
                             if rate > 0:
                                 row_style = ' style="color:red;"'
