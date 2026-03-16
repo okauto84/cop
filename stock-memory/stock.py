@@ -261,7 +261,7 @@ if context is not None and len(context) > 0:
                 )
                 st.markdown(table_html, unsafe_allow_html=True)
 else:
-    st.info("Google Sheet를 불러오면 여기에 내용이 표시됩니다.")
+    st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
 
 st.markdown("---")
 
