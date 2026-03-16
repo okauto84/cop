@@ -259,14 +259,17 @@ if context_total is not None and len(context_total) > 0:
         volume_pairs.sort(key=lambda x: x[1], reverse=True)
         obj["거래량 배열"] = " > ".join(label for label, _ in volume_pairs)
 
-    # ===== 이평 분류 (OpenAI + RAW data 기반) =====
+    # ===== 이평 분류 / 거래량 분류 (OpenAI + RAW data 기반) =====
     try:
         raw_df_for_ma = context_raw_range
         if API_KEY and raw_df_for_ma is not None and not raw_df_for_ma.empty:
             # RAW data 전체를 그대로 전달
             raw_ma_data = raw_df_for_ma.to_dict(orient="records")
 
-            classification_labels = [
+            client = OpenAI(api_key=API_KEY)
+
+            # --- 이평 분류 ---
+            ma_class_labels = [
                 "🚀 [정배열] 상승 가속 (최적 매수)",
                 "💣 [역배열] 하락 확정 (접근 금지)",
                 "🎯 [상승 중 눌림목] VCP 셋업 대기 (기회)",
@@ -275,34 +278,69 @@ if context_total is not None and len(context_total) > 0:
                 "🔍 [혼조세] 방향성 탐색 구간",
             ]
 
-            system_msg = (
-                "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서 아래 RAW 데이터는 한 종목의 최근 시계열 이동평균선 데이터이다. "
+            ma_system_msg = (
+                "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자이다. "
+                "아래 RAW 데이터는 한 종목의 최근 시계열 이동평균선 데이터이다. "
                 "이 데이터를 분석해서, 아래 [분류표] 중에서 현재 구간에 가장 적합한 1개 라벨만 골라라. "
                 "반드시 라벨 전체 문자열 하나만 그대로 반환하고, 다른 설명이나 문장은 절대 쓰지 마라.\n\n"
                 "[분류표]\n- "
-                + "\n- ".join(classification_labels)
+                + "\n- ".join(ma_class_labels)
             )
-            user_msg = "RAW 이동평균선 데이터:\n" + json.dumps(raw_ma_data, ensure_ascii=False, indent=2)
+            ma_user_msg = "RAW 이동평균선 데이터:\n" + json.dumps(raw_ma_data, ensure_ascii=False, indent=2)
 
-            client = OpenAI(api_key=API_KEY)
-            resp = client.chat.completions.create(
+            ma_resp = client.chat.completions.create(
                 model=model_name,
                 messages=[
-                    {"role": "system", "content": system_msg},
-                    {"role": "user", "content": user_msg},
+                    {"role": "system", "content": ma_system_msg},
+                    {"role": "user", "content": ma_user_msg},
                 ],
             )
-            raw_label = (resp.choices[0].message.content or "").strip()
+            ma_raw_label = (ma_resp.choices[0].message.content or "").strip()
 
-            chosen_label = None
-            for label in classification_labels:
-                if label in raw_label or raw_label == label:
-                    chosen_label = label
+            ma_chosen_label = None
+            for label in ma_class_labels:
+                if label in ma_raw_label or ma_raw_label == label:
+                    ma_chosen_label = label
                     break
-            if chosen_label:
-                obj["이평 분류"] = chosen_label
+            if ma_chosen_label:
+                obj["이평 분류"] = ma_chosen_label
+
+            # --- 거래량 분류 ---
+            vol_class_labels = [
+                "🔥 에너지 분출 (돌파/추세 가속)",
+                "📉 거래량 고갈 (Dry-up/매도 소진)",
+                "💤 단기 과열 후 휴식 (관망)",
+                "🔍 거래량 혼조 (추세 탐색)",
+            ]
+
+            vol_system_msg = (
+                "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자이다. "
+                "아래 RAW 데이터는 한 종목의 최근 시계열 거래량 및 거래량(평균) 데이터이다. "
+                "거래량 변화 패턴과 평균 대비 현재 수준을 분석해서, 아래 [분류표] 중에서 현재 구간에 가장 적합한 1개 라벨만 골라라. "
+                "반드시 라벨 전체 문자열 하나만 그대로 반환하고, 다른 설명이나 문장은 절대 쓰지 마라.\n\n"
+                "[분류표]\n- "
+                + "\n- ".join(vol_class_labels)
+            )
+            vol_user_msg = "RAW 거래량/거래량(평균) 데이터:\n" + json.dumps(raw_ma_data, ensure_ascii=False, indent=2)
+
+            vol_resp = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": vol_system_msg},
+                    {"role": "user", "content": vol_user_msg},
+                ],
+            )
+            vol_raw_label = (vol_resp.choices[0].message.content or "").strip()
+
+            vol_chosen_label = None
+            for label in vol_class_labels:
+                if label in vol_raw_label or vol_raw_label == label:
+                    vol_chosen_label = label
+                    break
+            if vol_chosen_label:
+                obj["거래량 분류"] = vol_chosen_label
     except Exception:
-        # 분류 실패 시 조용히 무시 (이평 분류 미설정)
+        # 분류 실패 시 조용히 무시 (이평/거래량 분류 미설정)
         pass
 
     sheet_objects_total = [obj]
