@@ -155,14 +155,14 @@ if context is not None and len(context) > 0:
         st.session_state.sheet_objects_json = []
     st.session_state.sheet_objects_json = sheet_objects
 
-    # 각 object별로 표 형식 출력 (Object 명칭 = 해당 블록의 첫 key)
+    # 각 object별로 접고 펼 수 있는 형태로 표 형식 출력 (Object 명칭 = 해당 블록의 첫 key)
     if sheet_objects:
         st.markdown("#### 구분된 객체 (표)")
         for obj in sheet_objects:
             object_name = next(iter(obj.keys()), "") if obj else ""
-            st.markdown(f"**{object_name}**")
-            table_df = pd.DataFrame([{"key": k, "value": v} for k, v in obj.items()])
-            st.table(table_df)
+            with st.expander(object_name or "(빈 객체)", expanded=False):
+                table_df = pd.DataFrame([{"key": k, "value": v} for k, v in obj.items()])
+                st.table(table_df)
 else:
     st.info("Google Sheet를 불러오면 여기에 내용이 표시됩니다.")
 
