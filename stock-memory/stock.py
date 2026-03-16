@@ -190,6 +190,16 @@ if context is not None and len(context) > 0:
                     except (ValueError, TypeError):
                         return None
 
+                # 거래량 막대 비교를 위한 값 수집
+                volume_keys = ["거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
+                volume_values = {}
+                for vk in volume_keys:
+                    volume_values[vk] = _parse_num(obj.get(vk))
+                max_vol = max(
+                    (v for v in volume_values.values() if v is not None),
+                    default=None,
+                )
+
                 table_rows = []
                 for k, v in obj.items():
                     k_esc = html.escape(str(k))
@@ -212,10 +222,28 @@ if context is not None and len(context) > 0:
                                 row_style = ' style="color:red;"'
                             elif rate < 0:
                                 row_style = ' style="color:blue;"'
-                    wrap = "<b>{}</b>" if k in bold_keys else "{}"
-                    cell_a = wrap.format(k_esc)
-                    cell_b = wrap.format(v_esc)
-                    table_rows.append(f"<tr{row_style}><td>{cell_a}</td><td>{cell_b}</td></tr>")
+
+                    # 거래량(현재/10/30/50) 은 막대 그래프 형태로 표현
+                    if k in volume_keys and max_vol and volume_values.get(k) is not None:
+                        ratio = max(volume_values[k] / max_vol, 0)
+                        bar_blocks = int(ratio * 30)  # 최대 30칸
+                        bar_html = (
+                            '<div style="display:flex;align-items:center;gap:8px;">'
+                            f'<div style="display:inline-block;height:12px;">'
+                            f'{"".join(["<span style=\'display:inline-block;width:4px;height:10px;background-color:#1f2933;margin-right:1px;\'></span>" for _ in range(bar_blocks)])}'
+                            f"</div>"
+                            f'<span style="font-family:monospace;font-size:0.8rem;">{v_esc}</span>'
+                            "</div>"
+                        )
+                        cell_b_html = bar_html
+                    else:
+                        wrap = "<b>{}</b>" if k in bold_keys else "{}"
+                        cell_b_html = wrap.format(v_esc)
+
+                    wrap_key = "<b>{}</b>" if k in bold_keys else "{}"
+                    cell_a_html = wrap_key.format(k_esc)
+                    table_rows.append(f"<tr{row_style}><td>{cell_a_html}</td><td>{cell_b_html}</td></tr>")
+
                 table_html = (
                     '<table style="width:100%; border-collapse: collapse;">'
                     "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
