@@ -28,8 +28,8 @@ except:
 
 # 사이드바 제거 후 사용하던 설정값 (메인에서 기본값으로 사용)
 output_method = "실시간 출력"
-# model_name = "gpt-5-mini"
-model_name = "gpt-5.4"
+model_name = "gpt-5-mini"
+# model_name = "gpt-5.4"
 
 # 메인 화면
 st.markdown("# test")
@@ -288,7 +288,7 @@ if prompt := st.chat_input("질문해보세요!"):
     with st.chat_message("assistant"):
         objects_data = st.session_state.get("sheet_objects_json", [])
         system_prompt = (
-            "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세추종 돌파매매를 전문으로 하는 전문 주식 투자자로서, objects JSON 데이터를 고려하여 질문에 답변을 하고 조언을 하시오. "
+            "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서, objects JSON 데이터를 고려하여 질문에 답변을 하고 조언을 하시오. "
             "아래 [참고 데이터]는 객체 목록이며, 각 객체는 key-value 쌍으로 구성되어 있습니다. "
             "이평 분류, 거래량 분류, 종합 분류 값에 상관없이, 이 데이터를 이해하고 사용자 질의에 맞게 답변하세요. \n\n"
             "[참고 데이터]\n"
