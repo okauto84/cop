@@ -259,6 +259,53 @@ if context_total is not None and len(context_total) > 0:
         volume_pairs.sort(key=lambda x: x[1], reverse=True)
         obj["거래량 배열"] = " > ".join(label for label, _ in volume_pairs)
 
+    # ===== 이평 분류 (OpenAI + RAW data 기반) =====
+    try:
+        raw_df_for_ma = context_raw_range
+        if API_KEY and raw_df_for_ma is not None and not raw_df_for_ma.empty:
+            # 이동평균선 관련 컬럼만 간단히 추려 전달 (컬럼 이름에 '이평' 이 포함된 것)
+            ma_cols = [c for c in raw_df_for_ma.columns if "이평" in str(c)]
+            raw_ma_data = raw_df_for_ma[ma_cols].to_dict(orient="records") if ma_cols else raw_df_for_ma.to_dict(orient="records")
+
+            classification_labels = [
+                "🚀 [정배열] 상승 가속 (최적 매수)",
+                "💣 [역배열] 하락 확정 (접근 금지)",
+                "🎯 [상승 중 눌림목] VCP 셋업 대기 (기회)",
+                "⚠️ [데드캣 바운스] 역배열 내 반등 (주의)",
+                "⚡ [추세 재개] 골든크로스 발생 (추격)",
+                "🔍 [혼조세] 방향성 탐색 구간",
+            ]
+
+            system_msg = (
+                "너는 주식 차트 전문가이다. 아래 RAW 데이터는 한 종목의 최근 시계열 이동평균선 데이터이다. "
+                "이 데이터를 분석해서, 아래 [분류표] 중에서 현재 구간에 가장 적합한 1개 라벨만 골라라. "
+                "반드시 라벨 전체 문자열 하나만 그대로 반환하고, 다른 설명이나 문장은 절대 쓰지 마라.\n\n"
+                "[분류표]\n- "
+                + "\n- ".join(classification_labels)
+            )
+            user_msg = "RAW 이동평균선 데이터:\n" + json.dumps(raw_ma_data, ensure_ascii=False, indent=2)
+
+            client = OpenAI(api_key=API_KEY)
+            resp = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": user_msg},
+                ],
+            )
+            raw_label = (resp.choices[0].message.content or "").strip()
+
+            chosen_label = None
+            for label in classification_labels:
+                if label in raw_label or raw_label == label:
+                    chosen_label = label
+                    break
+            if chosen_label:
+                obj["이평 분류"] = chosen_label
+    except Exception:
+        # 분류 실패 시 조용히 무시 (이평 분류 미설정)
+        pass
+
     sheet_objects_total = [obj]
     if "sheet_objects_total_json" not in st.session_state:
         st.session_state.sheet_objects_total_json = []
