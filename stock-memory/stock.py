@@ -97,8 +97,19 @@ def load_sheet_as_table(url: str) -> tuple[pd.DataFrame, str]:
 # 세션에 저장된 테이블(내용) 초기화
 if "sheet_table" not in st.session_state:
     st.session_state.sheet_table = pd.DataFrame()
+if "expand_object_name" not in st.session_state:
+    st.session_state.expand_object_name = None
 
-if st.button("google sheet 불러오기"):
+# 'google sheet 불러오기' 버튼 옆에 검색 입력 + 검색 버튼
+col_load, col_search, col_btn = st.columns([1, 2, 0.5])
+with col_load:
+    load_clicked = st.button("google sheet 불러오기")
+with col_search:
+    search_query = st.text_input("검색", label_visibility="collapsed", placeholder="object명 검색")
+with col_btn:
+    search_clicked = st.button("검색")
+
+if load_clicked:
     url = (google_sheet_url or "").strip()
     if not url:
         st.error("Streamlit secrets에 google_sheet_url을 설정하세요.")
@@ -109,10 +120,24 @@ if st.button("google sheet 불러오기"):
             st.error(f"시트를 불러올 수 없습니다. {err_msg}")
         elif sheet_table is not None and len(sheet_table.columns) > 0:
             st.session_state.sheet_table = sheet_table
+            st.session_state.expand_object_name = None
             st.success("Google Sheet를 불러왔습니다.")
             st.rerun()
         else:
             st.error("시트를 불러올 수 없습니다. google_sheet_url과 시트 공개(링크로 볼 수 있음) 설정을 확인하세요.")
+
+# 검색: object명과 동일하면 해당 object로 focus(펼침)
+if search_clicked and (search_query or "").strip():
+    query = (search_query or "").strip()
+    objects_json = st.session_state.get("sheet_objects_json", [])
+    for obj in objects_json:
+        object_name = next(iter(obj.keys()), "")
+        if object_name == query:
+            st.session_state.expand_object_name = object_name
+            st.rerun()
+            break
+    else:
+        st.warning("일치하는 object가 없습니다.")
 
 # 저장된 테이블 변수 (시트 내용 = context)
 context = st.session_state.sheet_table
@@ -155,12 +180,15 @@ if context is not None and len(context) > 0:
         st.session_state.sheet_objects_json = []
     st.session_state.sheet_objects_json = sheet_objects
 
-    # 각 object별로 접고 펼 수 있는 형태로 표 형식 출력 (Object 명칭 = 해당 블록의 첫 key)
+    # 각 object별로 접고 펼 수 있는 형태로 표 형식 출력 (검색 시 해당 object만 펼침)
     if sheet_objects:
-        st.markdown("#### 구분된 객체 (표)")
+        st.markdown("#### Objects")
+        expand_name = st.session_state.get("expand_object_name")
         for obj in sheet_objects:
             object_name = next(iter(obj.keys()), "") if obj else ""
-            with st.expander(object_name or "(빈 객체)", expanded=False):
+            label = object_name or "(빈 객체)"
+            expanded = (expand_name is not None and object_name == expand_name)
+            with st.expander(label, expanded=expanded):
                 table_df = pd.DataFrame([{"key": k, "value": v} for k, v in obj.items()])
                 st.table(table_df)
 else:
