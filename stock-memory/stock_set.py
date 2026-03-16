@@ -143,10 +143,18 @@ if load_clicked:
             if raw_df is not None and not raw_df.empty:
                 # A~F 열(0~5), 2행~53행 → index 기준 1~52
                 raw_slice = raw_df.iloc[1:53, 0:6].copy()
-                # 첫 행(원래 A2:F2)을 헤더로 사용
-                raw_slice.columns = (
-                    raw_slice.iloc[0].astype(str).str.strip()
-                )
+                # 첫 행(원래 A2:F2)을 헤더로 사용하되, 중복 헤더는 _1, _2 ... 를 붙여 유니크하게 만든다.
+                header_row = raw_slice.iloc[0].astype(str).str.strip().tolist()
+                seen: dict[str, int] = {}
+                unique_headers: list[str] = []
+                for h in header_row:
+                    if h in seen:
+                        seen[h] += 1
+                        unique_headers.append(f"{h}_{seen[h]}")
+                    else:
+                        seen[h] = 0
+                        unique_headers.append(h)
+                raw_slice.columns = unique_headers
                 raw_range_df = raw_slice.iloc[1:].reset_index(drop=True)
             st.session_state.sheet_table_raw_range = raw_range_df
             st.session_state.expand_object_name = None
