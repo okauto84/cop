@@ -232,7 +232,9 @@ if context_total is not None and len(context_total) > 0:
             else:
                 expanded = (expand_name is not None and object_name == expand_name)
             with st.expander(label, expanded=expanded):
+                # 우선적으로 화면 상단에 보여줄 핵심 키들
                 bold_keys = {"이평 배열", "이평 분류", "거래량 배열", "거래량 분류", "종합 분류"}
+                priority_keys = ["이평 배열", "이평 분류", "거래량 배열", "거래량 분류", "종합 분류"]
 
                 def _parse_num(s):
                     if s is None or str(s).strip() == "":
@@ -253,7 +255,20 @@ if context_total is not None and len(context_total) > 0:
                 max_price = max((v for v in price_values.values() if v is not None), default=None)
 
                 table_rows = []
-                for k, v in obj.items():
+
+                # key 순서를 "우선 키들 → 나머지 키들" 로 정렬
+                ordered_keys: list[str] = []
+                # 1) 우선 키들
+                for pk in priority_keys:
+                    if pk in obj:
+                        ordered_keys.append(pk)
+                # 2) 나머지 키들
+                for k in obj.keys():
+                    if k not in ordered_keys:
+                        ordered_keys.append(k)
+
+                for k in ordered_keys:
+                    v = obj.get(k)
                     k_esc = html.escape(str(k))
                     v_esc = html.escape(str(v))
                     row_style = ""
@@ -380,7 +395,7 @@ if prompt := st.chat_input("질문해보세요!"):
         }
         system_prompt = (
             "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서, 아래 Total / RAW 데이터를 참고하여 질문에 답변하고 조언을 하시오. "
-            "Total 데이터는 종목별 요약 객체 목록이며, RAW 데이터는 시계열 가격·거래량 등의 원천 데이터 테이블입니다. "
+            "Total 데이터는 종목별 요약 객체 목록이며, RAW 데이터는 거래일 날자별 종가, 이동평균선, 거래량, 거래량, 거래량(평균)의 원천 데이터 테이블입니다. "
             "이평 분류, 거래량 분류, 종합 분류 값 등에 구애받지 말고, 두 데이터를 함께 고려해 사용자 질의에 맞게 구체적으로 답변하세요. \n\n"
             "[참고 데이터]\n"
             + (json.dumps(objects_data, ensure_ascii=False, indent=2) if objects_data else "(데이터 없음 - 먼저 Google Sheet를 불러오세요.)")
