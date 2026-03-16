@@ -453,29 +453,6 @@ else:
 
 st.markdown("---")
 
-# 이평/거래량 분류에 사용된 최종 프롬프트 텍스트 출력
-ma_sys = st.session_state.get("ma_prompt_system")
-ma_usr = st.session_state.get("ma_prompt_user")
-vol_sys = st.session_state.get("vol_prompt_system")
-vol_usr = st.session_state.get("vol_prompt_user")
-
-if any([ma_sys, ma_usr, vol_sys, vol_usr]):
-    st.markdown("#### 이평/거래량 분류 프롬프트 (참고용)")
-    if ma_sys or ma_usr:
-        st.markdown("**이평 분류 프롬프트**")
-        if ma_sys:
-            st.text(f"[system]\n{ma_sys}")
-        if ma_usr:
-            st.text(f"[user]\n{ma_usr}")
-    if vol_sys or vol_usr:
-        st.markdown("**거래량 분류 프롬프트**")
-        if vol_sys:
-            st.text(f"[system]\n{vol_sys}")
-        if vol_usr:
-            st.text(f"[user]\n{vol_usr}")
-
-st.markdown("---")
-
 # 챗봇 섹션
 st.markdown("#### 💬 위 데이터 기반 질의응답")
 
