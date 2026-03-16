@@ -245,7 +245,7 @@ else:
 st.markdown("---")
 
 # 챗봇 섹션
-st.markdown("#### 💬 위 데이머 기반 질의응답")
+st.markdown("#### 💬 위 데이터 기반 질의응답")
 
 # OpenAI API 호출 함수
 def call_openai_api(messages: list) -> str:
