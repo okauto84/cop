@@ -217,14 +217,102 @@ if context_total is not None and len(context_total) > 0:
         st.session_state.sheet_objects_total_json = []
     st.session_state.sheet_objects_total_json = total_kv_list
 
-    # Total data를 key/value 표 형식으로 그대로 출력
+    # Total data를 key/value 표 형식으로 그대로 출력 (굵은 글씨, 색상, 막대 그래프 포함)
     if total_kv_list:
         st.markdown("##### Total data")
+
+        # key → value 딕셔너리로 한 번 변환 (비교/계산용)
+        kv_dict: dict[str, str] = {item["key"]: item["value"] for item in total_kv_list}
+
+        # 숫자 파싱 유틸
+        def _parse_num(s):
+            if s is None:
+                return None
+            txt = str(s).strip().replace(",", "")
+            if txt == "":
+                return None
+            try:
+                return float(txt)
+            except (ValueError, TypeError):
+                return None
+
+        # 거래량 막대 비교를 위한 값 수집
+        volume_keys = ["거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
+        volume_values = {vk: _parse_num(kv_dict.get(vk)) for vk in volume_keys}
+        max_vol = max((v for v in volume_values.values() if v is not None), default=None)
+
+        # 이평/가격 막대 비교를 위한 값 수집
+        price_keys = ["이평(5)", "이평(10)", "이평(20)", "이평(50)", "현재가", "평균단가"]
+        price_values = {pk: _parse_num(kv_dict.get(pk)) for pk in price_keys}
+        max_price = max((v for v in price_values.values() if v is not None), default=None)
+
+        bold_keys = {"이평 배열", "이평 분류", "거래량 배열", "거래량 분류", "종합 분류"}
+
         rows = []
         for item in total_kv_list:
-            k_esc = html.escape(item["key"])
-            v_esc = html.escape(item["value"])
-            rows.append(f"<tr><td>{k_esc}</td><td>{v_esc}</td></tr>")
+            k = item["key"]
+            v = item["value"]
+            k_esc = html.escape(k)
+            v_esc = html.escape(v)
+
+            # 기본 행 스타일
+            row_style = ""
+
+            # 평균단가 vs 현재가에 따라 색상
+            if k == "평균단가":
+                avg_price = _parse_num(v)
+                curr_price = _parse_num(kv_dict.get("현재가"))
+                if avg_price is not None and curr_price is not None:
+                    if avg_price > curr_price:
+                        row_style = ' style="color:blue;"'
+                    elif avg_price < curr_price:
+                        row_style = ' style="color:red;"'
+
+            # 수익률 색상 (양수=red, 음수=blue)
+            elif k == "수익률":
+                rate_str = v.replace("%", "").strip() if v is not None else ""
+                rate = _parse_num(rate_str) if rate_str else None
+                if rate is not None:
+                    if rate > 0:
+                        row_style = ' style="color:red;"'
+                    elif rate < 0:
+                        row_style = ' style="color:blue;"'
+
+            # 거래량 및 이평/가격 막대 그래프
+            cell_b_html = None
+            if k in volume_keys and max_vol and volume_values.get(k) is not None:
+                ratio = max(volume_values[k] / max_vol, 0)
+                bar_blocks = int(ratio * 20)  # 최대 20칸
+                bar_color = "#1f2933"
+            elif k in price_keys and max_price and price_values.get(k) is not None:
+                ratio = max(price_values[k] / max_price, 0)
+                bar_blocks = int(ratio * 20)  # 최대 20칸
+                bar_color = "#1f2933"
+            else:
+                bar_blocks = 0
+                bar_color = "#1f2933"
+
+            if (k in volume_keys or k in price_keys) and (max_vol or max_price) and bar_blocks > 0:
+                bar_html = (
+                    '<div style="display:flex;align-items:center;gap:8px;">'
+                    f'<div style="display:inline-block;height:12px;">'
+                    f'{"".join([f"<span style=\'display:inline-block;width:4px;height:10px;background-color:{bar_color};margin-right:1px;\'></span>" for _ in range(bar_blocks)])}'
+                    f"</div>"
+                    f'<span style="font-family:monospace;font-size:0.8rem;">{v_esc}</span>'
+                    "</div>"
+                )
+                cell_b_html = bar_html
+
+            # 막대가 없으면 기본 텍스트 (굵게/보통)
+            if cell_b_html is None:
+                wrap_val = "<b>{}</b>" if k in bold_keys else "{}"
+                cell_b_html = wrap_val.format(v_esc)
+
+            wrap_key = "<b>{}</b>" if k in bold_keys else "{}"
+            cell_a_html = wrap_key.format(k_esc)
+
+            rows.append(f"<tr{row_style}><td>{cell_a_html}</td><td>{cell_b_html}</td></tr>")
+
         table_html = (
             '<div style="font-size:0.8rem;">'
             '<table style="width:100%; border-collapse: collapse;">'
