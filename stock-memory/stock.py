@@ -208,16 +208,40 @@ if context is not None and len(context) > 0:
             else:
                 expanded = (expand_name is not None and object_name == expand_name)
             with st.expander(label, expanded=expanded):
-                # 아래 key명에 해당하는 행은 굵은 글씨로 표시
                 bold_keys = {"이평 배열", "이평 분류", "거래량 배열", "거래량 분류", "종합 분류"}
+
+                def _parse_num(s):
+                    if s is None or str(s).strip() == "":
+                        return None
+                    try:
+                        return float(str(s).strip().replace(",", ""))
+                    except (ValueError, TypeError):
+                        return None
+
                 table_rows = []
                 for k, v in obj.items():
                     k_esc = html.escape(str(k))
                     v_esc = html.escape(str(v))
-                    if k in bold_keys:
-                        table_rows.append(f"<tr><td><b>{k_esc}</b></td><td><b>{v_esc}</b></td></tr>")
-                    else:
-                        table_rows.append(f"<tr><td>{k_esc}</td><td>{v_esc}</td></tr>")
+                    row_style = ""
+                    if k == "평균단가":
+                        avg_price = _parse_num(v)
+                        curr_price = _parse_num(obj.get("현재가"))
+                        if avg_price is not None and curr_price is not None:
+                            if avg_price > curr_price:
+                                row_style = ' style="color:blue;"'
+                            elif avg_price < curr_price:
+                                row_style = ' style="color:red;"'
+                    elif k == "수익률":
+                        rate = _parse_num(v)
+                        if rate is not None:
+                            if rate > 0:
+                                row_style = ' style="color:red;"'
+                            elif rate < 0:
+                                row_style = ' style="color:blue;"'
+                    wrap = "<b>{}</b>" if k in bold_keys else "{}"
+                    cell_a = wrap.format(k_esc)
+                    cell_b = wrap.format(v_esc)
+                    table_rows.append(f"<tr{row_style}><td>{cell_a}</td><td>{cell_b}</td></tr>")
                 table_html = (
                     '<table style="width:100%; border-collapse: collapse;">'
                     "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
