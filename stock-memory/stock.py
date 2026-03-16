@@ -6,6 +6,7 @@ import time
 import pandas as pd
 import re
 import json
+import html
 # 페이지 설정
 st.set_page_config(
     page_title="Stock",
@@ -209,8 +210,25 @@ if context is not None and len(context) > 0:
             else:
                 expanded = (expand_name is not None and object_name == expand_name)
             with st.expander(label, expanded=expanded):
-                table_df = pd.DataFrame([{"key": k, "value": v} for k, v in obj.items()])
-                st.table(table_df)
+                # 9, 10, 15, 16, 17행(1-based)은 굵은 글씨로 표시
+                bold_row_numbers = {9, 10, 15, 16, 17}
+                rows = list(obj.items())
+                table_rows = []
+                for i, (k, v) in enumerate(rows):
+                    row_num = i + 1
+                    k_esc = html.escape(str(k))
+                    v_esc = html.escape(str(v))
+                    if row_num in bold_row_numbers:
+                        table_rows.append(f"<tr><td><b>{k_esc}</b></td><td><b>{v_esc}</b></td></tr>")
+                    else:
+                        table_rows.append(f"<tr><td>{k_esc}</td><td>{v_esc}</td></tr>")
+                table_html = (
+                    '<table style="width:100%; border-collapse: collapse;">'
+                    "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
+                    "<th style=\"text-align:left; padding:4px 8px;\">value</th></tr></thead>"
+                    "<tbody>" + "".join(table_rows) + "</tbody></table>"
+                )
+                st.markdown(table_html, unsafe_allow_html=True)
 else:
     st.info("Google Sheet를 불러오면 여기에 내용이 표시됩니다.")
 
