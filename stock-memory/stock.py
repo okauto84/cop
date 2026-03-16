@@ -40,8 +40,8 @@ with st.sidebar:
 st.markdown("# test")
 
 
-def _sheet_url_to_export_csv(url: str, gid: str = "0") -> str:
-    """공개 스프레드시트 URL을 CSV 내보내기 URL로 변환"""
+def _sheet_url_to_export_csv(url: str) -> str:
+    """공개 스프레드시트 URL을 CSV 내보내기 URL로 변환. 첫 번째 시트(total sheet, gid=0)만 사용."""
     url = (url or "").strip()
     if not url:
         return ""
@@ -50,15 +50,12 @@ def _sheet_url_to_export_csv(url: str, gid: str = "0") -> str:
     if not m:
         return ""
     sid = m.group(1)
-    # 기존 URL에 #gid= 숫자가 있으면 사용
-    gid_m = re.search(r"[#?]gid=(\d+)", url)
-    if gid_m:
-        gid = gid_m.group(1)
-    return f"https://docs.google.com/spreadsheets/d/{sid}/export?format=csv&gid={gid}"
+    # 항상 첫 번째 시트(total sheet)만 사용 (gid=0)
+    return f"https://docs.google.com/spreadsheets/d/{sid}/export?format=csv&gid=0"
 
 
 def _read_gsheet(url: str = None) -> pd.DataFrame:
-    """공개 Google Sheet URL로 시트 읽기 (URL은 secrets 또는 인자로 전달)"""
+    """공개 Google Sheet URL로 첫 번째 시트(total sheet)만 읽기 (URL은 secrets 또는 인자로 전달)"""
     u = (url or st.secrets.get("google_sheet_url", "") or "").strip()
     if not u:
         return pd.DataFrame()
@@ -81,7 +78,7 @@ if "messages" not in st.session_state:
 
 # Google Sheet URL로 불러와 시트 영역을 테이블(DataFrame)로 변환하여 변수에 저장
 def load_sheet_as_table(url: str) -> pd.DataFrame:
-    """Google Sheet URL을 받아 시트 영역을 table 형태(DataFrame)로 변환해 반환"""
+    """Google Sheet URL을 받아 첫 번째 시트(total sheet)만 table 형태(DataFrame)로 변환해 반환"""
     return _read_gsheet(url)
 
 # 세션에 저장된 테이블(내용) 초기화 (secrets에 URL이 있으면 최초 1회 로드)
