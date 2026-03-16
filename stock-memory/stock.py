@@ -47,7 +47,7 @@ st.markdown("# test")
 
 
 def _sheet_url_to_export_csv(url: str) -> str:
-    """공개 스프레드시트 URL을 CSV 내보내기 URL로 변환. 첫 번째 시트(total sheet, gid=0)만 사용."""
+    """공개 스프레드시트 URL을 CSV 내보내기 URL로 변환. gid 생략 시 첫 번째 시트가 내보내짐."""
     url = (url or "").strip()
     if not url:
         return ""
@@ -56,8 +56,8 @@ def _sheet_url_to_export_csv(url: str) -> str:
     if not m:
         return ""
     sid = m.group(1)
-    # 항상 첫 번째 시트(total sheet)만 사용 (gid=0)
-    return f"https://docs.google.com/spreadsheets/d/{sid}/export?format=csv&gid=0"
+    # gid 없이 export하면 첫 번째 시트가 기본. gid=0 은 시트 ID가 0이 아닐 때 400 Bad Request 발생.
+    return f"https://docs.google.com/spreadsheets/d/{sid}/export?format=csv"
 
 
 def _read_gsheet(url: str = None) -> tuple[pd.DataFrame, str]:
