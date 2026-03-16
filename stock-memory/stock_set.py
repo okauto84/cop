@@ -113,6 +113,9 @@ if "sheet_table_total" not in st.session_state:
     st.session_state.sheet_table_total = pd.DataFrame()
 if "sheet_table_raw" not in st.session_state:
     st.session_state.sheet_table_raw = pd.DataFrame()
+if "sheet_table_raw_range" not in st.session_state:
+    # RAW 시트에서 A2:F53 구간을 잘라낸 DataFrame
+    st.session_state.sheet_table_raw_range = pd.DataFrame()
 if "expand_object_name" not in st.session_state:
     st.session_state.expand_object_name = None
 if "expand_all" not in st.session_state:
@@ -133,6 +136,19 @@ if load_clicked:
         elif sheet_table_total is not None and len(sheet_table_total.columns) > 0:
             st.session_state.sheet_table_total = sheet_table_total
             st.session_state.sheet_table_raw = sheet_table_raw if sheet_table_raw is not None else pd.DataFrame()
+
+            # RAW 시트에서 A2:F53 범위를 잘라 A2 행을 헤더로 사용하는 DataFrame 생성
+            raw_df = st.session_state.sheet_table_raw
+            raw_range_df = pd.DataFrame()
+            if raw_df is not None and not raw_df.empty:
+                # A~F 열(0~5), 2행~53행 → index 기준 1~52
+                raw_slice = raw_df.iloc[1:53, 0:6].copy()
+                # 첫 행(원래 A2:F2)을 헤더로 사용
+                raw_slice.columns = (
+                    raw_slice.iloc[0].astype(str).str.strip()
+                )
+                raw_range_df = raw_slice.iloc[1:].reset_index(drop=True)
+            st.session_state.sheet_table_raw_range = raw_range_df
             st.session_state.expand_object_name = None
             st.session_state.expand_all = True  # 불러오기 시 모든 카드(expander) 펼침
             st.success("Google Sheet를 불러왔습니다.")
@@ -143,6 +159,7 @@ if load_clicked:
 # 저장된 테이블 변수 (시트 내용 = context)
 context_total = st.session_state.sheet_table_total
 context_raw = st.session_state.sheet_table_raw
+context_raw_range = st.session_state.sheet_table_raw_range
 
 
 def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]:
@@ -319,6 +336,11 @@ if context_total is not None and len(context_total) > 0:
                     "</div>"
                 )
                 st.markdown(table_html, unsafe_allow_html=True)
+
+    # RAW 시트 A2:F53 DataFrame 출력
+    if context_raw_range is not None and not context_raw_range.empty:
+        st.markdown("#### RAW 시트 DataFrame (A2:F53)")
+        st.dataframe(context_raw_range)
 else:
     st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
 
