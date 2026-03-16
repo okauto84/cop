@@ -146,11 +146,7 @@ def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]
     return objects
 
 
-# 내용(context)을 그대로 화면에 출력
-st.markdown("#### Google Sheet 내용")
 if context is not None and len(context) > 0:
-    st.dataframe(context, use_container_width=True, hide_index=True)
-
     # 행 3줄 빈 곳으로 구분 → A열=key, B열=value 객체 리스트(JSON)로 변수 저장
     sheet_objects = _parse_sheet_to_objects(context, empty_rows=3)
     if "sheet_objects_json" not in st.session_state:
