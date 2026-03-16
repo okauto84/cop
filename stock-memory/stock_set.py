@@ -339,6 +339,12 @@ if context_total is not None and len(context_total) > 0:
                     break
             if vol_chosen_label:
                 obj["거래량 분류"] = vol_chosen_label
+
+            # 프롬프트 내용을 세션에 저장하여 화면 하단에 표시할 수 있도록 함
+            st.session_state["ma_prompt_system"] = ma_system_msg
+            st.session_state["ma_prompt_user"] = ma_user_msg
+            st.session_state["vol_prompt_system"] = vol_system_msg
+            st.session_state["vol_prompt_user"] = vol_user_msg
     except Exception:
         # 분류 실패 시 조용히 무시 (이평/거래량 분류 미설정)
         pass
@@ -444,6 +450,29 @@ if context_total is not None and len(context_total) > 0:
         st.dataframe(context_raw_range)
 else:
     st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
+
+st.markdown("---")
+
+# 이평/거래량 분류에 사용된 최종 프롬프트 텍스트 출력
+ma_sys = st.session_state.get("ma_prompt_system")
+ma_usr = st.session_state.get("ma_prompt_user")
+vol_sys = st.session_state.get("vol_prompt_system")
+vol_usr = st.session_state.get("vol_prompt_user")
+
+if any([ma_sys, ma_usr, vol_sys, vol_usr]):
+    st.markdown("#### 이평/거래량 분류 프롬프트 (참고용)")
+    if ma_sys or ma_usr:
+        st.markdown("**이평 분류 프롬프트**")
+        if ma_sys:
+            st.text(f"[system]\n{ma_sys}")
+        if ma_usr:
+            st.text(f"[user]\n{ma_usr}")
+    if vol_sys or vol_usr:
+        st.markdown("**거래량 분류 프롬프트**")
+        if vol_sys:
+            st.text(f"[system]\n{vol_sys}")
+        if vol_usr:
+            st.text(f"[user]\n{vol_usr}")
 
 st.markdown("---")
 
