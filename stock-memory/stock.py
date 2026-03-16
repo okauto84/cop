@@ -210,15 +210,13 @@ if context is not None and len(context) > 0:
             else:
                 expanded = (expand_name is not None and object_name == expand_name)
             with st.expander(label, expanded=expanded):
-                # 9, 10, 15, 16, 17행(1-based)은 굵은 글씨로 표시
-                bold_row_numbers = {10, 11, 16, 17, 18}
-                rows = list(obj.items())
+                # 아래 key명에 해당하는 행은 굵은 글씨로 표시
+                bold_keys = {"이평 배열", "이평 분류", "거래량 배열", "거래량 분류", "종합 분류"}
                 table_rows = []
-                for i, (k, v) in enumerate(rows):
-                    row_num = i + 1
+                for k, v in obj.items():
                     k_esc = html.escape(str(k))
                     v_esc = html.escape(str(v))
-                    if row_num in bold_row_numbers:
+                    if k in bold_keys:
                         table_rows.append(f"<tr><td><b>{k_esc}</b></td><td><b>{v_esc}</b></td></tr>")
                     else:
                         table_rows.append(f"<tr><td>{k_esc}</td><td>{v_esc}</td></tr>")
