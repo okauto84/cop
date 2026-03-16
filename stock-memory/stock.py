@@ -211,7 +211,7 @@ if context is not None and len(context) > 0:
                 expanded = (expand_name is not None and object_name == expand_name)
             with st.expander(label, expanded=expanded):
                 # 9, 10, 15, 16, 17행(1-based)은 굵은 글씨로 표시
-                bold_row_numbers = {9, 10, 15, 16, 17}
+                bold_row_numbers = {10, 11, 16, 17, 18}
                 rows = list(obj.items())
                 table_rows = []
                 for i, (k, v) in enumerate(rows):
