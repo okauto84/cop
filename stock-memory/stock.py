@@ -103,17 +103,7 @@ if "expand_object_name" not in st.session_state:
 if "expand_all" not in st.session_state:
     st.session_state.expand_all = None  # None=개별, True=모두 펼치기, False=모두 접기
 
-# 텍스트 링크 '모두 접기'/'모두 펼치기' 클릭 시 쿼리 파라미터로 전달된 동작 처리
-if "expand_action" in st.query_params:
-    action = st.query_params.get("expand_action")
-    if action == "collapse":
-        st.session_state.expand_all = False
-    elif action == "expand":
-        st.session_state.expand_all = True
-    st.query_params.clear()
-    st.rerun()
-
-# 'google sheet 불러오기' 버튼 옆에 검색 입력 + 검색 버튼
+# google sheet 불러오기 버튼 + 검색
 col_load, col_search, col_btn = st.columns([1, 2, 0.5])
 with col_load:
     load_clicked = st.button("google sheet 불러오기")
@@ -199,9 +189,13 @@ if context is not None and len(context) > 0:
         with col_title:
             st.markdown("#### Objects")
         with col_collapse:
-            st.markdown('<a href="?expand_action=collapse" class="object-action-link">모두 접기</a>', unsafe_allow_html=True)
+            if st.button("모두 접기", key="collapse_all"):
+                st.session_state.expand_all = False
+                st.rerun()
         with col_expand:
-            st.markdown('<a href="?expand_action=expand" class="object-action-link">모두 펼치기</a>', unsafe_allow_html=True)
+            if st.button("모두 펼치기", key="expand_all_btn"):
+                st.session_state.expand_all = True
+                st.rerun()
         expand_all = st.session_state.get("expand_all")
         expand_name = st.session_state.get("expand_object_name")
         for obj in sheet_objects:
@@ -342,15 +336,6 @@ st.markdown("""
     }
     .stSidebar {
         background-color: #f0f2f6;
-    }
-    /* Objects 옆 '모두 접기'/'모두 펼치기' 텍스트 스타일 */
-    a.object-action-link {
-        color: inherit;
-        text-decoration: none;
-        cursor: pointer;
-    }
-    a.object-action-link:hover {
-        text-decoration: underline;
     }
 </style>
 """, unsafe_allow_html=True)
