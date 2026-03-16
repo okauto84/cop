@@ -93,8 +93,14 @@ if "expand_object_name" not in st.session_state:
 if "expand_all" not in st.session_state:
     st.session_state.expand_all = None  # None=개별, True=모두 펼치기, False=모두 접기
 
-# google sheet 불러오기 버튼
-load_clicked = st.button("google sheet 불러오기")
+# google sheet 불러오기 버튼 + 검색
+col_load, col_search, col_btn = st.columns([1, 2, 0.5])
+with col_load:
+    load_clicked = st.button("google sheet 불러오기")
+with col_search:
+    search_query = st.text_input("검색", label_visibility="collapsed", placeholder="object명 검색")
+with col_btn:
+    search_clicked = st.button("검색")
 
 if load_clicked:
     url = (google_sheet_url or "").strip()
@@ -113,6 +119,19 @@ if load_clicked:
             st.rerun()
         else:
             st.error("시트를 불러올 수 없습니다. google_sheet_url과 시트 공개(링크로 볼 수 있음) 설정을 확인하세요.")
+
+# 검색: object명과 동일하면 해당 object로 focus(펼침)
+if search_clicked and (search_query or "").strip():
+    query = (search_query or "").strip()
+    objects_json = st.session_state.get("sheet_objects_json", [])
+    for obj in objects_json:
+        object_name = next(iter(obj.keys()), "")
+        if object_name == query:
+            st.session_state.expand_object_name = object_name
+            st.rerun()
+            break
+    else:
+        st.warning("일치하는 object가 없습니다.")
 
 # 저장된 테이블 변수 (시트 내용 = context)
 context = st.session_state.sheet_table
