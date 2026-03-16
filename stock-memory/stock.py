@@ -5,6 +5,7 @@ from openai import OpenAI
 import time
 import pandas as pd
 import re
+import json
 # 페이지 설정
 st.set_page_config(
     page_title="Stock",
@@ -115,10 +116,54 @@ if st.button("google sheet 불러오기"):
 # 저장된 테이블 변수 (시트 내용 = context)
 context = st.session_state.sheet_table
 
+
+def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]:
+    """연속 empty_rows줄의 빈 행으로 구분된 블록을 별도 object로 파싱. A열=key, B열=value. JSON 형식 리스트 반환."""
+    if df is None or len(df) == 0 or df.columns.size < 2:
+        return []
+    col_a, col_b = df.columns[0], df.columns[1]
+    objects: list[dict] = []
+    current: list[tuple[str, str]] = []
+    empty_streak = 0
+
+    for _, row in df.iterrows():
+        a = row[col_a]
+        b = row[col_b]
+        a_str = "" if pd.isna(a) else str(a).strip()
+        b_str = "" if pd.isna(b) else str(b).strip()
+        if a_str == "" and b_str == "":
+            empty_streak += 1
+            if empty_streak >= empty_rows:
+                if current:
+                    objects.append(dict(current))
+                current = []
+        else:
+            empty_streak = 0
+            current.append((a_str, b_str))
+
+    if current:
+        objects.append(dict(current))
+    return objects
+
+
 # 내용(context)을 그대로 화면에 출력
 st.markdown("#### Google Sheet 내용")
 if context is not None and len(context) > 0:
     st.dataframe(context, use_container_width=True, hide_index=True)
+
+    # 행 3줄 빈 곳으로 구분 → A열=key, B열=value 객체 리스트(JSON)로 변수 저장
+    sheet_objects = _parse_sheet_to_objects(context, empty_rows=3)
+    if "sheet_objects_json" not in st.session_state:
+        st.session_state.sheet_objects_json = []
+    st.session_state.sheet_objects_json = sheet_objects
+
+    # 각 object별로 표 형식 출력
+    if sheet_objects:
+        st.markdown("#### 구분된 객체 (표)")
+        for i, obj in enumerate(sheet_objects):
+            st.markdown(f"**Object {i + 1}**")
+            table_df = pd.DataFrame([{"key": k, "value": v} for k, v in obj.items()])
+            st.table(table_df)
 else:
     st.info("Google Sheet를 불러오면 여기에 내용이 표시됩니다.")
 
