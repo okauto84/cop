@@ -29,11 +29,11 @@ except:
 
 # 사이드바 제거 후 사용하던 설정값 (메인에서 기본값으로 사용)
 output_method = "실시간 출력"
-model_name = "gpt-5-mini"
-# model_name = "gpt-5.4"
+# model_name = "gpt-5-mini"
+model_name = "gpt-5.4"
 
 # 메인 화면
-st.markdown("# test")
+st.markdown("## Stock")
 
 
 def _sheet_url_to_export_csv(url: str) -> str:
@@ -93,14 +93,8 @@ if "expand_object_name" not in st.session_state:
 if "expand_all" not in st.session_state:
     st.session_state.expand_all = None  # None=개별, True=모두 펼치기, False=모두 접기
 
-# google sheet 불러오기 버튼 + 검색
-col_load, col_search, col_btn = st.columns([1, 2, 0.5])
-with col_load:
-    load_clicked = st.button("google sheet 불러오기")
-with col_search:
-    search_query = st.text_input("검색", label_visibility="collapsed", placeholder="object명 검색")
-with col_btn:
-    search_clicked = st.button("검색")
+# google sheet 불러오기 버튼
+load_clicked = st.button("google sheet 불러오기")
 
 if load_clicked:
     url = (google_sheet_url or "").strip()
@@ -119,19 +113,6 @@ if load_clicked:
             st.rerun()
         else:
             st.error("시트를 불러올 수 없습니다. google_sheet_url과 시트 공개(링크로 볼 수 있음) 설정을 확인하세요.")
-
-# 검색: object명과 동일하면 해당 object로 focus(펼침)
-if search_clicked and (search_query or "").strip():
-    query = (search_query or "").strip()
-    objects_json = st.session_state.get("sheet_objects_json", [])
-    for obj in objects_json:
-        object_name = next(iter(obj.keys()), "")
-        if object_name == query:
-            st.session_state.expand_object_name = object_name
-            st.rerun()
-            break
-    else:
-        st.warning("일치하는 object가 없습니다.")
 
 # 저장된 테이블 변수 (시트 내용 = context)
 context = st.session_state.sheet_table
@@ -209,6 +190,16 @@ if context is not None and len(context) > 0:
                     except (ValueError, TypeError):
                         return None
 
+                # 거래량 막대 비교를 위한 값 수집
+                volume_keys = ["거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
+                volume_values = {vk: _parse_num(obj.get(vk)) for vk in volume_keys}
+                max_vol = max((v for v in volume_values.values() if v is not None), default=None)
+
+                # 이평/가격 막대 비교를 위한 값 수집
+                price_keys = ["이평(5)", "이평(10)", "이평(20)", "이평(50)", "현재가", "평균단가"]
+                price_values = {pk: _parse_num(obj.get(pk)) for pk in price_keys}
+                max_price = max((v for v in price_values.values() if v is not None), default=None)
+
                 table_rows = []
                 for k, v in obj.items():
                     k_esc = html.escape(str(k))
@@ -231,10 +222,37 @@ if context is not None and len(context) > 0:
                                 row_style = ' style="color:red;"'
                             elif rate < 0:
                                 row_style = ' style="color:blue;"'
-                    wrap = "<b>{}</b>" if k in bold_keys else "{}"
-                    cell_a = wrap.format(k_esc)
-                    cell_b = wrap.format(v_esc)
-                    table_rows.append(f"<tr{row_style}><td>{cell_a}</td><td>{cell_b}</td></tr>")
+
+                    # 거래량 및 이평/가격 값은 막대 그래프 형태로 표현
+                    cell_b_html = None
+                    if k in volume_keys and max_vol and volume_values.get(k) is not None:
+                        ratio = max(volume_values[k] / max_vol, 0)
+                        bar_blocks = int(ratio * 20)  # 최대 20칸
+                        bar_color = "#1f2933"
+                    elif k in price_keys and max_price and price_values.get(k) is not None:
+                        ratio = max(price_values[k] / max_price, 0)
+                        bar_blocks = int(ratio * 20)  # 최대 20칸
+                        bar_color = "#1f2933"  # 이평/가격도 동일하게 검은색 막대 사용
+                    if cell_b_html is None and (k in volume_keys or k in price_keys) and (max_vol or max_price):
+                        if (k in volume_keys and volume_values.get(k) is not None) or (k in price_keys and price_values.get(k) is not None):
+                            bar_html = (
+                                '<div style="display:flex;align-items:center;gap:8px;">'
+                                f'<div style="display:inline-block;height:12px;">'
+                                f'{"".join([f"<span style=\'display:inline-block;width:4px;height:10px;background-color:{bar_color};margin-right:1px;\'></span>" for _ in range(bar_blocks)])}'
+                                f"</div>"
+                                f'<span style="font-family:monospace;font-size:0.8rem;">{v_esc}</span>'
+                                "</div>"
+                            )
+                            cell_b_html = bar_html
+
+                    if cell_b_html is None:
+                        wrap_val = "<b>{}</b>" if k in bold_keys else "{}"
+                        cell_b_html = wrap_val.format(v_esc)
+
+                    wrap_key = "<b>{}</b>" if k in bold_keys else "{}"
+                    cell_a_html = wrap_key.format(k_esc)
+                    table_rows.append(f"<tr{row_style}><td>{cell_a_html}</td><td>{cell_b_html}</td></tr>")
+
                 table_html = (
                     '<table style="width:100%; border-collapse: collapse;">'
                     "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
@@ -243,7 +261,7 @@ if context is not None and len(context) > 0:
                 )
                 st.markdown(table_html, unsafe_allow_html=True)
 else:
-    st.info("Google Sheet를 불러오면 여기에 내용이 표시됩니다.")
+    st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
 
 st.markdown("---")
 

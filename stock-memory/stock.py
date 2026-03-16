@@ -254,10 +254,12 @@ if context is not None and len(context) > 0:
                     table_rows.append(f"<tr{row_style}><td>{cell_a_html}</td><td>{cell_b_html}</td></tr>")
 
                 table_html = (
+                    '<div style="font-size:0.8rem;">'
                     '<table style="width:100%; border-collapse: collapse;">'
                     "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
                     "<th style=\"text-align:left; padding:4px 8px;\">value</th></tr></thead>"
                     "<tbody>" + "".join(table_rows) + "</tbody></table>"
+                    "</div>"
                 )
                 st.markdown(table_html, unsafe_allow_html=True)
 else:
