@@ -424,8 +424,10 @@ if context_total is not None and len(context_total) > 0:
                         ratio = max(price_values[k] / max_price, 0)
                         bar_blocks = int(ratio * 20)  # 최대 20칸
                         bar_color = "#1f2933"  # 이평/가격도 동일하게 검은색 막대 사용
-                    if cell_b_html is None and (k in volume_keys or k in price_keys) and (max_vol or max_price):
-                        if (k in volume_keys and volume_values.get(k) is not None) or (k in price_keys and price_values.get(k) is not None):
+                    if cell_b_html is None and (src_key_for_volume or k in price_keys) and (max_vol or max_price):
+                        has_volume = src_key_for_volume is not None and volume_values_source.get(src_key_for_volume) is not None
+                        has_price = k in price_keys and price_values.get(k) is not None
+                        if has_volume or has_price:
                             bar_html = (
                                 '<div style="display:flex;align-items:center;gap:8px;">'
                                 f'<div style="display:inline-block;height:12px;">'
