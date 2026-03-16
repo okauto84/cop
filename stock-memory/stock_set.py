@@ -259,7 +259,7 @@ if context_total is not None and len(context_total) > 0:
         volume_pairs.sort(key=lambda x: x[1], reverse=True)
         obj["거래량 배열"] = " > ".join(label for label, _ in volume_pairs)
 
-    # ===== 이평 분류 / 거래량 분류 (OpenAI + RAW data 기반) =====
+    # ===== 이평 분류 / 거래량 분류 / 종합 분류 (OpenAI + RAW data 기반, 단일 호출) =====
     try:
         raw_df_for_ma = context_raw_range
         if API_KEY and raw_df_for_ma is not None and not raw_df_for_ma.empty:
@@ -268,7 +268,6 @@ if context_total is not None and len(context_total) > 0:
 
             client = OpenAI(api_key=API_KEY)
 
-            # --- 이평 분류 ---
             ma_class_labels = [
                 "🚀 [정배열] 상승 가속 (최적 매수)",
                 "💣 [역배열] 하락 확정 (접근 금지)",
@@ -277,70 +276,12 @@ if context_total is not None and len(context_total) > 0:
                 "⚡ [추세 재개] 골든크로스 발생 (추격)",
                 "🔍 [혼조세] 방향성 탐색 구간",
             ]
-
-            ma_system_msg = (
-                "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자이다. "
-                "아래 RAW 데이터는 한 종목의 최근 시계열 이동평균선 데이터이다. "
-                "이 데이터를 분석해서, 아래 [분류표] 중에서 현재 구간에 가장 적합한 1개 라벨만 골라라. "
-                "반드시 라벨 전체 문자열 하나만 그대로 반환하고, 다른 설명이나 문장은 절대 쓰지 마라.\n\n"
-                "[분류표]\n- "
-                + "\n- ".join(ma_class_labels)
-            )
-            ma_user_msg = "RAW 이동평균선 데이터:\n" + json.dumps(raw_ma_data, ensure_ascii=False, indent=2)
-
-            ma_resp = client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "system", "content": ma_system_msg},
-                    {"role": "user", "content": ma_user_msg},
-                ],
-            )
-            ma_raw_label = (ma_resp.choices[0].message.content or "").strip()
-
-            ma_chosen_label = None
-            for label in ma_class_labels:
-                if label in ma_raw_label or ma_raw_label == label:
-                    ma_chosen_label = label
-                    break
-            if ma_chosen_label:
-                obj["이평 분류"] = ma_chosen_label
-
-            # --- 거래량 분류 ---
             vol_class_labels = [
                 "🔥 에너지 분출 (돌파/추세 가속)",
                 "📉 거래량 고갈 (Dry-up/매도 소진)",
                 "💤 단기 과열 후 휴식 (관망)",
                 "🔍 거래량 혼조 (추세 탐색)",
             ]
-
-            vol_system_msg = (
-                "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자이다. "
-                "아래 RAW 데이터는 한 종목의 최근 시계열 거래량 및 거래량(평균) 데이터이다. "
-                "거래량 변화 패턴과 평균 대비 현재 수준을 분석해서, 아래 [분류표] 중에서 현재 구간에 가장 적합한 1개 라벨만 골라라. "
-                "반드시 라벨 전체 문자열 하나만 그대로 반환하고, 다른 설명이나 문장은 절대 쓰지 마라.\n\n"
-                "[분류표]\n- "
-                + "\n- ".join(vol_class_labels)
-            )
-            vol_user_msg = "RAW 거래량/거래량(평균) 데이터:\n" + json.dumps(raw_ma_data, ensure_ascii=False, indent=2)
-
-            vol_resp = client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "system", "content": vol_system_msg},
-                    {"role": "user", "content": vol_user_msg},
-                ],
-            )
-            vol_raw_label = (vol_resp.choices[0].message.content or "").strip()
-
-            vol_chosen_label = None
-            for label in vol_class_labels:
-                if label in vol_raw_label or vol_raw_label == label:
-                    vol_chosen_label = label
-                    break
-            if vol_chosen_label:
-                obj["거래량 분류"] = vol_chosen_label
-
-            # --- 종합 분류 (Objects + RAW 전체 데이터 기반) ---
             total_class_labels = [
                 "🚀 [최적 매수] 추세 가속 구간",
                 "🎯 [VCP 셋업] 폭발 전 수렴 구간",
@@ -351,35 +292,72 @@ if context_total is not None and len(context_total) > 0:
                 "🔍 [관망] 확실한 신호 대기",
             ]
 
-            total_system_msg = (
+            system_msg = (
                 "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자이다. "
                 "아래 Total 객체 정보(요약 데이터)와 RAW 시계열 데이터(가격, 이동평균선, 거래량, 거래량 평균)를 함께 분석하라. "
-                "현재 시점에서 이 종목에 대해 가장 적절한 종합 판단을 아래 [분류표] 중에서 1개 선택해라. "
-                "손익, 추세 방향, 변동성, 거래량, 평균 대비 위치 등을 모두 고려하되, 반드시 분류표의 라벨 전체 문자열 하나만 그대로 반환하고, 다른 설명이나 문장은 절대 쓰지 마라.\n\n"
-                "[분류표]\n- "
+                "다음 세 가지 분류 값을 각각 하나씩 선택해야 한다.\n\n"
+                "1) 이평 분류: 이동평균선 배열과 추세를 기준으로 아래 [이평 분류표] 중 1개 선택\n"
+                "2) 거래량 분류: 거래량 및 거래량(평균)을 기준으로 아래 [거래량 분류표] 중 1개 선택\n"
+                "3) 종합 분류: 가격, 이평, 거래량, 수익률 등을 모두 고려한 종합 판단으로 [종합 분류표] 중 1개 선택\n\n"
+                "반드시 아래 JSON 형식으로만 답하라.\n"
+                '{\"ma_class\": \"<이평 분류표의 라벨 중 하나>\", '
+                '\"volume_class\": \"<거래량 분류표의 라벨 중 하나>\", '
+                '\"total_class\": \"<종합 분류표의 라벨 중 하나>\"}\n\n'
+                "다른 설명, 문장, 코멘트는 절대 쓰지 마라.\n\n"
+                "[이평 분류표]\n- "
+                + "\n- ".join(ma_class_labels)
+                + "\n\n[거래량 분류표]\n- "
+                + "\n- ".join(vol_class_labels)
+                + "\n\n[종합 분류표]\n- "
                 + "\n- ".join(total_class_labels)
             )
 
-            total_user_payload = {
+            user_payload = {
                 "Total_Object": obj,
                 "RAW_Table": raw_ma_data,
             }
-            total_user_msg = "Total 및 RAW 데이터:\n" + json.dumps(total_user_payload, ensure_ascii=False, indent=2)
+            user_msg = "Total 및 RAW 데이터:\n" + json.dumps(user_payload, ensure_ascii=False, indent=2)
 
-            total_resp = client.chat.completions.create(
+            resp = client.chat.completions.create(
                 model=model_name,
                 messages=[
-                    {"role": "system", "content": total_system_msg},
-                    {"role": "user", "content": total_user_msg},
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": user_msg},
                 ],
             )
-            total_raw_label = (total_resp.choices[0].message.content or "").strip()
+            raw_content = (resp.choices[0].message.content or "").strip()
 
+            ma_chosen_label = None
+            vol_chosen_label = None
             total_chosen_label = None
+
+            try:
+                parsed = json.loads(raw_content)
+                ma_raw_label = str(parsed.get("ma_class", "")).strip()
+                vol_raw_label = str(parsed.get("volume_class", "")).strip()
+                total_raw_label = str(parsed.get("total_class", "")).strip()
+            except Exception:
+                ma_raw_label = raw_content
+                vol_raw_label = raw_content
+                total_raw_label = raw_content
+
+            for label in ma_class_labels:
+                if label in ma_raw_label or ma_raw_label == label:
+                    ma_chosen_label = label
+                    break
+            for label in vol_class_labels:
+                if label in vol_raw_label or vol_raw_label == label:
+                    vol_chosen_label = label
+                    break
             for label in total_class_labels:
                 if label in total_raw_label or total_raw_label == label:
                     total_chosen_label = label
                     break
+
+            if ma_chosen_label:
+                obj["이평 분류"] = ma_chosen_label
+            if vol_chosen_label:
+                obj["거래량 분류"] = vol_chosen_label
             if total_chosen_label:
                 obj["종합 분류"] = total_chosen_label
 
@@ -563,8 +541,8 @@ if prompt := st.chat_input("질문해보세요!"):
             "RAW": raw_records,
         }
         system_prompt = (
-            "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서, 아래 Total / RAW 데이터를 참고하여 질문에 답변하고 조언을 하시오. "
-            "Total 데이터는 종목별 요약 객체 목록이며, RAW 데이터는 거래일 날자별 종가, 이동평균선, 거래량, 거래량, 거래량(평균)의 원천 데이터 테이블입니다. "
+            "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서, 아래 objects / RAW data를 참고하여 질문에 답변하고 조언을 하시오. "
+            "Objects 데이터는 종목별 요약 객체 목록이며, RAW 데이터는 거래일 날자별 종가, 이동평균선, 거래량, 거래량, 거래량(평균)의 원천 데이터 테이블입니다. "
             "이평 분류, 거래량 분류, 종합 분류 값 등에 구애받지 말고, 두 데이터를 함께 고려해 사용자 질의에 맞게 구체적으로 답변하세요. \n\n"
             "[참고 데이터]\n"
             + (json.dumps(objects_data, ensure_ascii=False, indent=2) if objects_data else "(데이터 없음 - 먼저 Google Sheet를 불러오세요.)")
