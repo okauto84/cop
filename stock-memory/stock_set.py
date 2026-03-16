@@ -211,7 +211,7 @@ if context_total is not None and len(context_total) > 0:
     if sheet_objects_total:
         col_title, col_collapse, col_expand = st.columns([2, 0.5, 0.5])
         with col_title:
-            st.markdown("#### Total 시트 Objects")
+            st.markdown("##### Total data")
         with col_collapse:
             if st.button("모두 접기", key="collapse_all"):
                 st.session_state.expand_all = False
@@ -317,7 +317,7 @@ if context_total is not None and len(context_total) > 0:
 
     # RAW 시트 A1:F52 DataFrame 출력 (첫 행 A1:F1을 헤더로 사용)
     if context_raw_range is not None and not context_raw_range.empty:
-        st.markdown("#### RAW 시트 DataFrame (A1:F52)")
+        st.markdown("##### RAW Data")
         st.dataframe(context_raw_range)
 else:
     st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
@@ -366,17 +366,22 @@ if prompt := st.chat_input("질문해보세요!"):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # OpenAI API 호출 (objects JSON을 바탕으로 이해·답변하도록 시스템 프롬프트 구성)
+    # OpenAI API 호출 (Total objects JSON + RAW DataFrame 기반으로 이해·답변하도록 시스템 프롬프트 구성)
     with st.chat_message("assistant"):
-        # Total 시트 데이터만 포함
+        # Total 시트 object 데이터와 RAW 시트 테이블 데이터를 모두 포함
         objects_total = st.session_state.get("sheet_objects_total_json", [])
+        raw_df_for_prompt = st.session_state.get("sheet_table_raw_range", pd.DataFrame())
+        raw_records: list[dict] = []
+        if raw_df_for_prompt is not None and not raw_df_for_prompt.empty:
+            raw_records = raw_df_for_prompt.to_dict(orient="records")
         objects_data = {
             "Total": objects_total,
+            "RAW": raw_records,
         }
         system_prompt = (
-            "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서, objects JSON 데이터를 고려하여 질문에 답변을 하고 조언을 하시오. "
-            "아래 [참고 데이터]는 객체 목록이며, 각 객체는 key-value 쌍으로 구성되어 있습니다. "
-            "이평 분류, 거래량 분류, 종합 분류 값에 상관없이, 이 데이터를 이해하고 사용자 질의에 맞게 답변하세요. \n\n"
+            "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서, 아래 Total / RAW 데이터를 참고하여 질문에 답변하고 조언을 하시오. "
+            "Total 데이터는 종목별 요약 객체 목록이며, RAW 데이터는 시계열 가격·거래량 등의 원천 데이터 테이블입니다. "
+            "이평 분류, 거래량 분류, 종합 분류 값 등에 구애받지 말고, 두 데이터를 함께 고려해 사용자 질의에 맞게 구체적으로 답변하세요. \n\n"
             "[참고 데이터]\n"
             + (json.dumps(objects_data, ensure_ascii=False, indent=2) if objects_data else "(데이터 없음 - 먼저 Google Sheet를 불러오세요.)")
         )
