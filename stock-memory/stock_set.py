@@ -137,13 +137,13 @@ if load_clicked:
             st.session_state.sheet_table_total = sheet_table_total
             st.session_state.sheet_table_raw = sheet_table_raw if sheet_table_raw is not None else pd.DataFrame()
 
-            # RAW 시트에서 A2:F53 범위를 잘라 A2 행을 헤더로 사용하는 DataFrame 생성
+            # RAW 시트에서 A1:F52 범위를 잘라 A1 행을 헤더로 사용하는 DataFrame 생성
             raw_df = st.session_state.sheet_table_raw
             raw_range_df = pd.DataFrame()
             if raw_df is not None and not raw_df.empty:
-                # A~F 열(0~5), 2행~53행 → index 기준 1~52
-                raw_slice = raw_df.iloc[1:53, 0:6].copy()
-                # 첫 행(원래 A2:F2)을 헤더로 사용하되, 중복 헤더는 _1, _2 ... 를 붙여 유니크하게 만든다.
+                # A~F 열(0~5), 1행~52행 → index 기준 0~51
+                raw_slice = raw_df.iloc[0:52, 0:6].copy()
+                # 첫 행(원래 A1:F1)을 헤더로 사용하되, 중복 헤더는 _1, _2 ... 를 붙여 유니크하게 만든다.
                 header_row = raw_slice.iloc[0].astype(str).str.strip().tolist()
                 seen: dict[str, int] = {}
                 unique_headers: list[str] = []
@@ -345,9 +345,9 @@ if context_total is not None and len(context_total) > 0:
                 )
                 st.markdown(table_html, unsafe_allow_html=True)
 
-    # RAW 시트 A2:F53 DataFrame 출력 (첫 행 A2:F2를 헤더로 사용)
+    # RAW 시트 A1:F52 DataFrame 출력 (첫 행 A1:F1을 헤더로 사용)
     if context_raw_range is not None and not context_raw_range.empty:
-        st.markdown("#### RAW 시트 DataFrame (A2:F53)")
+        st.markdown("#### RAW 시트 DataFrame (A1:F52)")
         st.dataframe(context_raw_range)
 else:
     st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
