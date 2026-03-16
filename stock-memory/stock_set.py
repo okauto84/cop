@@ -29,8 +29,8 @@ except:
 
 # 사이드바 제거 후 사용하던 설정값 (메인에서 기본값으로 사용)
 output_method = "실시간 출력"
-# model_name = "gpt-5-mini"
-model_name = "gpt-5.4"
+model_name = "gpt-5-mini"
+# model_name = "gpt-5.4"
 
 # 메인 화면
 st.markdown("### Stock-set")
@@ -339,6 +339,49 @@ if context_total is not None and len(context_total) > 0:
                     break
             if vol_chosen_label:
                 obj["거래량 분류"] = vol_chosen_label
+
+            # --- 종합 분류 (Objects + RAW 전체 데이터 기반) ---
+            total_class_labels = [
+                "🚀 [최적 매수] 추세 가속 구간",
+                "🎯 [VCP 셋업] 폭발 전 수렴 구간",
+                "💣 [강력 매도] 하락 가속/투매 발생",
+                "⏸️ [보유/눌림목] 건전한 조정 구간",
+                "📉 [바닥 탐색] 하락 에너지 소진",
+                "⚡ [신규 진입] 단기 모멘텀 발생",
+                "🔍 [관망] 확실한 신호 대기",
+            ]
+
+            total_system_msg = (
+                "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자이다. "
+                "아래 Total 객체 정보(요약 데이터)와 RAW 시계열 데이터(가격, 이동평균선, 거래량, 거래량 평균)를 함께 분석하라. "
+                "현재 시점에서 이 종목에 대해 가장 적절한 종합 판단을 아래 [분류표] 중에서 1개 선택해라. "
+                "손익, 추세 방향, 변동성, 거래량, 평균 대비 위치 등을 모두 고려하되, 반드시 분류표의 라벨 전체 문자열 하나만 그대로 반환하고, 다른 설명이나 문장은 절대 쓰지 마라.\n\n"
+                "[분류표]\n- "
+                + "\n- ".join(total_class_labels)
+            )
+
+            total_user_payload = {
+                "Total_Object": obj,
+                "RAW_Table": raw_ma_data,
+            }
+            total_user_msg = "Total 및 RAW 데이터:\n" + json.dumps(total_user_payload, ensure_ascii=False, indent=2)
+
+            total_resp = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": total_system_msg},
+                    {"role": "user", "content": total_user_msg},
+                ],
+            )
+            total_raw_label = (total_resp.choices[0].message.content or "").strip()
+
+            total_chosen_label = None
+            for label in total_class_labels:
+                if label in total_raw_label or total_raw_label == label:
+                    total_chosen_label = label
+                    break
+            if total_chosen_label:
+                obj["종합 분류"] = total_chosen_label
 
             # 프롬프트 내용을 세션에 저장하여 화면 하단에 표시할 수 있도록 함
             st.session_state["ma_prompt_system"] = ma_system_msg
