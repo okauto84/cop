@@ -37,7 +37,7 @@ with st.sidebar:
         )
 
 # 메인 화면
-st.markdown("# Stock")
+st.markdown("# test")
 
 
 def _sheet_url_to_export_csv(url: str, gid: str = "0") -> str:
@@ -79,29 +79,39 @@ def _read_gsheet(url: str = None) -> pd.DataFrame:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Google Sheet 데이터: secrets의 google_sheet_url로 읽어서 세션에 유지
-if "table_data" not in st.session_state:
-    df = _read_gsheet(st.secrets.get("google_sheet_url", ""))
-    if df is not None and len(df.columns) > 0:
-        st.session_state.table_data = df
-    else:
-        st.session_state.table_data = pd.DataFrame()
+# Google Sheet URL로 불러와 시트 영역을 테이블(DataFrame)로 변환하여 변수에 저장
+def load_sheet_as_table(url: str) -> pd.DataFrame:
+    """Google Sheet URL을 받아 시트 영역을 table 형태(DataFrame)로 변환해 반환"""
+    return _read_gsheet(url)
+
+# 세션에 저장된 테이블(내용) 초기화 (secrets에 URL이 있으면 최초 1회 로드)
+if "sheet_table" not in st.session_state:
+    initial_df = load_sheet_as_table(st.secrets.get("google_sheet_url", ""))
+    st.session_state.sheet_table = initial_df if initial_df is not None and len(initial_df.columns) > 0 else pd.DataFrame()
 
 if st.button("google sheet 불러오기"):
     url = st.secrets.get("google_sheet_url", "")
     if not url or not str(url).strip():
         st.error("Streamlit secrets에 google_sheet_url을 설정하세요.")
     else:
-        df = _read_gsheet(url)
-        if df is not None and len(df.columns) > 0:
-            st.session_state.table_data = df
+        # URL로 불러와 table 형태로 변환 후 변수에 저장
+        sheet_table = load_sheet_as_table(url)
+        if sheet_table is not None and len(sheet_table.columns) > 0:
+            st.session_state.sheet_table = sheet_table
             st.success("Google Sheet를 불러왔습니다.")
             st.rerun()
         else:
             st.error("시트를 불러올 수 없습니다. google_sheet_url과 시트 공개(링크로 볼 수 있음) 설정을 확인하세요.")
 
-if st.session_state.table_data is not None and len(st.session_state.table_data) > 0:
-    st.dataframe(st.session_state.table_data, use_container_width=True, hide_index=True)
+# 저장된 테이블 변수 (시트 내용 = context)
+context = st.session_state.sheet_table
+
+# 내용(context)을 그대로 화면에 출력
+st.markdown("#### Google Sheet 내용")
+if context is not None and len(context) > 0:
+    st.dataframe(context, use_container_width=True, hide_index=True)
+else:
+    st.info("Google Sheet를 불러오면 여기에 내용이 표시됩니다.")
 
 st.markdown("---")
 
