@@ -201,134 +201,39 @@ def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]
 
 
 if context_total is not None and len(context_total) > 0:
-    # 행 3줄 빈 곳으로 구분 → A열=key, B열=value 객체 리스트(JSON)로 변수 저장 (Total 시트)
-    sheet_objects_total = _parse_sheet_to_objects(context_total, empty_rows=3)
+    # Total 시트: A컬럼을 key, B컬럼을 value 로 사용하는 단일 JSON 리스트로 변환 (데이터 그대로)
+    col_a, col_b = context_total.columns[0], context_total.columns[1]
+    total_kv_list: list[dict] = []
+    for _, row in context_total.iterrows():
+        k = row[col_a]
+        v = row[col_b]
+        k_str = "" if pd.isna(k) else str(k).strip()
+        v_str = "" if pd.isna(v) else str(v).strip()
+        if k_str == "" and v_str == "":
+            continue
+        total_kv_list.append({"key": k_str, "value": v_str})
+
     if "sheet_objects_total_json" not in st.session_state:
         st.session_state.sheet_objects_total_json = []
-    st.session_state.sheet_objects_total_json = sheet_objects_total
+    st.session_state.sheet_objects_total_json = total_kv_list
 
-    # Total 시트 Objects 출력
-    if sheet_objects_total:
-        col_title, col_collapse, col_expand = st.columns([2, 0.5, 0.5])
-        with col_title:
-            st.markdown("##### Total data")
-        with col_collapse:
-            if st.button("모두 접기", key="collapse_all"):
-                st.session_state.expand_all = False
-                st.rerun()
-        with col_expand:
-            if st.button("모두 펼치기", key="expand_all_btn"):
-                st.session_state.expand_all = True
-                st.rerun()
-        expand_all = st.session_state.get("expand_all")
-        expand_name = st.session_state.get("expand_object_name")
-        for obj in sheet_objects_total:
-            object_name = next(iter(obj.keys()), "") if obj else ""
-            label = object_name or "(빈 객체)"
-            if expand_all is True:
-                expanded = True
-            elif expand_all is False:
-                expanded = False
-            else:
-                expanded = (expand_name is not None and object_name == expand_name)
-            with st.expander(label, expanded=expanded):
-                # 우선적으로 화면 상단에 보여줄 핵심 키들
-                bold_keys = {"이평 배열", "이평 분류", "거래량 배열", "거래량 분류", "종합 분류"}
-                priority_keys = ["이평 배열", "이평 분류", "거래량 배열", "거래량 분류", "종합 분류"]
-
-                def _parse_num(s):
-                    if s is None or str(s).strip() == "":
-                        return None
-                    try:
-                        return float(str(s).strip().replace(",", ""))
-                    except (ValueError, TypeError):
-                        return None
-
-                # 거래량 막대 비교를 위한 값 수집
-                volume_keys = ["거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
-                volume_values = {vk: _parse_num(obj.get(vk)) for vk in volume_keys}
-                max_vol = max((v for v in volume_values.values() if v is not None), default=None)
-
-                # 이평/가격 막대 비교를 위한 값 수집
-                price_keys = ["이평(5)", "이평(10)", "이평(20)", "이평(50)", "현재가", "평균단가"]
-                price_values = {pk: _parse_num(obj.get(pk)) for pk in price_keys}
-                max_price = max((v for v in price_values.values() if v is not None), default=None)
-
-                table_rows = []
-
-                # key 순서를 "우선 키들 → 나머지 키들" 로 정렬
-                ordered_keys: list[str] = []
-                # 1) 우선 키들
-                for pk in priority_keys:
-                    if pk in obj:
-                        ordered_keys.append(pk)
-                # 2) 나머지 키들
-                for k in obj.keys():
-                    if k not in ordered_keys:
-                        ordered_keys.append(k)
-
-                for k in ordered_keys:
-                    v = obj.get(k)
-                    k_esc = html.escape(str(k))
-                    v_esc = html.escape(str(v))
-                    row_style = ""
-                    if k == "평균단가":
-                        avg_price = _parse_num(v)
-                        curr_price = _parse_num(obj.get("현재가"))
-                        if avg_price is not None and curr_price is not None:
-                            if avg_price > curr_price:
-                                row_style = ' style="color:blue;"'
-                            elif avg_price < curr_price:
-                                row_style = ' style="color:red;"'
-                    elif k == "수익률":
-                        # 화면에는 % 포함 그대로 표시, 색 판단 시에만 % 제거 후 숫자로 파싱
-                        rate_str = str(v).replace("%", "").strip() if v is not None else ""
-                        rate = _parse_num(rate_str) if rate_str else None
-                        if rate is not None:
-                            if rate > 0:
-                                row_style = ' style="color:red;"'
-                            elif rate < 0:
-                                row_style = ' style="color:blue;"'
-
-                    # 거래량 및 이평/가격 값은 막대 그래프 형태로 표현
-                    cell_b_html = None
-                    if k in volume_keys and max_vol and volume_values.get(k) is not None:
-                        ratio = max(volume_values[k] / max_vol, 0)
-                        bar_blocks = int(ratio * 20)  # 최대 20칸
-                        bar_color = "#1f2933"
-                    elif k in price_keys and max_price and price_values.get(k) is not None:
-                        ratio = max(price_values[k] / max_price, 0)
-                        bar_blocks = int(ratio * 20)  # 최대 20칸
-                        bar_color = "#1f2933"  # 이평/가격도 동일하게 검은색 막대 사용
-                    if cell_b_html is None and (k in volume_keys or k in price_keys) and (max_vol or max_price):
-                        if (k in volume_keys and volume_values.get(k) is not None) or (k in price_keys and price_values.get(k) is not None):
-                            bar_html = (
-                                '<div style="display:flex;align-items:center;gap:8px;">'
-                                f'<div style="display:inline-block;height:12px;">'
-                                f'{"".join([f"<span style=\'display:inline-block;width:4px;height:10px;background-color:{bar_color};margin-right:1px;\'></span>" for _ in range(bar_blocks)])}'
-                                f"</div>"
-                                f'<span style="font-family:monospace;font-size:0.8rem;">{v_esc}</span>'
-                                "</div>"
-                            )
-                            cell_b_html = bar_html
-
-                    if cell_b_html is None:
-                        wrap_val = "<b>{}</b>" if k in bold_keys else "{}"
-                        cell_b_html = wrap_val.format(v_esc)
-
-                    wrap_key = "<b>{}</b>" if k in bold_keys else "{}"
-                    cell_a_html = wrap_key.format(k_esc)
-                    table_rows.append(f"<tr{row_style}><td>{cell_a_html}</td><td>{cell_b_html}</td></tr>")
-
-                table_html = (
-                    '<div style="font-size:0.8rem;">'
-                    '<table style="width:100%; border-collapse: collapse;">'
-                    "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
-                    "<th style=\"text-align:left; padding:4px 8px;\">value</th></tr></thead>"
-                    "<tbody>" + "".join(table_rows) + "</tbody></table>"
-                    "</div>"
-                )
-                st.markdown(table_html, unsafe_allow_html=True)
+    # Total data를 key/value 표 형식으로 그대로 출력
+    if total_kv_list:
+        st.markdown("##### Total data")
+        rows = []
+        for item in total_kv_list:
+            k_esc = html.escape(item["key"])
+            v_esc = html.escape(item["value"])
+            rows.append(f"<tr><td>{k_esc}</td><td>{v_esc}</td></tr>")
+        table_html = (
+            '<div style="font-size:0.8rem;">'
+            '<table style="width:100%; border-collapse: collapse;">'
+            "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
+            "<th style=\"text-align:left; padding:4px 8px;\">value</th></tr></thead>"
+            "<tbody>" + "".join(rows) + "</tbody></table>"
+            "</div>"
+        )
+        st.markdown(table_html, unsafe_allow_html=True)
 
     # RAW 시트 A1:F52 DataFrame 출력 (첫 행 A1:F1을 헤더로 사용)
     if context_raw_range is not None and not context_raw_range.empty:
