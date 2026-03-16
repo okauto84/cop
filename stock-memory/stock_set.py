@@ -33,11 +33,13 @@ output_method = "실시간 출력"
 model_name = "gpt-5.4"
 
 # 메인 화면
-st.markdown("### Stock(올투님을 배우자!^^)")
+st.markdown("### Stock-set")
 
 
-def _sheet_url_to_export_csv(url: str) -> str:
-    """공개 스프레드시트 URL을 CSV 내보내기 URL로 변환. gid 생략 시 첫 번째 시트가 내보내짐."""
+def _sheet_url_to_export_csv(url: str, sheet_name: str | None = None) -> str:
+    """공개 스프레드시트 URL을 CSV 내보내기 URL로 변환.
+    sheet_name이 주어지면 해당 이름의 시트를, 없으면 첫 번째 시트를 CSV로 내보낸다.
+    """
     url = (url or "").strip()
     if not url:
         return ""
@@ -46,16 +48,25 @@ def _sheet_url_to_export_csv(url: str) -> str:
     if not m:
         return ""
     sid = m.group(1)
-    # gid 없이 export하면 첫 번째 시트가 기본. gid=0 은 시트 ID가 0이 아닐 때 400 Bad Request 발생.
+    # sheet 이름이 명시되면 gviz/tq API로 해당 시트만 CSV로 가져온다.
+    if sheet_name:
+        return (
+            f"https://docs.google.com/spreadsheets/d/{sid}/gviz/tq"
+            f"?tqx=out:csv&sheet={sheet_name}"
+        )
+    # sheet_name이 없으면 첫 번째 시트를 기본으로 export
     return f"https://docs.google.com/spreadsheets/d/{sid}/export?format=csv"
 
 
-def _read_gsheet(url: str = None) -> tuple[pd.DataFrame, str]:
-    """공개 Google Sheet URL로 첫 번째 시트(total sheet)만 읽기. (DataFrame, 에러메시지) 반환. 성공 시 에러메시지는 ''."""
+def _read_gsheet(url: str = None, sheet_name: str | None = None) -> tuple[pd.DataFrame, str]:
+    """공개 Google Sheet URL에서 지정된 시트를 읽기.
+    sheet_name이 None이면 첫 번째 시트(기본 시트)를 읽는다.
+    (DataFrame, 에러메시지) 반환. 성공 시 에러메시지는 ''.
+    """
     u = (url or "").strip()
     if not u:
         return pd.DataFrame(), "google_sheet_url이 비어 있습니다."
-    export_url = _sheet_url_to_export_csv(u)
+    export_url = _sheet_url_to_export_csv(u, sheet_name=sheet_name)
     if not export_url:
         return pd.DataFrame(), "URL 형식이 올바르지 않습니다. 예: https://docs.google.com/spreadsheets/d/스프레드시트ID/edit"
     try:
@@ -80,14 +91,28 @@ if "messages" not in st.session_state:
 
 
 # Google Sheet URL로 불러와 시트 영역을 테이블(DataFrame)로 변환하여 변수에 저장
-def load_sheet_as_table(url: str) -> tuple[pd.DataFrame, str]:
-    """Google Sheet URL을 받아 첫 번째 시트(total sheet)만 table 형태(DataFrame)로 변환. (DataFrame, 에러메시지) 반환."""
-    return _read_gsheet(url)
+def load_sheet_as_table(url: str) -> tuple[pd.DataFrame, pd.DataFrame, str]:
+    """Google Sheet URL을 받아
+    - 첫 번째 시트 'Total'
+    - 두 번째 시트 'RAW'
+    를 각각 table 형태(DataFrame)로 변환하여 반환.
+    (total_df, raw_df, 에러메시지) 반환. (둘 중 하나라도 실패 시 에러메시지에 포함)
+    """
+    total_df, err_total = _read_gsheet(url, sheet_name="Total")
+    raw_df, err_raw = _read_gsheet(url, sheet_name="RAW")
+    errs = []
+    if err_total:
+        errs.append(f"Total 시트 오류: {err_total}")
+    if err_raw:
+        errs.append(f"RAW 시트 오류: {err_raw}")
+    return total_df, raw_df, "\n".join(errs)
 
 
 # 세션에 저장된 테이블(내용) 초기화
-if "sheet_table" not in st.session_state:
-    st.session_state.sheet_table = pd.DataFrame()
+if "sheet_table_total" not in st.session_state:
+    st.session_state.sheet_table_total = pd.DataFrame()
+if "sheet_table_raw" not in st.session_state:
+    st.session_state.sheet_table_raw = pd.DataFrame()
 if "expand_object_name" not in st.session_state:
     st.session_state.expand_object_name = None
 if "expand_all" not in st.session_state:
@@ -102,11 +127,12 @@ if load_clicked:
         st.error("Streamlit secrets에 google_sheet_url을 설정하세요.")
     else:
         # URL로 불러와 table 형태로 변환 후 변수에 저장
-        sheet_table, err_msg = load_sheet_as_table(url)
+        sheet_table_total, sheet_table_raw, err_msg = load_sheet_as_table(url)
         if err_msg:
-            st.error(f"시트를 불러올 수 없습니다. {err_msg}")
-        elif sheet_table is not None and len(sheet_table.columns) > 0:
-            st.session_state.sheet_table = sheet_table
+            st.error(f"시트를 불러올 수 없습니다.\n{err_msg}")
+        elif sheet_table_total is not None and len(sheet_table_total.columns) > 0:
+            st.session_state.sheet_table_total = sheet_table_total
+            st.session_state.sheet_table_raw = sheet_table_raw if sheet_table_raw is not None else pd.DataFrame()
             st.session_state.expand_object_name = None
             st.session_state.expand_all = True  # 불러오기 시 모든 카드(expander) 펼침
             st.success("Google Sheet를 불러왔습니다.")
@@ -115,7 +141,8 @@ if load_clicked:
             st.error("시트를 불러올 수 없습니다. google_sheet_url과 시트 공개(링크로 볼 수 있음) 설정을 확인하세요.")
 
 # 저장된 테이블 변수 (시트 내용 = context)
-context = st.session_state.sheet_table
+context_total = st.session_state.sheet_table_total
+context_raw = st.session_state.sheet_table_raw
 
 
 def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]:
@@ -148,18 +175,26 @@ def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]
     return objects
 
 
-if context is not None and len(context) > 0:
-    # 행 3줄 빈 곳으로 구분 → A열=key, B열=value 객체 리스트(JSON)로 변수 저장
-    sheet_objects = _parse_sheet_to_objects(context, empty_rows=3)
-    if "sheet_objects_json" not in st.session_state:
-        st.session_state.sheet_objects_json = []
-    st.session_state.sheet_objects_json = sheet_objects
+if context_total is not None and len(context_total) > 0:
+    # 행 3줄 빈 곳으로 구분 → A열=key, B열=value 객체 리스트(JSON)로 변수 저장 (Total 시트)
+    sheet_objects_total = _parse_sheet_to_objects(context_total, empty_rows=3)
+    if "sheet_objects_total_json" not in st.session_state:
+        st.session_state.sheet_objects_total_json = []
+    st.session_state.sheet_objects_total_json = sheet_objects_total
 
-    # 각 object별로 접고 펼 수 있는 형태로 표 형식 출력 (검색 시 해당 object만 펼침)
-    if sheet_objects:
+    # RAW 시트도 동일하게 파싱
+    sheet_objects_raw = []
+    if context_raw is not None and len(context_raw) > 0:
+        sheet_objects_raw = _parse_sheet_to_objects(context_raw, empty_rows=3)
+    if "sheet_objects_raw_json" not in st.session_state:
+        st.session_state.sheet_objects_raw_json = []
+    st.session_state.sheet_objects_raw_json = sheet_objects_raw
+
+    # Total 시트 Objects 출력
+    if sheet_objects_total:
         col_title, col_collapse, col_expand = st.columns([2, 0.5, 0.5])
         with col_title:
-            st.markdown("#### Objects")
+            st.markdown("#### Total 시트 Objects")
         with col_collapse:
             if st.button("모두 접기", key="collapse_all"):
                 st.session_state.expand_all = False
@@ -170,7 +205,7 @@ if context is not None and len(context) > 0:
                 st.rerun()
         expand_all = st.session_state.get("expand_all")
         expand_name = st.session_state.get("expand_object_name")
-        for obj in sheet_objects:
+        for obj in sheet_objects_total:
             object_name = next(iter(obj.keys()), "") if obj else ""
             label = object_name or "(빈 객체)"
             if expand_all is True:
@@ -262,6 +297,28 @@ if context is not None and len(context) > 0:
                     "</div>"
                 )
                 st.markdown(table_html, unsafe_allow_html=True)
+
+    # RAW 시트 Objects 출력
+    if sheet_objects_raw:
+        st.markdown("#### RAW 시트 Objects")
+        for obj in sheet_objects_raw:
+            object_name = next(iter(obj.keys()), "") if obj else ""
+            label = object_name or "(빈 객체)"
+            with st.expander(label, expanded=False):
+                rows = []
+                for k, v in obj.items():
+                    k_esc = html.escape(str(k))
+                    v_esc = html.escape(str(v))
+                    rows.append(f"<tr><td>{k_esc}</td><td>{v_esc}</td></tr>")
+                table_html = (
+                    '<div style="font-size:0.8rem;">'
+                    '<table style="width:100%; border-collapse: collapse;">'
+                    "<thead><tr><th style=\"text-align:left; padding:4px 8px;\">key</th>"
+                    "<th style=\"text-align:left; padding:4px 8px;\">value</th></tr></thead>"
+                    "<tbody>" + "".join(rows) + "</tbody></table>"
+                    "</div>"
+                )
+                st.markdown(table_html, unsafe_allow_html=True)
 else:
     st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
 
@@ -311,7 +368,13 @@ if prompt := st.chat_input("질문해보세요!"):
 
     # OpenAI API 호출 (objects JSON을 바탕으로 이해·답변하도록 시스템 프롬프트 구성)
     with st.chat_message("assistant"):
-        objects_data = st.session_state.get("sheet_objects_json", [])
+        # Total / RAW 두 시트 데이터를 모두 포함
+        objects_total = st.session_state.get("sheet_objects_total_json", [])
+        objects_raw = st.session_state.get("sheet_objects_raw_json", [])
+        objects_data = {
+            "Total": objects_total,
+            "RAW": objects_raw,
+        }
         system_prompt = (
             "당신은 마크 미너비니, 윌리엄 오닐의 수제자로, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서, objects JSON 데이터를 고려하여 질문에 답변을 하고 조언을 하시오. "
             "아래 [참고 데이터]는 객체 목록이며, 각 객체는 key-value 쌍으로 구성되어 있습니다. "
