@@ -33,7 +33,7 @@ output_method = "실시간 출력"
 model_name = "gpt-5.4"
 
 # 메인 화면
-st.markdown("## Stock(올투님 추종)")
+st.markdown("### Stock(올투님을 배우자!^^)")
 
 
 def _sheet_url_to_export_csv(url: str) -> str:
