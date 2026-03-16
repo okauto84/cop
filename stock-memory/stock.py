@@ -29,8 +29,8 @@ except:
 
 # 사이드바 제거 후 사용하던 설정값 (메인에서 기본값으로 사용)
 output_method = "실시간 출력"
-model_name = "gpt-5-mini"
-# model_name = "gpt-5.4"
+# model_name = "gpt-5-mini"
+model_name = "gpt-5.4"
 
 # 메인 화면
 st.markdown("# test")
