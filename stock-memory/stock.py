@@ -124,6 +124,7 @@ if load_clicked:
         elif sheet_table is not None and len(sheet_table.columns) > 0:
             st.session_state.sheet_table = sheet_table
             st.session_state.expand_object_name = None
+            st.session_state.expand_all = True  # 불러오기 시 모든 카드(expander) 펼침
             st.success("Google Sheet를 불러왔습니다.")
             st.rerun()
         else:
