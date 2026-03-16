@@ -26,23 +26,10 @@ try:
 except:
     google_sheet_url = ""
 
-# 사이드바 설정
-with st.sidebar:
-    st.markdown("### 설정")
-    
-    with st.expander("📍 출력방법", expanded=False):
-        output_method = st.selectbox(
-            "출력 방식 선택",
-            ["실시간 출력", "일괄 출력"],
-            index=0
-        )
-    
-    with st.expander("💭 모델", expanded=False):
-        model_name = st.selectbox(
-            "모델 선택",
-            ["gpt-5-mini"],
-            index=0
-        )
+# 사이드바 제거 후 사용하던 설정값 (메인에서 기본값으로 사용)
+output_method = "실시간 출력"
+# model_name = "gpt-5-mini"
+model_name = "gpt-5.4"
 
 # 메인 화면
 st.markdown("# test")
@@ -367,9 +354,6 @@ st.markdown("""
     }
     .main > div {
         padding-top: 2rem;
-    }
-    .stSidebar {
-        background-color: #f0f2f6;
     }
 </style>
 """, unsafe_allow_html=True)
