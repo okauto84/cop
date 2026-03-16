@@ -119,9 +119,6 @@ context = st.session_state.sheet_table
 st.markdown("#### Google Sheet 내용")
 if context is not None and len(context) > 0:
     st.dataframe(context, use_container_width=True, hide_index=True)
-    # 테이블 밑에 저장된 변수 값 출력
-    st.markdown("#### 저장된 변수 값")
-    st.write(context)
 else:
     st.info("Google Sheet를 불러오면 여기에 내용이 표시됩니다.")
 
