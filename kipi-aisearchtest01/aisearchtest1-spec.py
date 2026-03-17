@@ -3,6 +3,11 @@
 import streamlit as st
 import pandas as pd
 
+try:
+    from gazette_detail_content import GAZETTE_DETAIL
+except ImportError:
+    GAZETTE_DETAIL = ""
+
 # AI분석 탭 - 발명 3요소 블록 스타일
 st.markdown("""
 <style>
@@ -249,13 +254,13 @@ with left_col:
     # 제목 영역 + 분류코드
     st.markdown("### 💡 특허 공보")
     st.markdown(
-        '<div class="gazette-title-ko">컨볼루션 신경망을 사용하는 의미적 세그먼트화 및 깊이 완성 방법 및 장치</div>'
-        '<div class="gazette-title-en">METHOD AND APPARATUS FOR SEMANTIC SEGMENTATION AND DEPTH COMPLETION USING A CONVOLUTIONAL NEURAL NETWORK</div>'
+        '<div class="gazette-title-ko">전자 소자 패키지</div>'
+        '<div class="gazette-title-en">Electronic device package</div>'
         '<div class="gazette-tag-row">'
-        '<span class="gazette-tag gazette-tag-cpc">G06N 3/08</span>'
-        '<span class="gazette-tag gazette-tag-cpc">G06N 3/045</span>'
-        '<span class="gazette-tag gazette-tag-cpc">G06F 16/55</span>'
-        '<span class="gazette-tag gazette-tag-cpc">G06T 7/11</span>'
+        '<span class="gazette-tag gazette-tag-cpc">H01L 25/06</span>'
+        '<span class="gazette-tag gazette-tag-cpc"H01L 23/52</span>'
+        '<span class="gazette-tag gazette-tag-cpc">H01L 25/10</span>'
+        '<span class="gazette-tag gazette-tag-cpc">H01L 23/00</span>'
         '</div>',
         unsafe_allow_html=True,
     )
@@ -267,17 +272,17 @@ with left_col:
         st.markdown(
             '<div class="gazette-section">'
             '<div class="gazette-bib">'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">출원번호</span> 1020190168468</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">출원일</span> 2019.12.17</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">공개번호</span> 1020210073416</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">공개일</span> 2021.06.18</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">공보번호</span> —</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">공보일</span> 2022.03.25</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">등록번호</span> 1023788500000</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">등록일</span> 2022.03.22</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">출원번호</span> 1020160184354</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">출원일</span> 2016.12.30</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">공개번호</span> 1020180079007</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">공개일</span> 2018.07.10</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">공보번호</span></div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">공보일</span> 2024.05.07</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">등록번호</span> 1026638100000</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">등록일</span> 2024.04.30</div>'
             '<div class="gazette-bib-item"><span class="gazette-bib-label">최종상태</span> 등록결정(일반)</div>'
             '<div class="gazette-bib-item"><span class="gazette-bib-label">등록상태</span> 등록</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">재심사청구 Y</span> 2020.01.16</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">재심사청구 Y</span> 2021.11.22</div>'
             '<div class="gazette-bib-item"></div>'
             '</div></div>',
             unsafe_allow_html=True,
@@ -285,12 +290,13 @@ with left_col:
 
     # 초록 (접기/펼치기 카드)
     abstract_text = (
-        "입력 시각적 이미지 및/또는 입력 깊이 이미지로부터 컨볼루션 신경망(CNN)을 사용하여 "
-        "의미적으로 세그먼트화된 이미지 및 깊이 완성 이미지를 생성하는 컴퓨터 구현된 방법이다. "
-        "일 실시예에서, 방법은"
-        "<span id=\"focus-same\" style=\"background-color: #66bb6a;\">트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화 및 깊이 완성을 위한 CNN을 트레이닝시키는 단계</span>를 포함한다."
-        "트레이닝된 CNN은 입력 이미지로부터 "
-        "의미적으로 세그먼트화된 이미지 및 깊이 완성 이미지를 생성하는 데 사용될 수 있다."
+        "본 발명의 전자 소자 패키지는 패키지 기판과, 상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 인터포저와, "
+        "상기 인터포저의 상부에 위치하고 상기 인터포저와 전기적으로 연결된 프로세싱 소자와, "
+        "상기 인터포저의 상부에 위치하고 상기 인터포저 및 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자와, "
+        "상기 인터포저의 상부에 위치하고 상기 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자와, "
+        "상기 인터포저의 상부 또는 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함한다. "
+        "상기 수동 소자는 인덕터를 포함하고, 상기 인덕터는 상기 인터포저의 상하부에 각각 형성된 상부 자석층 및 하부 자석층, "
+        "상기 상하부 자석층들을 연결하는 관통 실리콘 비아들, 및 상기 관통 실리콘 비아들을 연결하는 재배선층을 포함한다."
     )
     with st.expander("📄 초록", expanded=True):
         st.markdown(
@@ -298,39 +304,33 @@ with left_col:
             unsafe_allow_html=True,
         )
 
-    # 청구항 (접기/펼치기 카드, 내부에 청구항 1·2·3 각각 expander)
-    claim1_text = (
-        '트레이닝 세트의 이미지 쌍들을 사용하여 이미지들의 의미적 세그먼트화(semantic segmentation) 및 '
-        "깊이 완성(depth completion)을 위한 컨볼루션 신경망(convolutional neural network)을 트레이닝시키기 위한 "
-        "컴퓨터 구현된 방법으로서, 상기 방법은: 상기 트레이닝 세트로부터 이미지 쌍을 수신하는 단계; "
-        "<span id=\"focus-partial\" style=\"background-color: #f9a825;\">상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계</span>; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
-        "상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법."
-    )
-    claim2_text = (
-        "전항의 방법에 있어서, 상기 트레이닝 세트로부터 이미지 쌍을 수신하는 단계는 "
-        "<span id=\"focus-diff\" style=\"background-color: #e57373;\">시각적 이미지와 대응하는 깊이 이미지가 정렬된 쌍을 수신하는 단계</span>를 포함하는, 방법."
-    )
-    claim3_text = (
-        "상기 이미지 쌍에 기초하여 상기 CNN을 트레이닝시키는 단계; 및 상기 트레이닝된 CNN을 저장하는 단계를 포함하고, "
-        "<span id=\"focus-same-claim3\" style=\"background-color: #66bb6a;\">상기 이미지 쌍의 각각은 시각적 이미지 및 대응하는 깊이 이미지를 포함하는, 방법</span>."
-    )
+    # 청구항 (접기/펼치기 카드, 내부에 청구항 1~6 각각 expander)
+    claim1_text = "패키지 기판; 상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 인터포저; 상기 인터포저의 상부에 위치하고 상기 인터포저와 전기적으로 연결된 프로세싱 소자; 상기 인터포저의 상부에 위치하고 상기 인터포저 및 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자; 상기 인터포저의 상부에 위치하고 상기 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자; 및 상기 인터포저의 상부 또는 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함하되, 상기 수동 소자는 인덕터를 포함하고, 상기 인덕터는 상기 인터포저의 상하부에 각각 형성된 상부 자석층 및 하부 자석층, 상기 상하부 자석층들을 연결하는 관통 실리콘 비아들, 및 상기 관통 실리콘 비아들을 연결하는 재배선층을 포함하는 것을 특징으로 하는 전자 소자 패키지."
+    claim2_text = "제1항에 있어서, 상기 인덕터는 상기 전력 관리 집적 회로 소자의 아래의 상기 인터포저 내부에 형성되어 있는 것을 특징으로 하는 전자 소자 패키지."
+    claim3_text = ""
+    claim4_text = ""
+    claim5_text = "제1항에 있어서, 상기 수동 소자는 커패시터를 더 포함하고, 상기 커패시터는 상기 인터포저 내부에 형성된 복수개의 배선 패턴층을 포함하는 것을 특징으로 하는 전자 소자 패키지."
+    claim6_text = "제1항에 있어서, 상기 전력 관리 집적 회로 소자, 및 상기 수동 소자는 하나로 집적화된 집적화 소자로 구성되고, 상기 집적화 소자에 포함된 상기 전력 관리 집적 회로 소자 및 상기 수동 소자는 관통 실리콘 비아로 전기적으로 연결되는 것을 특징으로 하는 전자 소자 패키지."
     with st.expander("📌 청구항", expanded=True):
         with st.expander("청구항 1", expanded=True):
-            st.markdown(claim1_text, unsafe_allow_html=True)
+            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim1_text}</div></div>', unsafe_allow_html=True)
         with st.expander("청구항 2", expanded=True):
-            st.markdown(claim2_text, unsafe_allow_html=True)
+            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim2_text}</div></div>', unsafe_allow_html=True)
         with st.expander("청구항 3", expanded=True):
-            st.markdown(claim3_text, unsafe_allow_html=True)
+            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim3_text}</div></div>', unsafe_allow_html=True)
+        with st.expander("청구항 4", expanded=True):
+            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim4_text}</div></div>', unsafe_allow_html=True)
+        with st.expander("청구항 5", expanded=True):
+            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim5_text}</div></div>', unsafe_allow_html=True)
+        with st.expander("청구항 6", expanded=True):
+            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim6_text}</div></div>', unsafe_allow_html=True)
 
     # 기술분야 (접기/펼치기 카드)
     with st.expander("🔬 기술분야", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '본 발명은 컨볼루션 신경망(CNN)을 사용하여 입력 이미지로부터 의미적 세그먼트화(semantic segmentation) 및 '
-            '깊이 완성(depth completion)을 수행하는 방법 및 장치에 관한 것이다. '
-            '보다 상세하게는, 시각적 이미지 및/또는 깊이 이미지를 입력받아 딥러닝 기반으로 의미 영역을 분할하고 '
-            '희소(sparse) 깊이 데이터를 조밀(dense) 깊이 맵으로 완성하는 컴퓨터 구현 기술에 관한 것이다.'
+            '본 발명의 기술적 사상은 전자 소자 패키지에 관한 것으로서, 보다 상세하게는 집적 회로 소자, 메모리 소자 및 수동 소자 등을 포함하는 전자 소자 패키지에 관한 것이다.'
             '</div></div>',
             unsafe_allow_html=True,
         )
@@ -340,53 +340,43 @@ with left_col:
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '자율 주행, 로봇 비전, 증강/가상 현실 등에서는 장면의 의미적 이해와 정확한 깊이 정보가 필수적이다. '
-            '의미적 세그먼트화는 픽셀 단위로 객체 클래스를 분류하는 기술이며, 깊이 완성은 LiDAR 등으로 얻은 '
-            '희소 깊이를 전체 화면에 대한 조밀 깊이 맵으로 보완하는 기술이다. '
-            '종래에는 두 과제를 별도 네트워크로 처리하여 계산 비용이 크고, 시각 정보와 깊이 정보 간의 일관성이 '
-            '보장되지 않는 문제가 있었다. 또한 트레이닝 시 시각 이미지와 깊이 이미지의 정렬(alignment)이 '
-            '불완전한 경우 성능이 저하되는 한계가 있었다.'
+            '전자 소자 패키지는 보드 기판이나 패키지 기판 상에 전자 소자, 예컨대 집적 회로 소자, 메모리 소자 및 수동 소자 등이 탑재될 수 있다.<br>'
+            '전자 기기의 소형화 및 전자 소자의 집적도 향상에 따라 전자 소자가 보드 기판이나 패키지 기판에 실장되는 살장 면적을 줄이는 것이 요구되고 있다.'
             '</div></div>',
             unsafe_allow_html=True,
         )
 
-    # 해결하려는 과제 (접기/펼치기 카드)
-    with st.expander("🎯 해결하려는 과제", expanded=True):
+    # 해결하고자 하는 과제 (접기/펼치기 카드)
+    with st.expander("🎯 해결하고자 하는 과제", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '본 발명이 해결하려는 과제는, 단일 CNN으로 의미적 세그먼트화와 깊이 완성을 동시에 수행하여 '
-            '계산 효율을 높이고 두 출력 간의 일관성을 확보하는 것이다. 또한 트레이닝 단계에서 '
-            '시각적 이미지와 대응하는 깊이 이미지가 정렬된 이미지 쌍을 사용함으로써 학습 안정성과 '
-            '추론 정확도를 향상시키는 방법 및 장치를 제공하는 것이다.'
+            '본 발명의 기술적 사상이 해결하고자 하는 과제는 실장 면적을 줄이면서도 성능은 향상시킬 수 있는 전자 소자 패키지를 제공하는 데 있다.'
             '</div></div>',
             unsafe_allow_html=True,
         )
 
-    # 과제의 해결 수단 (접기/펼치기 카드)
-    with st.expander("⚙️ 과제의 해결 수단", expanded=True):
+    # 해결수단 (접기/펼치기 카드)
+    with st.expander("⚙️ 해결수단", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '상기 과제를 해결하기 위하여, 본 발명은 트레이닝 세트의 이미지 쌍(시각 이미지 및 대응 깊이 이미지)을 '
-            '사용하여 의미적 세그먼트화 및 깊이 완성을 위한 CNN을 트레이닝시키는 컴퓨터 구현 방법을 제공한다. '
-            '방법은 트레이닝 세트로부터 이미지 쌍을 수신하는 단계, 해당 이미지 쌍에 기초하여 CNN을 트레이닝시키는 단계, '
-            '및 트레이닝된 CNN을 저장하는 단계를 포함한다. 일 실시예에서 이미지 쌍 수신 단계는 '
-            '시각적 이미지와 대응하는 깊이 이미지가 정렬된 쌍을 수신하는 것을 포함하여, '
-            '공동 학습(joint learning)을 통한 성능 향상을 도모한다.'
+            '상술한 과제를 해결하기 위하여 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지는 패키지 기판; 상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 인터포저; 상기 인터포저의 상부에 위치하고 상기 인터포저와 전기적으로 연결된 프로세싱 소자; 상기 인터포저의 상부에 위치하고 상기 인터포저 및 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자; 상기 인터포저의 상부에 위치하고 상기 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자; 및 상기 인터포저의 상부 또는 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함한다.<br>'
+            '상기 수동 소자는 인덕터를 포함하고, 상기 인덕터는 상기 인터포저의 상하부에 각각 형성된 상부 자석층 및 하부 자석층, 상기 상하부 자석층들을 연결하는 관통 실리콘 비아들, 및 상기 관통 실리콘 비아들을 연결하는 재배선층을 포함한다.<br>'
+            '본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지는 패키지 기판; 상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 하부 인터포저; 상기 하부 인터포저의 상부에 위치하고 상기 하부 인터포저와 전기적으로 연결된 상부 인터포저; 상기 상부 인터포저의 상부에 위치하고 상기 상부 인터포저와 전기적으로 연결된 프로세싱 소자; 상기 상부 인터포저의 상부에 위치하고 상기 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자; 상기 상부 인터포저의 상에 위치하고 상기 상부 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자; 및 상기 하부 인터포저 및 상기 상부 인터포저의 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함한다.<br>'
+            '상기 수동 소자는 인덕터를 포함하고, 상기 인덕터는 상기 상부 인터포저 및 상기 하부 인터포저의 상하부에 각각 형성된 상부 자석층 및 하부 자석층, 상기 상하부 자석층들을 연결하는 관통 실리콘 비아들, 및 상기 관통 실리콘 비아들을 연결하는 재배선층을 포함한다.<br>'
+            '또한, 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지는 패키지 기판; 상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 하부 인터포저; 상기 하부 인터포저의 상부에 위치하고 상기 하부 인터포저와 전기적으로 연결된 중간 인터포저; 상기 중간 인터포저의 상부에 위치하고 상기 중간 인터포저와 전기적으로 연결된 상부 인터포저; 상기 상부 인터포저의 상부에 위치하고 상기 상부 인터포저와 전기적으로 연결된 프로세싱 소자; 상기 상부 인터포저의 상부에 위치하고 상기 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자; 상기 중간 인터포저 내에 위치하고 상기 상부 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자; 및 상기 하부 인터포저 및 상기 중간 인터포저의 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함한다.'
             '</div></div>',
             unsafe_allow_html=True,
         )
 
-    # 발명의 효과 (접기/펼치기 카드)
-    with st.expander("⭐ 발명의 효과", expanded=True):
+    # 효과 (접기/펼치기 카드)
+    with st.expander("⭐ 효과", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '본 발명에 따르면, (1) 하나의 CNN으로 의미적 세그먼트화와 깊이 완성을 동시에 수행함으로써 '
-            '계산량 및 메모리 사용을 절감할 수 있고, (2) 공동 학습을 통해 두 태스크 간 일관된 특징 표현을 '
-            '얻어 정확도가 향상되며, (3) 정렬된 이미지 쌍을 이용한 트레이닝으로 추론 시 더 안정적인 '
-            '세그먼트 및 깊이 결과를 제공할 수 있다.'
+            '본 발명의 기술적 사상의 전자 소자 패키지는 패키지 기판 상에 인터포저를 위치시키고 인터포저 상부 또는 내부에 전력 관리 집적 회로 소자를 탑재하고, 인터포저 상에는 메모리 소자를 탑재하고, 인터포저 내에는 인덕터나 커패시터와 같은 수동 소자를 형성한다.<br>'
+            '이와 같이 구성할 경우, 본 발명의 기술적 사상의 전자 소자 패키지는 패키지 기판 상에 전자 소자의 실장 면적을 줄이면서도 전력 공급을 안정적으로 하여 성능을 향상시킬 수 있다.'
             '</div></div>',
             unsafe_allow_html=True,
         )
@@ -396,46 +386,55 @@ with left_col:
         st.markdown(
             '<div class="gazette-section">'
             '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '<strong>도 1</strong>은 본 발명의 일 실시예에 따른 의미적 세그먼트화 및 깊이 완성 방법의 전체 흐름을 나타내는 블록도이다.<br>'
-            '<strong>도 2</strong>는 CNN 트레이닝 단계에서 사용되는 이미지 쌍 및 레이블 구조를 개략적으로 나타낸 도면이다.<br>'
-            '<strong>도 3</strong>은 추론 단계에서 입력 이미지로부터 세그먼트 맵 및 깊이 완성 맵을 생성하는 장치 구성을 나타낸 도면이다.<br>'
-            '<strong>도 4</strong>는 실시예에 따른 처리 장치의 하드웨어 구성 예를 나타낸 블록도이다.'
+            '도 1은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이다.<br>'
+            '도 2는 도 1의 전자 소자 패키지의 수동 소자의 확대도이다.<br>'
+            '도 3은 도 1의 전자 소자 패키지의 인터포저의 확대도이다.<br>'
+            '도 4는 도 3의 인터포저의 "B" 부분 확대도이다.<br>'
+            '도 5는 도 1의 고대역폭 메모리 소자의 확대도이다.<br>'
+            '도 6a 내지 도 6c는 본 발명의 기술적 사상의 전자 소자 패키지의 각 전자 요소들의 위치 관계를 설명하기 위한 레이아웃도이다.<br>'
+            '도 7은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이고, 도 8 및 도 9는 도 7의 "C"부분 확대도이다.<br>'
+            '도 10은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이다.<br>'
+            '도 11은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이다.<br>'
+            '도 12는 은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이다.<br>'
+            '도 13a는 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이고, 도 13b는 도 13a의 수동 소자의 요부 단면도이다.<br>'
+            '도 14a 및 14b는 각각 본 발명의 기술적 사상의 일 실시예에 따라 전자 소자 패키지에 이용될 수 있는 수동 소자를 설명하기 위한 부분 단면도 및 부분 평면도이다.<br>'
+            '도 15는 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이다.<br>'
+            '도 16은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 포함하는 전자 시스템을 도시한 블록도이다.<br>'
+            '도 17은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 포함하는 전자 시스템을 도시한 블록도이다.'
             '</div></div>',
             unsafe_allow_html=True,
         )
 
-    # 발명을 실시하기 위한 구체적인 내용 (접기/펼치기 카드)
-    with st.expander("📝 발명을 실시하기 위한 구체적인 내용", expanded=True):
-        st.markdown(
+    # 발명의 상세한 설명 (접기/펼치기 카드)
+    with st.expander("📝 발명의 상세한 설명", expanded=False):
+        detail_html = (
             '<div class="gazette-section">'
-            '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '이하, 첨부 도면을 참조하여 본 발명의 실시예를 상세히 설명한다. 도 1에 따르면, 트레이닝 세트는 '
-            '시각적 이미지와 대응하는 깊이 이미지(및 필요시 세그먼트/깊이 레이블)로 구성된 이미지 쌍들을 포함한다. '
-            '트레이닝 단계에서는 이 쌍들을 입력으로 하여 CNN의 파라미터가 갱신되며, 손실 함수는 세그먼트 오차와 '
-            '깊이 오차를 결합한 다중 태스크 손실일 수 있다. 트레이닝이 완료된 CNN은 저장 매체에 저장되고, '
-            '추론 시(도 3) 새로운 시각 이미지 및/또는 희소 깊이 이미지를 입력받아 의미적 세그먼트 맵과 '
-            '조밀 깊이 완성 맵을 출력한다. 정렬된 이미지 쌍을 사용함으로써 두 모달리티 간의 대응 관계가 '
-            '학습에 반영되어 성능이 향상된다. 도 4의 처리 장치(예: CPU, GPU, 메모리)는 상기 방법을 '
-            '실행하기 위한 프로그램을 저장하고 실행한다.'
-            '</div></div>',
-            unsafe_allow_html=True,
+            '<div style="font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;">'
+            + GAZETTE_DETAIL.replace("\n", "<br>")
+            + "</div></div>"
         )
+        st.markdown(detail_html, unsafe_allow_html=True)
 
-    # 부호의 설명 (접기/펼치기 카드)
+    # 부호의 설명 (접기/펼치기 카드) - 전자 소자 패키지
     with st.expander("🔢 부호의 설명", expanded=True):
         st.markdown(
             '<div class="gazette-section">'
             '<div class="gazette-bib" style="grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem;">'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">100</span> 트레이닝 세트</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">110</span> 이미지 쌍</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">120</span> 시각적 이미지</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">130</span> 깊이 이미지</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">200</span> CNN(컨볼루션 신경망)</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">210</span> 인코더</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">220</span> 디코더(세그먼트)</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">230</span> 디코더(깊이 완성)</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">300</span> 처리 장치</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">310</span> 저장 매체</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">100</span> 전자 소자 패키지</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">102</span> 패키지 기판</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">104</span> 제1 연결 단자</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">106</span> 제1 배선층</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">110</span> 인터포저</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">112</span> 제2 연결 단자</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">113</span> 제1 관통 실리콘 비아</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">114</span> 제2 배선층</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">120</span> 프로세싱 소자</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">122</span> 제2 연결 단자</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">124</span> 전력 관리 집적 회로 소자</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">128</span> 고대역폭 메모리 소자</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">132</span> 수동 소자</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">136</span> 제2 관통 실리콘 비아들</div>'
+            '<div class="gazette-bib-item"><span class="gazette-bib-label">137</span> 재배선층</div>'
             '</div></div>',
             unsafe_allow_html=True,
         )
