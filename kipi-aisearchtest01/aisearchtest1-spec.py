@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import os
+from pathlib import Path
 import streamlit as st
 import pandas as pd
 
 # 스크립트 위치 기준 data 폴더 경로
-_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-_DATA_DIR = os.path.join(_SCRIPT_DIR, "data")
+drawing_path = Path(__file__).parent / "data"
 
 # AI분석 탭 - 발명 3요소 블록 스타일
 st.markdown("""
@@ -204,10 +203,10 @@ with right_col:
     tab_labels = ["도면 1", "도면 2", "도면 3", "도면 4", "도면 5", "도면 6"]
     drawing_tabs = st.tabs(tab_labels)
     for tab, fname in zip(drawing_tabs, drawing_files):
-        path = os.path.join(_DATA_DIR, fname)
+        path = drawing_path / fname
         with tab:
-            if os.path.isfile(path):
-                st.image(path)
+            if path.is_file():
+                st.image(str(path))
             else:
                 st.caption(f"파일 없음: {fname}")
 
