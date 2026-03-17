@@ -281,6 +281,36 @@ SUMMARY_TABLE_HTML = """
 </div>
 """
 
+# 우측 사이드바(대표도면 아래) — 대상 AI요약과 동일한 카드 스타일 (대표청구항, 해결과제, 해결수단, 효과)
+RIGHT_SIDEBAR_CONTENT_HTML = """
+<div class="summary-cards" style="font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; max-width: 100%;">
+    <div class="summary-item">
+        <div class="summary-item-row">
+            <span class="summary-item-title">대표청구항</span>
+        </div>
+        <div class="summary-item-body">패키지 기판;<br>상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 인터포저;<br>상기 인터포저의 상부에 위치하고 상기 인터포저와 전기적으로 연결된 프로세싱 소자;<br>상기 인터포저의 상부에 위치하고 상기 인터포저 및 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자;<br>상기 인터포저의 상부에 위치하고 상기 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자; 및<br>상기 인터포저의 상부 또는 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함하는 전자 소자 패키지.</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-item-row">
+            <span class="summary-item-title">해결과제(목적)</span>
+        </div>
+        <div class="summary-item-body">인터포저 기반 패키지 구조에서 수동소자와 전력 관리 회로를 효율적으로 통합하여 패키지 실장 면적을 줄이면서도 전력 공급 안정성과 시스템 성능을 향상시킬 수 있는 전자 소자 패키지를 제공</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-item-row">
+            <span class="summary-item-title">해결수단</span>
+        </div>
+        <div class="summary-item-body">패키지 기판 상부에 인터포저를 배치하고, 인터포저 상부에 프로세싱 소자와 고대역폭 메모리 소자 및 전력 관리 집적 회로 소자를 탑재하며, 인터포저 내부 또는 상부에 인덕터 및 커패시터와 같은 수동소자를 형성한다. 특히 인덕터는 인터포저 상하부에 형성된 자석층과 이를 연결하는 관통 실리콘 비아 및 재배선층을 이용하여 형성되며, 전력 관리 집적 회로와 전기적으로 연결되어 안정적인 전력 공급을 구현한다.</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-item-row">
+            <span class="summary-item-title">효과</span>
+        </div>
+        <div class="summary-item-body">인터포저 내부에 수동소자와 전력 관리 회로를 통합함으로써 패키지 기판 상의 실장 면적을 줄일 수 있고, 프로세싱 소자와 고대역폭 메모리에 안정적인 전력 공급을 제공하여 전체 전자 시스템의 성능 및 전력 효율을 향상</div>
+    </div>
+</div>
+"""
+
 # 대상 보기 패널 표시 여부 (대상 보기 버튼 토글)
 if "claims_visible" not in st.session_state:
     st.session_state.claims_visible = False
@@ -496,7 +526,7 @@ with right_sidebar:
         else:
             st.caption("`./data/drawing.jpg` 파일을 추가하면 대표도면이 표시됩니다.")
         
-        st.markdown(SUMMARY_TABLE_HTML, unsafe_allow_html=True)
+        st.markdown(RIGHT_SIDEBAR_CONTENT_HTML, unsafe_allow_html=True)
         st.markdown(
             '</div>',
             unsafe_allow_html=True,
