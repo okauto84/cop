@@ -3,6 +3,7 @@
 import streamlit as st
 import pandas as pd
 from pathlib import Path
+from PIL import Image
 
 try:
     from gazette_detail_content import (
@@ -236,8 +237,12 @@ with right_col:
         _tabs = st.tabs(_tab_names)
         for _tab, _img_path in zip(_tabs, _image_files):
             with _tab:
-                _col_img, _ = st.columns([0.9, 0.1])  # 이미지 80% 너비
-                with _col_img:
+                try:
+                    with Image.open(_img_path) as _img:
+                        _w, _h = _img.size
+                    _display_w = int(_w * 0.8)
+                    st.image(str(_img_path), width=_display_w)
+                except Exception:
                     st.image(str(_img_path), use_container_width=True)
     else:
         st.info("도면 이미지가 없습니다. `./data` 폴더에 이미지 파일(.png, .jpg 등)을 넣어 주세요.")
