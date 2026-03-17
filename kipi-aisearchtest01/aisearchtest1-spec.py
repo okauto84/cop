@@ -255,7 +255,6 @@ with right_col:
         unsafe_allow_html=True,
     )
 
-    st.markdown("")  # 간격
     st.markdown("### 💡 종합 의견")
     st.markdown(
         '<div class="compare-box common" style="border-left-color: #1565c0; border-right-color: #1565c0;">'
