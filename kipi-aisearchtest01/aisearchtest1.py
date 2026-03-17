@@ -61,6 +61,16 @@ st.markdown("""
     .main .block-container { padding-top: 3rem; }
     div[data-testid="stText"] { font-size: 14px; }
 
+    /* 메인 4열(좌측|대상|중앙|우측) 한 줄 고정 — 줄바꿈 방지 */
+    div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) {
+        flex-wrap: nowrap !important;
+        display: flex !important;
+        width: 100% !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"] {
+        min-width: 0;
+        flex-shrink: 1;
+    }
     /* 좌측 | 메인 | 우측 사이드바 구분 라인 (세로), 좌·메인 간격 축소 */
     [data-testid="column"] {
         border-right: 1px solid #dee2e6;
@@ -68,8 +78,8 @@ st.markdown("""
         padding-left: 0.1rem;
     }
     [data-testid="column"]:first-of-type { padding-left: 0; padding-right: 0.35rem; }
-    /* 우측 사이드바(대표도면 영역): 고정 높이 + 스크롤바 */
-    [data-testid="column"]:last-of-type {
+    /* 우측 사이드바(대표도면 영역): 4열 행의 마지막 열만 적용, 고정 높이 + 스크롤바 */
+    div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:last-of-type {
         border-right: none;
         padding-right: 0;
         padding-top: 0.5rem;
@@ -78,12 +88,14 @@ st.markdown("""
         overflow-y: auto;
         overflow-x: visible;
         min-height: 200px;
+        flex-shrink: 0;
+        min-width: 1rem;
     }
-    [data-testid="column"]:last-of-type > div {
+    div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:last-of-type > div {
         padding-top: 0.25rem;
         max-height: none;
     }
-    [data-testid="column"]:last-of-type .stMarkdown { animation: slideIn 0.3s ease-out; }
+    div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:last-of-type .stMarkdown { animation: slideIn 0.3s ease-out; }
 
     /* 탭 구분: 탭 버튼 영역 하단 라인, 탭 내용 영역 테두리 */
     [data-testid="stTabs"] {
