@@ -236,14 +236,10 @@ with right_col:
     st.markdown(
         '<div class="compare-box common" style="border-left-color: #1565c0; border-right-color: #1565c0;">'
         '<div style="font-size: 0.9rem; line-height: 1.7;">'
-        '구성요소 대비표에 따르면, 출원발명과 인용발명은 '
-        '<span class="highlight">탈거방지턱(718)과 체결스프링(99)</span>에서 재료의 탄성 변형을 활용한 '
-        '이탈 방지 메커니즘이 실질적으로 동일하다. '
-        '<span class="highlight">베이스팬(100)과 베리어(73)</span>은 결합 기능을 본체 구조물에 일체화했다는 점에서 유사하지만, '
-        '관통형 가이드공과 단부측판이라는 구조적 차이가 존재한다. '
-        '반면, <span class="highlight">상측캐비넷(650)과 측면브라켓(80)</span>, '
-        '<span class="highlight">커텐프레임(710)과 전면패널(95)</span>은 '
-        '슬라이딩 vs 스냅 결합, 선형 가이드 vs 점 결합 구조 등에서 기술적 초점이 상이하다.'
+        '출원발명의 제1 기판 패키지(110), 인터포저(130), 및 제1 반도체 칩(140)에 대응하는 구성은 '
+        '선행발명의 패키지 기판(102), 인터포저(110), 및 프로세싱 소자(120)에 의해 대응되나, '
+        '출원발명의 제1 기판 패키지 하부에 배치되는 제2 기판 패키지(120)에 대응되는 구성은 '
+        '선행발명에 개시되어 있지 않다.'
         '</div>'
         '</div>',
         unsafe_allow_html=True,
