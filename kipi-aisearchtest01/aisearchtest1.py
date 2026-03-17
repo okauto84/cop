@@ -316,9 +316,9 @@ def hide_sidebar():
 
 # 기술 구성요소 목록 (요소 추가 시 마지막에 빈칸 추가)
 DEFAULT_COMPONENTS = [
-    "흐름전극기반 축전식 탈염을 위한 슬러리 탄소 적극을 제조하는 방법",
-    "집전체와 음이온교환막을 포함하는 양극유로를 준비하는 단계",
-    "상기 양극유로의 집전체와 전기적으로 분리된 집전체 및 양이온...",
+    "제1 기판 패키지(110): 제1 피치(P1)의 제1 패드(114)를 포함하는 ABF 패키지",
+    "제2 기판 패키지(120): 제2 피치(P2)의 제2 패드(124)를 포함하는 HDI 패키지",
+    "인터포저(130): 제3 패드(134)와 수직 신호 라인(138)을 포함하는 반도체 인터포저",
 ]
 if "components" not in st.session_state:
     st.session_state.components = list(DEFAULT_COMPONENTS)
@@ -377,7 +377,7 @@ else:
 with left_col:
     # 대상 검색 (기존 '대상 AI요약' 탭은 슬라이드 패널로 이전)
     st.markdown("**⚙️ 심사 대상 건 입력**")
-    st.text_input("출원번호", value="1020200091668", label_visibility="collapsed")
+    st.text_input("출원번호", value="1020200026921", label_visibility="collapsed")
     
     st.text_area(
         "문장 검색",
