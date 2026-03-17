@@ -218,8 +218,11 @@ with right_col:
 
     st.markdown("### 💡 도면")
 
-    # ./data 폴더 이미지 파일 목록 (스크립트 위치 기준)
-    _script_dir = Path(__file__).resolve().parent
+    # ./data 폴더 이미지 파일 목록 (스크립트 위치 기준, exec 시 __file__ 전달됨)
+    try:
+        _script_dir = Path(__file__).resolve().parent
+    except NameError:
+        _script_dir = Path.cwd()
     _data_dir = _script_dir / "data"
     _img_ext = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
     _image_files = []

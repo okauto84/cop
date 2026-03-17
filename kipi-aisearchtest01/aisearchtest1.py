@@ -40,7 +40,7 @@ def show_spec_popup():
     _orig = getattr(st, "set_page_config", None)
     try:
         spec_content = spec_path.read_text(encoding="utf-8")
-        _spec_globals = {"st": st, "pd": pd, "__name__": "__main__"}
+        _spec_globals = {"st": st, "pd": pd, "__name__": "__main__", "__file__": str(spec_path)}
         st.set_page_config = lambda *a, **k: None
         exec(compile(spec_content, str(spec_path), "exec"), _spec_globals)
     except Exception as e:
