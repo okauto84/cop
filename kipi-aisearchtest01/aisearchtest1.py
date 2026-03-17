@@ -176,11 +176,6 @@ st.markdown("""
         align-items: center;
         gap: 8px;
         margin-bottom: 6px;
-        cursor: pointer;
-    }
-    .summary-cards .summary-item-row input[type="checkbox"] {
-        flex-shrink: 0;
-        accent-color: #1e3a8a;
     }
     .summary-cards .summary-item-title {
         color: #1e3a8a;
@@ -232,63 +227,55 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 대상 AI요약 — 청구항 탭과 동일 스타일(체크박스+굵은 타이틀 행, 하단 내용 한 칸씩)
+# 대상 AI요약 — 청구항 탭과 동일 스타일(굵은 타이틀 행, 하단 내용 한 칸씩)
 SUMMARY_TABLE_HTML = """
 <div class="summary-cards" style="font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; max-width: 600px;">
     <div class="summary-item">
-        <label class="summary-item-row">
-            <input type="checkbox" class="summary-cb" name="summary_selection" value="0">
+        <div class="summary-item-row">
             <span class="summary-item-title">기술분야</span>
-        </label>
+        </div>
         <div class="summary-item-body">반도체 패키지 기술에 관한 것으로, 서로 다른 피치를 갖는 기판 패키지 사이에 인터포저를 배치하여 반도체 칩을 적층하는 스택 패키지 및 그 제조 방법</div>
     </div>
     <div class="summary-item">
-        <label class="summary-item-row">
-            <input type="checkbox" class="summary-cb" name="summary_selection" value="1">
+        <div class="summary-item-row">
             <span class="summary-item-title">문제점</span>
-        </label>
+        </div>
         <div class="summary-item-body">기존 기술에서는 인터포저를 ABF 패키지 또는 HDI 패키지 중 하나에만 적용하는 경우 대면적 스택 패키지 제조 비용이 증가하거나 인터포저 내부에 수평 신호 라인을 형성해야 하므로 저항 증가로 인해 패키지 성능이 저하되는 문제</div>
     </div>
     <div class="summary-item">
-        <label class="summary-item-row">
-            <input type="checkbox" class="summary-cb" name="summary_selection" value="2">
+        <div class="summary-item-row">
             <span class="summary-item-title">해결과제(목적)</span>
-        </label>
+        </div>
         <div class="summary-item-body">서로 다른 피치를 갖는 기판 패키지를 효율적으로 연결하면서 인터포저의 수평 신호 라인을 제거하여 제조 비용을 절감하고 성능을 향상시킨 스택 패키지를 제공</div>
     </div>
     <div class="summary-item">
-        <label class="summary-item-row">
-            <input type="checkbox" class="summary-cb" name="summary_selection" value="3">
+        <div class="summary-item-row">
             <span class="summary-item-title">해결수단</span>
-        </label>
+        </div>
         <div class="summary-item-body">제1 피치의 패드를 갖는 ABF 기반 제1 기판 패키지(110)와 제2 피치의 패드를 갖는 HDI 기반 제2 기판 패키지(120)를 적층하고, 제1 기판 패키지 상부에 제3 피치의 패드를 갖는 인터포저(130)를 배치하며, 인터포저 내부에 수직 신호 라인(138)을 형성하여 제1·제2 기판 패키지와 반도체 칩(140)을 도전성 범프(170,172,174)로 전기적으로 연결하도록 구성</div>
     </div>
     <div class="summary-item">
-        <label class="summary-item-row">
-            <input type="checkbox" class="summary-cb" name="summary_selection" value="4">
+        <div class="summary-item-row">
             <span class="summary-item-title">핵심기술</span>
-        </label>
+        </div>
         <div class="summary-item-body">•ABF 패키지와 HDI 패키지를 순차적으로 적층하고 그 사이에 인터포저를 배치하는 스택 패키지 구조<br>•ABF 패키지와 인터포저가 실질적으로 동일한 피치를 갖도록 하여 인터포저 내부의 수직 신호 라인만으로 전기 연결하는 기술<br>•제1·제2·제3 도전성 범프를 이용하여 기판 패키지와 인터포저 및 반도체 칩을 단계적으로 연결하는 패키지 구조<br>•인터포저 상부에 ASIC 및 HBM 반도체 칩을 배치하여 고대역폭 신호 연결을 구현하는 구조</div>
     </div>
     <div class="summary-item">
-        <label class="summary-item-row">
-            <input type="checkbox" class="summary-cb" name="summary_selection" value="5">
+        <div class="summary-item-row">
             <span class="summary-item-title">효과</span>
-        </label>
+        </div>
         <div class="summary-item-body">인터포저에 수평 신호 라인을 형성할 필요가 없어 저항 증가를 방지하고 성능을 향상시키며 동시에 대면적 스택 패키지의 제조 비용을 절감</div>
     </div>
     <div class="summary-item">
-        <label class="summary-item-row">
-            <input type="checkbox" class="summary-cb" name="summary_selection" value="6">
+        <div class="summary-item-row">
             <span class="summary-item-title">응용분야</span>
-        </label>
+        </div>
         <div class="summary-item-body">인공지능 디바이스, 네트워크 장치, 고대역폭 메모리 기반 고성능 반도체 패키지 등 고집적 반도체 시스템에 적용</div>
     </div>
     <div class="summary-item">
-        <label class="summary-item-row">
-            <input type="checkbox" class="summary-cb" name="summary_selection" value="7">
+        <div class="summary-item-row">
             <span class="summary-item-title">보충설명</span>
-        </label>
+        </div>
         <div class="summary-item-body">본 발명의 스택 패키지는 HDI 패키지, ABF 패키지, 인터포저 및 반도체 칩을 계단형 피라미드 구조로 적층하고 인터포저 내부의 수직 신호 라인을 이용해 전기적으로 연결하는 구조를 통해 신호 전달 효율을 향상시킨다</div>
     </div>
 </div>
