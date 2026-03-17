@@ -85,10 +85,10 @@ div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
 .claim-table .comp-name { font-weight: bold; display: block; margin-bottom: 0.25rem; }
 .claim-table .comp-desc { color: #555; font-size: 0.85em; }
 .tag { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; color: white; font-size: 0.85em; font-weight: 500; }
-.tag-partial { background-color: #f9a825; }
-.tag-diff { background-color: #e57373; }
-.tag-same { background-color: #66bb6a; }
-.tag-same-partial { background-color: #ffa726; }
+.tag-partial { background-color: #2e7d32; }        /* 동일: 진한 녹색 */
+.tag-diff { background-color: #c62828; }           /* 차이: 빨강 */
+.tag-same-partial { background-color: #ef6c00; }   /* 일부 동일: 주황 */
+.tag-same { background-color: #1565c0; }           /* 실질적 동일: 파랑 */
 .tag-link { text-decoration: none; color: inherit; cursor: pointer; display: inline-block; }
 .tag-link:hover { opacity: 0.9; }
 [id^="focus-"] { scroll-margin-top: 2rem; }
