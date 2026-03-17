@@ -202,28 +202,28 @@ with right_col:
         </thead>
         <tbody>
         <tr>
-        <td><span class="comp-name">베이스팬(100)</span><span class="comp-desc">양측면에 가이드공(170)이 관통 형성됨</span></td>
-        <td><span class="comp-name">베리어(73)</span><span class="comp-desc">양단에 실내측을 향해 연장된 단부측판(75) 구비</span></td>
-        <td><a href="#focus-partial" class="tag-link"><span class="tag tag-partial">일부동일</span></a></td>
-        <td>본체 구조물에 결합 기능을 통합한 점은 유사하나, 관통공 vs 측판 구조의 형태적 차이 존재</td>
+        <td>제 1 피치의 간격을 두고 배열된 제 1 패드들을 포함하는 제 1 기판 패키지</td>
+        <td>전자 소자 패키지(100)의 하부에서 전자 요소들을 지지하고 전기적으로 연결되는 패키지 기판(102)</td>
+        <td><a href="#focus-partial" class="tag-link"><span class="tag tag-partial">동일</span></a></td>
+        <td>출원발명의 제1 패드가 일정 피치 간격으로 배열된 제1 기판 패키지는 선행발명의 패키지 기판에 상부 패드가 배열되어 있는 구성과 구조적으로 대응한다ㅡㅜ</td>
         </tr>
         <tr>
-        <td><span class="comp-name">상측캐비넷(650)</span><span class="comp-desc">삽입채널(662) 및 삽입가이드편(664) 형성</span></td>
-        <td><span class="comp-name">측면브라켓(80)</span><span class="comp-desc">절곡된 스프링고정부(81)가 일체로 성형됨</span></td>
+        <td>상기 제 1 기판 패키지의 하부에 배치되고, 상기 제 1 피치와 다른 제 2 피치의 간격을 두고 배열된 제 2 패드들을 포함하는 제 2 기판 패키지</td>
+        <td>(대응되는 내용 없음)</td>
         <td><a href="#focus-diff" class="tag-link"><span class="tag tag-diff">차이</span></a></td>
-        <td>슬라이딩 안내를 위한 레일 채널 구조와 스냅 결합을 위한 개별 절곡부의 물리적 형상 차이</td>
+        <td>선행발명에서는 하부에 별도의 ‘제 2 기판 패키지’ 혹은 서로 다른 피치로 배열된 패드에 대한 기술이 존재하지 않는다. 주로 패키지 기판·인터포저·패시브 소자에 초점을 두고 있어, 해당 구성요소와 직접적인 대응이 없으며 차이로 판단한다.</td>
         </tr>
         <tr>
-        <td><span class="comp-name">커텐프레임(710)</span><span class="comp-desc">가이드공 및 단차부에 삽입되어 슬라이딩됨</span></td>
-        <td><span class="comp-name">전면패널(95)</span><span class="comp-desc">체결스프링(99)을 통해 본체에 고정됨</span></td>
-        <td><a href="#focus-diff" class="tag-link"><span class="tag tag-diff">차이</span></a></td>
-        <td>가동형 부품의 길이 조절(Sliding) 방식과 고정형 외장재의 단순 결합(Snap) 방식의 차이</td>
+        <td>상기 제 1 기판 패키지의 상부에 배치되고, 제 3 피치의 간격을 두고 배열된 제 3 패드들을 포함하는 인터포저</td>
+        <td>패키지 기판(102)의 상부에 위치하고 패키지 기판과 전기적으로 연결되는 인터포저(110)</td>
+        <td><a href="#focus-same" class="tag-link"><span class="tag tag-same">일부동일</span></a></td>
+        <td>선행발명에서 인터포저가 패키지 기판 위에 배치되고, ‘상부 패드(109)’ 및 ‘배선 패드(119)’가 배열된 구조가 명시되어 있다. 이는 출원발명의 인터포저가 상부에 배치되고, 일정 피치로 배열된 패드들을 포함한다는 점과 구조·배치·전기적 연결 기능이 실질적으로 동일함을 보여준다.</td>
         </tr>
         <tr>
-        <td><span class="comp-name">탈거방지턱(718)</span><span class="comp-desc">탄성채널(719)에 의한 임의 이탈 방지</span></td>
-        <td><span class="comp-name">체결스프링(99)</span><span class="comp-desc">안착부(99c)와 걸림부(99d)로 탈거 방지</span></td>
+        <td>상기 인터포저의 상부에 배치된 적어도 하나의 제 1 반도체 칩</td>
+        <td>인터포저의 상부에 배치된 프로세싱 소자를 포함하는 전자 소자</td>
         <td><a href="#focus-same" class="tag-link"><span class="tag tag-same">실질적동일</span></a></td>
-        <td>재료의 탄성 변형을 이용하여 결합 후 역방향 이탈을 방지하는 기구적 메커니즘이 매우 유사함</td>
+        <td>선행발명에서는 인터포저의 상부에 ‘프로세싱 소자(또는 반도체 칩)’가 전기적으로 연결된 형태가 기술되어 있다. 이는 출원발명의 인터포저 상부에 배치된 반도체 칩과 동일한 구조·기능(전기적 연결 및 상부 배치)으로 실질적 동일성을 가진다.</td>
         </tr>
         </tbody>
         </table>
