@@ -1,3 +1,5 @@
 streamlit>=1.35.0
 pandas>=1.5.0
 google-genai>=0.2.0
+
+# pathlib: Python 표준 라이브러리 (3.4+), 별도 설치 불필요

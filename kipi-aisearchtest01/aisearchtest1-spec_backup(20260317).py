@@ -2,7 +2,6 @@
 
 import streamlit as st
 import pandas as pd
-from pathlib import Path
 
 try:
     from gazette_detail_content import (
@@ -214,27 +213,6 @@ with right_col:
         """,
         unsafe_allow_html=True,
     )
-    st.markdown("---")
-
-    st.markdown("### 💡 도면")
-
-    # ./data 폴더 이미지 파일 목록 (스크립트 위치 기준)
-    _script_dir = Path(__file__).resolve().parent
-    _data_dir = _script_dir / "data"
-    _img_ext = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
-    _image_files = []
-    if _data_dir.is_dir():
-        _image_files = sorted(
-            [f for f in _data_dir.iterdir() if f.is_file() and f.suffix.lower() in _img_ext]
-        )
-    if _image_files:
-        _tab_names = [f.stem for f in _image_files]
-        _tabs = st.tabs(_tab_names)
-        for _tab, _img_path in zip(_tabs, _image_files):
-            with _tab:
-                st.image(str(_img_path), use_container_width=True)
-    else:
-        st.info("도면 이미지가 없습니다. `./data` 폴더에 이미지 파일(.png, .jpg 등)을 넣어 주세요.")
 
     st.markdown("---")
     st.markdown("### 💡 구성요소 대비표 (Claim Analysis Table)")
