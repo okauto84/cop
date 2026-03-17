@@ -555,7 +555,7 @@ if prompt := st.chat_input("질문해보세요!"):
         ]
 
         if output_method == "실시간 출력":
-            with st.spinner("OpenAI가 답변을 생성하고 있습니다..."):
+            with st.spinner("생성AI가 답변을 생성하고 있습니다..."):
                 response = call_openai_api(messages_for_api)
             message_placeholder = st.empty()
             displayed_text = ""
