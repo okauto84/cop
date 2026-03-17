@@ -194,12 +194,12 @@ with right_col:
 
     # 도면 탭: data 폴더 내 drawing.jpg, drawing02.jpg ~ drawing06.jpg
     drawing_files = [
-        "drawing.jpg",
-        "drawing02.jpg",
-        "drawing03.jpg",
-        "drawing04.jpg",
-        "drawing05.jpg",
-        "drawing06.jpg",
+        "./data/drawing.jpg",
+        "./data/drawing02.jpg",
+        "./data/drawing03.jpg",
+        "./data/drawing04.jpg",
+        "./data/drawing05.jpg",
+        "./data/drawing06.jpg",
     ]
     tab_labels = ["도면 1", "도면 2", "도면 3", "도면 4", "도면 5", "도면 6"]
     drawing_tabs = st.tabs(tab_labels)
