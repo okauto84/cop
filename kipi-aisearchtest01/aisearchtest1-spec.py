@@ -249,46 +249,170 @@ with right_col:
 
     st.markdown("---")
     st.markdown("### 💡 구성요소 대비표 (Claim Analysis Table)")
-    st.markdown(
+    # Streamlit 보안 정책상 메인 DOM에 삽입된 테이블은 JS로 직접 후킹이 불안정할 수 있어,
+    # 테이블+스크립트를 하나의 HTML 컴포넌트(동일 iframe)로 렌더링하여 드래그 하이라이트를 안정화한다.
+    st.components.v1.html(
         """
-        <table class="claim-table">
-        <thead>
-        <tr>
-        <th>출원발명</th>
-        <th>인용발명</th>
-        <th>관련도</th>
-        <th>대비결과</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-        <td>제 1 피치의 간격을 두고 배열된 제 1 패드들을 포함하는 제 1 기판 패키지</td>
-        <td>전자 소자 패키지(100)의 하부에서 전자 요소들을 지지하고 전기적으로 연결되는 패키지 기판(102)</td>
-        <td><a href="#focus-partial" class="tag-link"><span class="tag tag-partial">동일</span></a></td>
-        <td>출원발명의 제1 패드가 일정 피치 간격으로 배열된 제1 기판 패키지는 선행발명의 패키지 기판에 상부 패드가 배열되어 있는 구성과 구조적으로 대응한다</td>
-        </tr>
-        <tr>
-        <td>상기 제 1 기판 패키지의 하부에 배치되고, 상기 제 1 피치와 다른 제 2 피치의 간격을 두고 배열된 제 2 패드들을 포함하는 제 2 기판 패키지</td>
-        <td>(대응되는 내용 없음)</td>
-        <td><a href="#focus-diff" class="tag-link"><span class="tag tag-diff">차이</span></a></td>
-        <td>선행발명에서는 하부에 별도의 ‘제 2 기판 패키지’ 혹은 서로 다른 피치로 배열된 패드에 대한 기술이 존재하지 않는다. 주로 패키지 기판·인터포저·패시브 소자에 초점을 두고 있어, 해당 구성요소와 직접적인 대응이 없으며 차이로 판단한다.</td>
-        </tr>
-        <tr>
-        <td>상기 제 1 기판 패키지의 상부에 배치되고, 제 3 피치의 간격을 두고 배열된 제 3 패드들을 포함하는 인터포저</td>
-        <td>패키지 기판(102)의 상부에 위치하고 패키지 기판과 전기적으로 연결되는 인터포저(110)</td>
-        <td><a href="#focus-same-partial" class="tag-link"><span class="tag tag-same-partial">일부동일</span></a></td>
-        <td>선행발명에서 인터포저가 패키지 기판 위에 배치되고, ‘상부 패드(109)’ 및 ‘배선 패드(119)’가 배열된 구조가 명시되어 있다. 이는 출원발명의 인터포저가 상부에 배치되고, 일정 피치로 배열된 패드들을 포함한다는 점과 구조·배치·전기적 연결 기능이 실질적으로 동일함을 보여준다.</td>
-        </tr>
-        <tr>
-        <td>상기 인터포저의 상부에 배치된 적어도 하나의 제 1 반도체 칩</td>
-        <td>인터포저의 상부에 배치된 프로세싱 소자를 포함하는 전자 소자</td>
-        <td><a href="#focus-same" class="tag-link"><span class="tag tag-same">실질적동일</span></a></td>
-        <td>선행발명에서는 인터포저의 상부에 ‘프로세싱 소자(또는 반도체 칩)’가 전기적으로 연결된 형태가 기술되어 있다. 이는 출원발명의 인터포저 상부에 배치된 반도체 칩과 동일한 구조·기능(전기적 연결 및 상부 배치)으로 실질적 동일성을 가진다.</td>
-        </tr>
-        </tbody>
+        <style>
+          .claim-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
+          .claim-table th, .claim-table td { border: 1px solid #ddd; padding: 0.75rem 1rem; text-align: left; vertical-align: top; }
+          .claim-table th { background-color: #f5f5f5; font-weight: bold; }
+          .tag { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; color: white; font-size: 0.85em; font-weight: 500; }
+          .tag-partial { background-color: #2e7d32; }
+          .tag-diff { background-color: #c62828; }
+          .tag-same-partial { background-color: #ef6c00; }
+          .tag-same { background-color: #1565c0; }
+          .tag-link { text-decoration: none; color: inherit; cursor: pointer; display: inline-block; }
+          .tag-link:hover { opacity: 0.9; }
+
+          .cite-auto-hl {
+            background: #fff59d;
+            border-radius: 2px;
+            padding: 0 2px;
+          }
+        </style>
+
+        <table class="claim-table" id="claim-table">
+          <thead>
+            <tr>
+              <th>출원발명</th>
+              <th>인용발명</th>
+              <th>관련도</th>
+              <th>대비결과</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>제 1 피치의 간격을 두고 배열된 제 1 패드들을 포함하는 제 1 기판 패키지</td>
+              <td>전자 소자 패키지(100)의 하부에서 전자 요소들을 지지하고 전기적으로 연결되는 패키지 기판(102)</td>
+              <td><span class="tag tag-partial">동일</span></td>
+              <td>출원발명의 제1 패드가 일정 피치 간격으로 배열된 제1 기판 패키지는 선행발명의 패키지 기판에 상부 패드가 배열되어 있는 구성과 구조적으로 대응한다</td>
+            </tr>
+            <tr>
+              <td>상기 제 1 기판 패키지의 하부에 배치되고, 상기 제 1 피치와 다른 제 2 피치의 간격을 두고 배열된 제 2 패드들을 포함하는 제 2 기판 패키지</td>
+              <td>(대응되는 내용 없음)</td>
+              <td><span class="tag tag-diff">차이</span></td>
+              <td>선행발명에서는 하부에 별도의 ‘제 2 기판 패키지’ 혹은 서로 다른 피치로 배열된 패드에 대한 기술이 존재하지 않는다. 주로 패키지 기판·인터포저·패시브 소자에 초점을 두고 있어, 해당 구성요소와 직접적인 대응이 없으며 차이로 판단한다.</td>
+            </tr>
+            <tr>
+              <td>상기 제 1 기판 패키지의 상부에 배치되고, 제 3 피치의 간격을 두고 배열된 제 3 패드들을 포함하는 인터포저</td>
+              <td>패키지 기판(102)의 상부에 위치하고 패키지 기판과 전기적으로 연결되는 인터포저(110)</td>
+              <td><span class="tag tag-same-partial">일부동일</span></td>
+              <td>선행발명에서 인터포저가 패키지 기판 위에 배치되고, ‘상부 패드(109)’ 및 ‘배선 패드(119)’가 배열된 구조가 명시되어 있다. 이는 출원발명의 인터포저가 상부에 배치되고, 일정 피치로 배열된 패드들을 포함한다는 점과 구조·배치·전기적 연결 기능이 실질적으로 동일함을 보여준다.</td>
+            </tr>
+            <tr>
+              <td>상기 인터포저의 상부에 배치된 적어도 하나의 제 1 반도체 칩</td>
+              <td>인터포저의 상부에 배치된 프로세싱 소자를 포함하는 전자 소자</td>
+              <td><span class="tag tag-same">실질적동일</span></td>
+              <td>선행발명에서는 인터포저의 상부에 ‘프로세싱 소자(또는 반도체 칩)’가 전기적으로 연결된 형태가 기술되어 있다. 이는 출원발명의 인터포저 상부에 배치된 반도체 칩과 동일한 구조·기능(전기적 연결 및 상부 배치)으로 실질적 동일성을 가진다.</td>
+            </tr>
+          </tbody>
         </table>
+
+        <script>
+        (function(){
+          var root = document;
+          var table = root.getElementById("claim-table");
+          if (!table) return;
+
+          var lastNeedle = "";
+
+          function escapeHtml(s) {
+            return String(s)
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+          }
+
+          function escapeRegExp(s) {
+            return String(s).replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");
+          }
+
+          function getCitationCells() {
+            return Array.prototype.slice.call(
+              table.querySelectorAll("tbody tr td:nth-child(2)")
+            );
+          }
+
+          function ensureOrigText(cells) {
+            for (var i = 0; i < cells.length; i++) {
+              if (cells[i].dataset.origText === undefined) {
+                cells[i].dataset.origText = cells[i].textContent || "";
+              }
+            }
+          }
+
+          function clearHighlights(cells) {
+            for (var i = 0; i < cells.length; i++) {
+              cells[i].textContent = cells[i].dataset.origText || (cells[i].textContent || "");
+            }
+          }
+
+          function highlightAll(cells, needle) {
+            if (!needle) return;
+            var re = new RegExp(escapeRegExp(needle), "gi"); // 대소문자 무시
+            for (var i = 0; i < cells.length; i++) {
+              var orig = cells[i].dataset.origText || (cells[i].textContent || "");
+              var html = "";
+              var lastIndex = 0;
+              var m;
+              while ((m = re.exec(orig)) !== null) {
+                var start = m.index;
+                var end = start + m[0].length;
+                html += escapeHtml(orig.slice(lastIndex, start));
+                html += '<span class="cite-auto-hl">' + escapeHtml(orig.slice(start, end)) + "</span>";
+                lastIndex = end;
+                if (m[0].length === 0) break;
+              }
+              html += escapeHtml(orig.slice(lastIndex));
+              cells[i].innerHTML = html;
+            }
+          }
+
+          function isSelectionInCitationColumn(sel) {
+            if (!sel || sel.rangeCount === 0) return false;
+            var range = sel.getRangeAt(0);
+            var node = range.commonAncestorContainer;
+            var el = node.nodeType === 1 ? node : node.parentElement;
+            if (!el || !el.closest) return false;
+            return !!el.closest("tbody tr td:nth-child(2)");
+          }
+
+          function applyFromSelection() {
+            var sel = window.getSelection ? window.getSelection() : null;
+            var text = sel && sel.toString ? sel.toString().trim() : "";
+
+            var cells = getCitationCells();
+            ensureOrigText(cells);
+
+            // 선택이 없으면(빈 곳 클릭 등) 하이라이트 제거
+            if (!text) {
+              if (lastNeedle) {
+                clearHighlights(cells);
+                lastNeedle = "";
+              }
+              return;
+            }
+
+            // 인용발명 컬럼에서 선택한 경우에만 적용
+            if (!isSelectionInCitationColumn(sel)) return;
+
+            clearHighlights(cells);
+            lastNeedle = text;
+            highlightAll(cells, text);
+          }
+
+          // 드래그 종료/클릭 모두에서 동작
+          window.addEventListener("mouseup", function(){ setTimeout(applyFromSelection, 0); }, true);
+          window.addEventListener("keyup", function(){ setTimeout(applyFromSelection, 0); }, true);
+          window.addEventListener("mousedown", function(){ setTimeout(applyFromSelection, 0); }, true);
+        })();
+        </script>
         """,
-        unsafe_allow_html=True,
+        height=360,
+        scrolling=True,
     )
 
     st.markdown("### 💡 종합 의견")
@@ -413,167 +537,4 @@ with left_col:
             unsafe_allow_html=True,
         )
 
-# 관련도 링크 클릭 시 포커스 이동 후 하이라이트 3회 깜박임
-st.components.v1.html(
-    """
-    <style>
-      .cite-auto-hl {
-        background: #fff59d;
-        border-radius: 2px;
-        padding: 0 2px;
-      }
-    </style>
-    <script>
-    (function(){
-        var win = window.parent;
-        var doc = win.document;
-        function runBlink(){
-            var hash = win.location.hash;
-            if (!hash || hash.indexOf("#focus-") !== 0) return;
-            var el = doc.querySelector(hash);
-            if (!el) return;
-            el.classList.remove("focus-blink");
-            el.offsetHeight;
-            el.classList.add("focus-blink");
-            setTimeout(function(){ el.classList.remove("focus-blink"); }, 700);
-        }
-        win.addEventListener("hashchange", runBlink);
-        if (win.location.hash && win.location.hash.indexOf("#focus-") === 0) {
-            setTimeout(runBlink, 150);
-        }
-    })();
-    </script>
-
-    <script>
-    (function(){
-        var win = window.parent;
-        var doc = win.document;
-        var lastNeedle = "";
-
-        function escapeHtml(s) {
-            return String(s)
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;")
-              .replace(/'/g, "&#039;");
-        }
-
-        function escapeRegExp(s) {
-            return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        }
-
-        function getCitationCells() {
-            return Array.prototype.slice.call(
-                doc.querySelectorAll("table.claim-table tbody tr td:nth-child(2)")
-            );
-        }
-
-        function ensureOrigText(cells) {
-            for (var i = 0; i < cells.length; i++) {
-                if (cells[i].dataset && cells[i].dataset.origText === undefined) {
-                    cells[i].dataset.origText = cells[i].textContent || "";
-                }
-            }
-        }
-
-        function clearHighlights(cells) {
-            for (var i = 0; i < cells.length; i++) {
-                var t = (cells[i].dataset && cells[i].dataset.origText !== undefined)
-                  ? cells[i].dataset.origText
-                  : (cells[i].textContent || "");
-                cells[i].textContent = t;
-            }
-        }
-
-        function highlightAll(cells, needle) {
-            if (!needle) return;
-            var re = new RegExp(escapeRegExp(needle), "gi"); // 대소문자 무시
-            for (var i = 0; i < cells.length; i++) {
-                var orig = (cells[i].dataset && cells[i].dataset.origText !== undefined)
-                  ? cells[i].dataset.origText
-                  : (cells[i].textContent || "");
-
-                var html = "";
-                var lastIndex = 0;
-                var m;
-                while ((m = re.exec(orig)) !== null) {
-                    var start = m.index;
-                    var end = start + m[0].length;
-                    html += escapeHtml(orig.slice(lastIndex, start));
-                    html += '<span class="cite-auto-hl">' + escapeHtml(orig.slice(start, end)) + "</span>";
-                    lastIndex = end;
-                    if (m[0].length === 0) break; // 안전장치
-                }
-                html += escapeHtml(orig.slice(lastIndex));
-                cells[i].innerHTML = html;
-            }
-        }
-
-        function isSelectionInCitationColumn(sel) {
-            if (!sel || sel.rangeCount === 0) return false;
-            var range = sel.getRangeAt(0);
-            var node = range.commonAncestorContainer;
-            var el = node && (node.nodeType === 1 ? node : node.parentElement);
-            if (!el || !el.closest) return false;
-            return !!el.closest("table.claim-table tbody tr td:nth-child(2)");
-        }
-
-        function attach() {
-            var table = doc.querySelector("table.claim-table");
-            if (!table) return false;
-            var cells = getCitationCells();
-            if (!cells.length) return false;
-            ensureOrigText(cells);
-
-            // 중복 바인딩 방지
-            if (table.dataset && table.dataset.citeHlBound === "1") return true;
-            if (table.dataset) table.dataset.citeHlBound = "1";
-
-            // 드래그 후 마우스업: 선택 텍스트 하이라이트
-            win.addEventListener("mouseup", function(){
-                var sel = win.getSelection ? win.getSelection() : null;
-                if (!sel) return;
-                if (!isSelectionInCitationColumn(sel)) return;
-
-                var text = (sel.toString ? sel.toString() : "").trim();
-                var _cells = getCitationCells();
-                ensureOrigText(_cells);
-                clearHighlights(_cells);
-                lastNeedle = "";
-                if (text.length > 0) {
-                    lastNeedle = text;
-                    highlightAll(_cells, text);
-                }
-            }, true);
-
-            // 빈 곳 클릭 등으로 선택이 해제되면 하이라이트 제거
-            win.addEventListener("mousedown", function(){
-                win.setTimeout(function(){
-                    var sel = win.getSelection ? win.getSelection() : null;
-                    var text = sel && sel.toString ? sel.toString().trim() : "";
-                    if (text.length === 0 && lastNeedle) {
-                        var _cells = getCitationCells();
-                        ensureOrigText(_cells);
-                        clearHighlights(_cells);
-                        lastNeedle = "";
-                    }
-                }, 0);
-            }, true);
-
-            return true;
-        }
-
-        // Streamlit 렌더 타이밍 대비: 짧게 재시도
-        var tries = 0;
-        var timer = win.setInterval(function(){
-            tries += 1;
-            if (attach() || tries > 40) {
-                win.clearInterval(timer);
-            }
-        }, 250);
-    })();
-    </script>
-    """,
-    height=0,
-)
+# (기존) 메인 DOM 후킹 방식은 Streamlit 컴포넌트 sandbox 환경에서 동작이 불안정하여 제거.
