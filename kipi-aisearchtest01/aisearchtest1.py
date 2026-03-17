@@ -68,11 +68,12 @@ st.markdown("""
         padding-left: 0.1rem;
     }
     [data-testid="column"]:first-of-type { padding-left: 0; padding-right: 0.35rem; }
-    /* 우측 사이드바: 고정 높이 + 스크롤바 */
+    /* 우측 사이드바(대표도면 영역): 고정 높이 + 스크롤바 */
     [data-testid="column"]:last-of-type {
         border-right: none;
         padding-right: 0;
         padding-top: 0.5rem;
+        height: calc(100vh - 120px);
         max-height: calc(100vh - 120px);
         overflow-y: auto;
         overflow-x: visible;
@@ -80,7 +81,7 @@ st.markdown("""
     }
     [data-testid="column"]:last-of-type > div {
         padding-top: 0.25rem;
-        max-height: inherit;
+        max-height: none;
     }
     [data-testid="column"]:last-of-type .stMarkdown { animation: slideIn 0.3s ease-out; }
 
@@ -205,12 +206,14 @@ st.markdown("""
     .claims-tab-panel { display: none; max-height: calc(100vh - 180px); overflow-y: auto; position: relative; z-index: 0; }
     #claimstab-claim:checked ~ #panel-claim,
     #claimstab-summary:checked ~ #panel-summary { display: block; }
-    /* 우측 대표도면/발명의 3요소 패널: 오른쪽에서 왼쪽으로 슬라이드 인 */
+    /* 우측 대표도면/발명의 3요소 패널: 고정 높이 + 스크롤바, 슬라이드 인 */
     .right-panel-slide {
         position: relative;
         z-index: 1;
+        height: calc(100vh - 120px);
         max-height: calc(100vh - 120px);
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: visible;
         animation: rightPanelSlideIn 0.5s ease-out forwards;
     }
     @keyframes rightPanelSlideIn {
