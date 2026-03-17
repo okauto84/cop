@@ -416,6 +416,13 @@ with left_col:
 # 관련도 링크 클릭 시 포커스 이동 후 하이라이트 3회 깜박임
 st.components.v1.html(
     """
+    <style>
+      .cite-auto-hl {
+        background: #fff59d;
+        border-radius: 2px;
+        padding: 0 2px;
+      }
+    </style>
     <script>
     (function(){
         var win = window.parent;
@@ -434,6 +441,107 @@ st.components.v1.html(
         if (win.location.hash && win.location.hash.indexOf("#focus-") === 0) {
             setTimeout(runBlink, 150);
         }
+    })();
+    </script>
+
+    <script>
+    (function(){
+        var win = window.parent;
+        var doc = win.document;
+
+        function escapeHtml(s) {
+            return String(s)
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+        }
+
+        function getCitationCells() {
+            return Array.prototype.slice.call(
+                doc.querySelectorAll("table.claim-table tbody tr td:nth-child(2)")
+            );
+        }
+
+        function ensureOrigText(cells) {
+            for (var i = 0; i < cells.length; i++) {
+                if (cells[i].dataset && cells[i].dataset.origText === undefined) {
+                    cells[i].dataset.origText = cells[i].textContent || "";
+                }
+            }
+        }
+
+        function clearHighlights(cells) {
+            for (var i = 0; i < cells.length; i++) {
+                var t = (cells[i].dataset && cells[i].dataset.origText !== undefined)
+                  ? cells[i].dataset.origText
+                  : (cells[i].textContent || "");
+                cells[i].textContent = t;
+            }
+        }
+
+        function highlightAll(cells, needle) {
+            if (!needle) return;
+            for (var i = 0; i < cells.length; i++) {
+                var orig = (cells[i].dataset && cells[i].dataset.origText !== undefined)
+                  ? cells[i].dataset.origText
+                  : (cells[i].textContent || "");
+                var safe = escapeHtml(orig);
+                var safeNeedle = escapeHtml(needle);
+                if (safeNeedle.length === 0) {
+                    cells[i].innerHTML = safe;
+                    continue;
+                }
+                // split/join으로 전체 치환(정규식 이스케이프 불필요), 대소문자 구분
+                cells[i].innerHTML = safe.split(safeNeedle).join('<span class="cite-auto-hl">' + safeNeedle + "</span>");
+            }
+        }
+
+        function isSelectionInCitationColumn(sel) {
+            if (!sel || sel.rangeCount === 0) return false;
+            var range = sel.getRangeAt(0);
+            var node = range.commonAncestorContainer;
+            var el = node && (node.nodeType === 1 ? node : node.parentElement);
+            if (!el || !el.closest) return false;
+            return !!el.closest("table.claim-table tbody tr td:nth-child(2)");
+        }
+
+        function attach() {
+            var table = doc.querySelector("table.claim-table");
+            if (!table) return false;
+            var cells = getCitationCells();
+            if (!cells.length) return false;
+            ensureOrigText(cells);
+
+            // 중복 바인딩 방지
+            if (table.dataset && table.dataset.citeHlBound === "1") return true;
+            if (table.dataset) table.dataset.citeHlBound = "1";
+
+            doc.addEventListener("mouseup", function(){
+                var sel = win.getSelection ? win.getSelection() : null;
+                if (!sel) return;
+                if (!isSelectionInCitationColumn(sel)) return;
+                var text = (sel.toString ? sel.toString() : "").trim();
+                var _cells = getCitationCells();
+                ensureOrigText(_cells);
+                clearHighlights(_cells);
+                if (text.length > 0) {
+                    highlightAll(_cells, text);
+                }
+            }, true);
+
+            return true;
+        }
+
+        // Streamlit 렌더 타이밍 대비: 짧게 재시도
+        var tries = 0;
+        var timer = win.setInterval(function(){
+            tries += 1;
+            if (attach() || tries > 40) {
+                win.clearInterval(timer);
+            }
+        }, 250);
     })();
     </script>
     """,
