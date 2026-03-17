@@ -163,20 +163,22 @@ with right_col:
           <tr>
             <td style="background-color: #FEE7E7;">
               <div class="ai-summary-block">
-                <div class="block-title">⚠️ 해결 과제 및 목적</div>
-                창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
-              </div>
-            </td>
-            <td style="background-color: #E7FEE7;">
-              <div class="ai-summary-block">
-                <div class="block-title">🎯 해결 수단</div>
-                베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함.
+                <div class="block-title">⚠️ 해결 과제(목적)</div>
+                인터포저 기반 패키지 구조에서 수동소자와 전력 관리 회로를 효율적으로 통합하여 패키지 실장 면적을 줄이면서도 전력 공급 안정성과 시스템 성능을 향상시킬 수 있는 전자 소자 패키지를 제공
               </div>
             </td>
             <td style="background-color: #E7EEFE;">
               <div class="ai-summary-block">
                 <div class="block-title">⭐ 발명의 효과</div>
-                부품 수 절감으로 제조 원가를 낮추며, 완벽한 밀폐를 통해 에어컨의 냉방 효율을 획기적으로 향상시킴.
+                인터포저 내부에 수동소자와 전력 관리 회로를 통합함으로써 패키지 기판 상의 실장 면적을 줄일 수 있고, 프로세싱 소자와 고대역폭 메모리에 안정적인 전력 공급을 제공하여 전체 전자 시스템의 성능 및 전력 효율을 향상
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="background-color: #E7FEE7;">
+              <div class="ai-summary-block">
+                <div class="block-title">🎯 해결 수단</div>
+                패키지 기판 상부에 인터포저를 배치하고, 인터포저 상부에 프로세싱 소자와 고대역폭 메모리 소자 및 전력 관리 집적 회로 소자를 탑재하며, 인터포저 내부 또는 상부에 인덕터 및 커패시터와 같은 수동소자를 형성한다. 특히 인덕터는 인터포저 상하부에 형성된 자석층과 이를 연결하는 관통 실리콘 비아 및 재배선층을 이용하여 형성되며, 전력 관리 집적 회로와 전기적으로 연결되어 안정적인 전력 공급을 구현한다.
               </div>
             </td>
           </tr>
