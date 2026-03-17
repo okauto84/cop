@@ -303,15 +303,15 @@ if context_total is not None and len(context_total) > 0:
                 "당신은 마크 미너비니, 윌리엄 오닐을 존경하고 따르는 수제자로써, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자이다. "
                 "아래 Total_Object 객체 정보(요약 데이터)와 RAW_Table 시계열 데이터(종가, 이동평균선, 거래량, 거래량 평균)를 함께 분석하라. "
                 "다음 네 가지를 작성해야 한다.\n\n"
-                "1) 이평 분류: 이동평균선 배열과 추세를 기준으로 아래 [이평 분류표] 중 1개 선택\n"
-                "2) 거래량 분류: 거래량(1) 이상 및 거래량(평균)을 기준으로 아래 [거래량 분류표] 중 1개 선택. 단, 거래량(현재)는 판단에서 제외\n"
-                "3) 종합 분류: 현재가, 이평, 거래량 등을 모두 고려한 종합 판단으로 [종합 분류표] 중 1개 선택\n"
-                "4) 요약 정리: 종목명, 현재가, 이동평균선, 거래량 현황을 종합 분석하여 70자 이내로 요약 (한글 기준, 공백·기호 포함 70자 이내)\n\n"
+                "1) 이평 분류(AI): 이동평균선 배열과 추세를 기준으로 아래 [이평 분류표] 중 1개 선택\n"
+                "2) 거래량 분류(AI): 거래량(1) 이상 및 거래량(평균)을 기준으로 아래 [거래량 분류표] 중 1개 선택. 단, 거래량(현재)는 판단에서 제외\n"
+                "3) 종합 분류(AI): 현재가, 이평, 거래량 등을 모두 고려한 종합 판단으로 [종합 분류표] 중 1개 선택\n"
+                "4) 요약 정리(AI): 종목명, 현재가, 이동평균선, 거래량 현황을 종합 분석하여 80자 수준으로 요약 (한글 기준, 공백·기호 포함 80자 수준)\n\n"
                 "반드시 아래 JSON 형식으로만 답하라.\n"
                 '{\"ma_class\": \"<이평 분류표의 라벨 중 하나>\", '
                 '\"volume_class\": \"<거래량 분류표의 라벨 중 하나>\", '
                 '\"total_class\": \"<종합 분류표의 라벨 중 하나>\", '
-                '\"one_line_summary\": \"<70자 이내 요약 정리>\"}\n\n'
+                '\"one_line_summary\": \"<80자 수준으로 요약 정리>\"}\n\n'
                 "다른 설명, 문장, 코멘트는 절대 쓰지 마라.\n\n"
                 "[이평 분류표]\n- "
                 + "\n- ".join(ma_class_labels)
@@ -366,13 +366,13 @@ if context_total is not None and len(context_total) > 0:
                     break
 
             if ma_chosen_label:
-                obj["이평 분류"] = ma_chosen_label
+                obj["이평 분류(AI)"] = ma_chosen_label
             if vol_chosen_label:
-                obj["거래량 분류"] = vol_chosen_label
+                obj["거래량 분류(AI)"] = vol_chosen_label
             if total_chosen_label:
-                obj["종합 분류"] = total_chosen_label
+                obj["종합 분류(AI)"] = total_chosen_label
             if one_line_raw:
-                obj["한줄 정리"] = one_line_raw[:100] if len(one_line_raw) > 100 else one_line_raw
+                obj["한줄 정리(AI)"] = one_line_raw[:100] if len(one_line_raw) > 100 else one_line_raw
 
             # 프롬프트 내용을 세션에 저장하여 화면 하단에 표시할 수 있도록 함
             st.session_state["classification_system_prompt"] = system_msg
@@ -390,7 +390,7 @@ if context_total is not None and len(context_total) > 0:
     if sheet_objects_total:
         st.markdown("#### Objects")
         obj = sheet_objects_total[0]
-        bold_keys = {"이평 배열", "이평 분류", "거래량 배열", "거래량 분류", "종합 분류", "한줄 정리"}
+        bold_keys = {"이평 배열", "이평 분류(AI)", "거래량 배열", "거래량 분류(AI)", "종합 분류(AI)", "한줄 정리(AI)"}
 
         def _parse_num(s):
             if s is None or str(s).strip() == "":
@@ -545,7 +545,7 @@ if prompt := st.chat_input("질문해보세요!"):
         system_prompt = (
             "당신은 마크 미너비니, 윌리엄 오닐을 존경하고 따르는 수제자로써, 추세 추종 돌파 매매를 전문으로 하는 전문 주식 투자자로서, 아래 objects / RAW data를 참고하여 질문에 답변하고 조언을 하시오. "
             "Objects 데이터는 종목별 요약 객체 목록이며, RAW 데이터는 거래일 날자별 종가, 이동평균선, 거래량, 거래량, 거래량(평균)의 원천 데이터 테이블입니다. "
-            "이평 분류, 거래량 분류, 종합 분류 값 등에 구애받지 말고, 두 데이터를 함께 고려해 사용자 질의에 맞게 구체적으로 답변하세요. \n\n"
+            "이평 분류(AI), 거래량 분류(AI), 종합 분류(AI) 값 등에 구애받지 말고, 두 데이터를 함께 고려해 사용자 질의에 맞게 구체적으로 답변하세요. \n\n"
             "[참고 데이터]\n"
             + (json.dumps(objects_data, ensure_ascii=False, indent=2) if objects_data else "(데이터 없음 - 먼저 Google Sheet를 불러오세요.)")
         )
