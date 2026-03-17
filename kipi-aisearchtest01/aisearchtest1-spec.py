@@ -88,6 +88,7 @@ div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
 .tag-partial { background-color: #f9a825; }
 .tag-diff { background-color: #e57373; }
 .tag-same { background-color: #66bb6a; }
+.tag-same-partial { background-color: #ffa726; }
 .tag-link { text-decoration: none; color: inherit; cursor: pointer; display: inline-block; }
 .tag-link:hover { opacity: 0.9; }
 [id^="focus-"] { scroll-margin-top: 2rem; }
@@ -270,7 +271,7 @@ with right_col:
         <tr>
         <td>상기 제 1 기판 패키지의 상부에 배치되고, 제 3 피치의 간격을 두고 배열된 제 3 패드들을 포함하는 인터포저</td>
         <td>패키지 기판(102)의 상부에 위치하고 패키지 기판과 전기적으로 연결되는 인터포저(110)</td>
-        <td><a href="#focus-same" class="tag-link"><span class="tag tag-same">일부동일</span></a></td>
+        <td><a href="#focus-same-partial" class="tag-link"><span class="tag tag-same-partial">일부동일</span></a></td>
         <td>선행발명에서 인터포저가 패키지 기판 위에 배치되고, ‘상부 패드(109)’ 및 ‘배선 패드(119)’가 배열된 구조가 명시되어 있다. 이는 출원발명의 인터포저가 상부에 배치되고, 일정 피치로 배열된 패드들을 포함한다는 점과 구조·배치·전기적 연결 기능이 실질적으로 동일함을 보여준다.</td>
         </tr>
         <tr>
