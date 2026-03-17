@@ -87,6 +87,7 @@ st.markdown("""
         min-width: 0;
         flex-shrink: 1;
         overflow-x: hidden;
+        align-self: flex-start;
     }
     /* 좌측 | 메인 | 우측 사이드바 구분 라인 (세로), 좌·메인 간격 축소 */
     [data-testid="column"] {
@@ -95,23 +96,18 @@ st.markdown("""
         padding-left: 0.1rem;
     }
     [data-testid="column"]:first-of-type { padding-left: 0; padding-right: 0.35rem; }
-    /* 우측 사이드바(대표도면 영역): 4열 행의 마지막 열만 적용, 상단 맞춤 + 고정 높이 + 스크롤바 */
+    /* 우측 사이드바(대표도면 영역): 4열 행의 마지막 열만 적용, 상단 맞춤, 세로 스크롤 없음 */
     div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:last-of-type {
         border-right: none;
         padding-right: 0;
         padding-top: 0;
-        height: calc(100vh - 120px);
-        max-height: calc(100vh - 120px);
-        overflow-y: auto;
+        overflow-y: visible;
         overflow-x: hidden;
-        min-height: 200px;
         flex-shrink: 0;
         min-width: 1rem;
-        align-self: flex-start;
     }
     div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:last-of-type > div {
         padding-top: 0;
-        max-height: none;
     }
     div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:last-of-type .stMarkdown { animation: slideIn 0.3s ease-out; }
 
@@ -245,9 +241,6 @@ st.markdown("""
     .right-panel-slide {
         position: relative;
         z-index: 1;
-        height: calc(100vh - 120px);
-        max-height: calc(100vh - 120px);
-        overflow-y: auto;
         overflow-x: visible;
         animation: rightPanelSlideIn 0.5s ease-out forwards;
     }
