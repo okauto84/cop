@@ -306,12 +306,12 @@ if context_total is not None and len(context_total) > 0:
                 "1) 이평 분류(AI): 이동평균선 배열과 추세를 기준으로 아래 [이평 분류표] 중 1개 선택\n"
                 "2) 거래량 분류(AI): 거래량(1) 이상 및 거래량(평균)을 기준으로 아래 [거래량 분류표] 중 1개 선택. 단, 거래량(현재)는 판단에서 제외\n"
                 "3) 종합 분류(AI): 현재가, 이평, 거래량 등을 모두 고려한 종합 판단으로 [종합 분류표] 중 1개 선택\n"
-                "4) 요약 정리(AI): 종목명, 현재가, 이동평균선, 거래량 현황을 종합 분석하여 80자 수준으로 요약 (한글 기준, 공백·기호 포함 80자 수준)\n\n"
+                "4) 요약 정리(AI): 해당 종목에 대한 주식 흐름에 대해서 종합 분석하여 150자 수준으로 요약 (한글 기준, 공백·기호 포함 150자 수준)\n\n"
                 "반드시 아래 JSON 형식으로만 답하라.\n"
                 '{\"ma_class\": \"<이평 분류표의 라벨 중 하나>\", '
                 '\"volume_class\": \"<거래량 분류표의 라벨 중 하나>\", '
                 '\"total_class\": \"<종합 분류표의 라벨 중 하나>\", '
-                '\"one_line_summary\": \"<80자 수준으로 요약 정리>\"}\n\n'
+                '\"one_line_summary\": \"<150자 수준으로 요약 정리>\"}\n\n'
                 "다른 설명, 문장, 코멘트는 절대 쓰지 마라.\n\n"
                 "[이평 분류표]\n- "
                 + "\n- ".join(ma_class_labels)
@@ -372,7 +372,7 @@ if context_total is not None and len(context_total) > 0:
             if total_chosen_label:
                 obj["종합 분류(AI)"] = total_chosen_label
             if one_line_raw:
-                obj["한줄 정리(AI)"] = one_line_raw[:100] if len(one_line_raw) > 100 else one_line_raw
+                obj["한줄 정리(AI)"] = one_line_raw[:150] if len(one_line_raw) > 150 else one_line_raw
 
             # 프롬프트 내용을 세션에 저장하여 화면 하단에 표시할 수 있도록 함
             st.session_state["classification_system_prompt"] = system_msg
