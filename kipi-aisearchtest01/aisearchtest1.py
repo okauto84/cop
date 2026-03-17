@@ -49,28 +49,44 @@ def show_spec_popup():
         if _orig is not None:
             st.set_page_config = _orig
 
-# CSS: 헤더 아래로 메인 화면 내려서 탭 클릭 가능하게, 시인성, 구분 라인, 우측 사이드바
+# CSS: 헤더 아래로 메인 화면 내려서 탭 클릭 가능하게, 시인성, 구분 라인, 우측 사이드바, 가로 스크롤 방지
 st.markdown("""
     <style>
-    /* 메인 화면 전체를 아래로 내려서 Streamlit 헤더에 탭이 가리지 않게 */
+    /* 전체 가로 스크롤 방지 — 뷰포트 너비에 맞춰 동적 조절 */
+    html, body, .stApp, [data-testid="stAppViewContainer"], .main {
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box;
+    }
+    /* 메인 화면: 아래로 내려서 헤더에 탭 가리지 않게, 가로는 뷰포트에 맞춤 */
     .block-container {
         padding-top: 3rem;
         padding-bottom: 2rem;
         max-width: 100%;
     }
-    .main .block-container { padding-top: 3rem; }
+    .main .block-container {
+        padding-top: 3rem;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        box-sizing: border-box;
+    }
     div[data-testid="stText"] { font-size: 14px; }
 
-    /* 메인 4열(좌측|대상|중앙|우측) 한 줄 고정, 상단 정렬 */
+    /* 메인 4열(좌측|대상|중앙|우측) 한 줄 고정, 상단 정렬, 가로 넘침 방지 */
     div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) {
         flex-wrap: nowrap !important;
         display: flex !important;
         width: 100% !important;
+        max-width: 100% !important;
         align-items: flex-start !important;
+        min-width: 0;
     }
     div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"] {
         min-width: 0;
         flex-shrink: 1;
+        overflow-x: hidden;
     }
     /* 좌측 | 메인 | 우측 사이드바 구분 라인 (세로), 좌·메인 간격 축소 */
     [data-testid="column"] {
@@ -87,7 +103,7 @@ st.markdown("""
         height: calc(100vh - 120px);
         max-height: calc(100vh - 120px);
         overflow-y: auto;
-        overflow-x: visible;
+        overflow-x: hidden;
         min-height: 200px;
         flex-shrink: 0;
         min-width: 1rem;
@@ -129,6 +145,11 @@ st.markdown("""
         max-height: none !important;
     }
 
+    /* 테이블·이미지 등 컨테이너 폭 초과 방지(가로 스크롤 방지) */
+    [data-testid="stDataFrame"], [data-testid="stDataFrame"] > div,
+    .stImage img, [data-testid="column"] .stMarkdown {
+        max-width: 100% !important;
+    }
     /* 테이블 행 선택: 체크박스 → 라디오 버튼 모양(원형) */
     [data-testid="stDataFrame"] input[type="checkbox"],
     [data-testid="stDataFrame"] [data-testid="stCheckbox"] input {
