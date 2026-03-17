@@ -293,7 +293,7 @@ SUMMARY_TABLE_HTML = """
     </div>
     <div class="summary-item">
         <div class="summary-item-row">
-            <span class="summary-item-title">효과</span>
+            <span class="summary-item-title">발명의 효과</span>
         </div>
         <div class="summary-item-body">인터포저에 수평 신호 라인을 형성할 필요가 없어 저항 증가를 방지하고 성능을 향상시키며 동시에 대면적 스택 패키지의 제조 비용을 절감</div>
     </div>
@@ -335,7 +335,7 @@ RIGHT_SIDEBAR_CONTENT_HTML = """
     </div>
     <div class="summary-item">
         <div class="summary-item-row">
-            <span class="summary-item-title">효과</span>
+            <span class="summary-item-title">발명의 효과</span>
         </div>
         <div class="summary-item-body">인터포저 내부에 수동소자와 전력 관리 회로를 통합함으로써 패키지 기판 상의 실장 면적을 줄일 수 있고, 프로세싱 소자와 고대역폭 메모리에 안정적인 전력 공급을 제공하여 전체 전자 시스템의 성능 및 전력 효율을 향상</div>
     </div>

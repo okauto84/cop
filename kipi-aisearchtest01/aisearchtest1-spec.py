@@ -4,8 +4,30 @@ import streamlit as st
 import pandas as pd
 
 try:
-    from gazette_detail_content import GAZETTE_DETAIL
+    from gazette_detail_content import (
+        GAZETTE_BIB_ITEMS,
+        GAZETTE_ABSTRACT,
+        GAZETTE_CLAIMS,
+        GAZETTE_TECHNICAL_FIELD,
+        GAZETTE_BACKGROUND,
+        GAZETTE_PROBLEM,
+        GAZETTE_SOLUTION,
+        GAZETTE_EFFECT,
+        GAZETTE_DRAWING_DESC_LINES,
+        GAZETTE_SYMBOLS,
+        GAZETTE_DETAIL,
+    )
 except ImportError:
+    GAZETTE_BIB_ITEMS = []
+    GAZETTE_ABSTRACT = ""
+    GAZETTE_CLAIMS = []
+    GAZETTE_TECHNICAL_FIELD = ""
+    GAZETTE_BACKGROUND = ""
+    GAZETTE_PROBLEM = ""
+    GAZETTE_SOLUTION = ""
+    GAZETTE_EFFECT = ""
+    GAZETTE_DRAWING_DESC_LINES = []
+    GAZETTE_SYMBOLS = []
     GAZETTE_DETAIL = ""
 
 # AI분석 탭 - 발명 3요소 블록 스타일
@@ -258,7 +280,7 @@ with left_col:
         '<div class="gazette-title-en">Electronic device package</div>'
         '<div class="gazette-tag-row">'
         '<span class="gazette-tag gazette-tag-cpc">H01L 25/06</span>'
-        '<span class="gazette-tag gazette-tag-cpc"H01L 23/52</span>'
+        '<span class="gazette-tag gazette-tag-cpc">H01L 23/52</span>'
         '<span class="gazette-tag gazette-tag-cpc">H01L 25/10</span>'
         '<span class="gazette-tag gazette-tag-cpc">H01L 23/00</span>'
         '</div>',
@@ -268,140 +290,72 @@ with left_col:
     st.markdown("---")
 
     # 서지 정보 (접기/펼치기 카드)
+    bib_html = "".join(
+        f'<div class="gazette-bib-item"><span class="gazette-bib-label">{label}</span> {value}</div>'
+        for label, value in GAZETTE_BIB_ITEMS
+    ) + '<div class="gazette-bib-item"></div>'
     with st.expander("📋 서지 정보", expanded=True):
         st.markdown(
-            '<div class="gazette-section">'
-            '<div class="gazette-bib">'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">출원번호</span> 1020160184354</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">출원일</span> 2016.12.30</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">공개번호</span> 1020180079007</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">공개일</span> 2018.07.10</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">공보번호</span></div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">공보일</span> 2024.05.07</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">등록번호</span> 1026638100000</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">등록일</span> 2024.04.30</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">최종상태</span> 등록결정(일반)</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">등록상태</span> 등록</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">재심사청구 Y</span> 2021.11.22</div>'
-            '<div class="gazette-bib-item"></div>'
-            '</div></div>',
+            f'<div class="gazette-section"><div class="gazette-bib">{bib_html}</div></div>',
             unsafe_allow_html=True,
         )
 
     # 초록 (접기/펼치기 카드)
-    abstract_text = (
-        "본 발명의 전자 소자 패키지는 패키지 기판과, 상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 인터포저와, "
-        "상기 인터포저의 상부에 위치하고 상기 인터포저와 전기적으로 연결된 프로세싱 소자와, "
-        "상기 인터포저의 상부에 위치하고 상기 인터포저 및 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자와, "
-        "상기 인터포저의 상부에 위치하고 상기 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자와, "
-        "상기 인터포저의 상부 또는 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함한다. "
-        "상기 수동 소자는 인덕터를 포함하고, 상기 인덕터는 상기 인터포저의 상하부에 각각 형성된 상부 자석층 및 하부 자석층, "
-        "상기 상하부 자석층들을 연결하는 관통 실리콘 비아들, 및 상기 관통 실리콘 비아들을 연결하는 재배선층을 포함한다."
-    )
     with st.expander("📄 초록", expanded=True):
         st.markdown(
-            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{abstract_text}</div></div>',
+            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_ABSTRACT}</div></div>',
             unsafe_allow_html=True,
         )
 
     # 청구항 (접기/펼치기 카드, 내부에 청구항 1~6 각각 expander)
-    claim1_text = "패키지 기판; 상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 인터포저; 상기 인터포저의 상부에 위치하고 상기 인터포저와 전기적으로 연결된 프로세싱 소자; 상기 인터포저의 상부에 위치하고 상기 인터포저 및 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자; 상기 인터포저의 상부에 위치하고 상기 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자; 및 상기 인터포저의 상부 또는 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함하되, 상기 수동 소자는 인덕터를 포함하고, 상기 인덕터는 상기 인터포저의 상하부에 각각 형성된 상부 자석층 및 하부 자석층, 상기 상하부 자석층들을 연결하는 관통 실리콘 비아들, 및 상기 관통 실리콘 비아들을 연결하는 재배선층을 포함하는 것을 특징으로 하는 전자 소자 패키지."
-    claim2_text = "제1항에 있어서, 상기 인덕터는 상기 전력 관리 집적 회로 소자의 아래의 상기 인터포저 내부에 형성되어 있는 것을 특징으로 하는 전자 소자 패키지."
-    claim3_text = ""
-    claim4_text = ""
-    claim5_text = "제1항에 있어서, 상기 수동 소자는 커패시터를 더 포함하고, 상기 커패시터는 상기 인터포저 내부에 형성된 복수개의 배선 패턴층을 포함하는 것을 특징으로 하는 전자 소자 패키지."
-    claim6_text = "제1항에 있어서, 상기 전력 관리 집적 회로 소자, 및 상기 수동 소자는 하나로 집적화된 집적화 소자로 구성되고, 상기 집적화 소자에 포함된 상기 전력 관리 집적 회로 소자 및 상기 수동 소자는 관통 실리콘 비아로 전기적으로 연결되는 것을 특징으로 하는 전자 소자 패키지."
     with st.expander("📌 청구항", expanded=True):
-        with st.expander("청구항 1", expanded=True):
-            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim1_text}</div></div>', unsafe_allow_html=True)
-        with st.expander("청구항 2", expanded=True):
-            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim2_text}</div></div>', unsafe_allow_html=True)
-        with st.expander("청구항 3", expanded=True):
-            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim3_text}</div></div>', unsafe_allow_html=True)
-        with st.expander("청구항 4", expanded=True):
-            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim4_text}</div></div>', unsafe_allow_html=True)
-        with st.expander("청구항 5", expanded=True):
-            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim5_text}</div></div>', unsafe_allow_html=True)
-        with st.expander("청구항 6", expanded=True):
-            st.markdown(f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim6_text}</div></div>', unsafe_allow_html=True)
+        for i, claim_text in enumerate(GAZETTE_CLAIMS, start=1):
+            with st.expander(f"청구항 {i}", expanded=True):
+                st.markdown(
+                    f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim_text}</div></div>',
+                    unsafe_allow_html=True,
+                )
 
     # 기술분야 (접기/펼치기 카드)
     with st.expander("🔬 기술분야", expanded=True):
         st.markdown(
-            '<div class="gazette-section">'
-            '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '본 발명의 기술적 사상은 전자 소자 패키지에 관한 것으로서, 보다 상세하게는 집적 회로 소자, 메모리 소자 및 수동 소자 등을 포함하는 전자 소자 패키지에 관한 것이다.'
-            '</div></div>',
+            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_TECHNICAL_FIELD}</div></div>',
             unsafe_allow_html=True,
         )
 
     # 배경기술 (접기/펼치기 카드)
     with st.expander("📖 배경기술", expanded=True):
         st.markdown(
-            '<div class="gazette-section">'
-            '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '전자 소자 패키지는 보드 기판이나 패키지 기판 상에 전자 소자, 예컨대 집적 회로 소자, 메모리 소자 및 수동 소자 등이 탑재될 수 있다.<br>'
-            '전자 기기의 소형화 및 전자 소자의 집적도 향상에 따라 전자 소자가 보드 기판이나 패키지 기판에 실장되는 살장 면적을 줄이는 것이 요구되고 있다.'
-            '</div></div>',
+            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_BACKGROUND}</div></div>',
             unsafe_allow_html=True,
         )
 
     # 해결하고자 하는 과제 (접기/펼치기 카드)
     with st.expander("🎯 해결하고자 하는 과제", expanded=True):
         st.markdown(
-            '<div class="gazette-section">'
-            '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '본 발명의 기술적 사상이 해결하고자 하는 과제는 실장 면적을 줄이면서도 성능은 향상시킬 수 있는 전자 소자 패키지를 제공하는 데 있다.'
-            '</div></div>',
+            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_PROBLEM}</div></div>',
             unsafe_allow_html=True,
         )
 
     # 해결수단 (접기/펼치기 카드)
     with st.expander("⚙️ 해결수단", expanded=True):
         st.markdown(
-            '<div class="gazette-section">'
-            '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '상술한 과제를 해결하기 위하여 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지는 패키지 기판; 상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 인터포저; 상기 인터포저의 상부에 위치하고 상기 인터포저와 전기적으로 연결된 프로세싱 소자; 상기 인터포저의 상부에 위치하고 상기 인터포저 및 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자; 상기 인터포저의 상부에 위치하고 상기 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자; 및 상기 인터포저의 상부 또는 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함한다.<br>'
-            '상기 수동 소자는 인덕터를 포함하고, 상기 인덕터는 상기 인터포저의 상하부에 각각 형성된 상부 자석층 및 하부 자석층, 상기 상하부 자석층들을 연결하는 관통 실리콘 비아들, 및 상기 관통 실리콘 비아들을 연결하는 재배선층을 포함한다.<br>'
-            '본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지는 패키지 기판; 상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 하부 인터포저; 상기 하부 인터포저의 상부에 위치하고 상기 하부 인터포저와 전기적으로 연결된 상부 인터포저; 상기 상부 인터포저의 상부에 위치하고 상기 상부 인터포저와 전기적으로 연결된 프로세싱 소자; 상기 상부 인터포저의 상부에 위치하고 상기 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자; 상기 상부 인터포저의 상에 위치하고 상기 상부 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자; 및 상기 하부 인터포저 및 상기 상부 인터포저의 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함한다.<br>'
-            '상기 수동 소자는 인덕터를 포함하고, 상기 인덕터는 상기 상부 인터포저 및 상기 하부 인터포저의 상하부에 각각 형성된 상부 자석층 및 하부 자석층, 상기 상하부 자석층들을 연결하는 관통 실리콘 비아들, 및 상기 관통 실리콘 비아들을 연결하는 재배선층을 포함한다.<br>'
-            '또한, 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지는 패키지 기판; 상기 패키지 기판의 상부에 위치하고 상기 패키지 기판과 전기적으로 연결된 하부 인터포저; 상기 하부 인터포저의 상부에 위치하고 상기 하부 인터포저와 전기적으로 연결된 중간 인터포저; 상기 중간 인터포저의 상부에 위치하고 상기 중간 인터포저와 전기적으로 연결된 상부 인터포저; 상기 상부 인터포저의 상부에 위치하고 상기 상부 인터포저와 전기적으로 연결된 프로세싱 소자; 상기 상부 인터포저의 상부에 위치하고 상기 프로세싱 소자와 전기적으로 연결된 적어도 하나의 고대역폭 메모리 소자; 상기 중간 인터포저 내에 위치하고 상기 상부 인터포저 및 상기 프로세싱 소자와 전기적으로 연결된 전력 관리 집적 회로 소자; 및 상기 하부 인터포저 및 상기 중간 인터포저의 내부에 위치하고 상기 전력 관리 집적 회로 소자와 전기적으로 연결된 수동 소자를 포함한다.'
-            '</div></div>',
+            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_SOLUTION}</div></div>',
             unsafe_allow_html=True,
         )
 
     # 효과 (접기/펼치기 카드)
     with st.expander("⭐ 효과", expanded=True):
         st.markdown(
-            '<div class="gazette-section">'
-            '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '본 발명의 기술적 사상의 전자 소자 패키지는 패키지 기판 상에 인터포저를 위치시키고 인터포저 상부 또는 내부에 전력 관리 집적 회로 소자를 탑재하고, 인터포저 상에는 메모리 소자를 탑재하고, 인터포저 내에는 인덕터나 커패시터와 같은 수동 소자를 형성한다.<br>'
-            '이와 같이 구성할 경우, 본 발명의 기술적 사상의 전자 소자 패키지는 패키지 기판 상에 전자 소자의 실장 면적을 줄이면서도 전력 공급을 안정적으로 하여 성능을 향상시킬 수 있다.'
-            '</div></div>',
+            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_EFFECT}</div></div>',
             unsafe_allow_html=True,
         )
 
     # 도면의 간단한 설명 (접기/펼치기 카드)
+    drawing_desc_html = "<br>".join(GAZETTE_DRAWING_DESC_LINES)
     with st.expander("🖼️ 도면의 간단한 설명", expanded=True):
         st.markdown(
-            '<div class="gazette-section">'
-            '<div style="font-size: 0.95rem; line-height: 1.6;">'
-            '도 1은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이다.<br>'
-            '도 2는 도 1의 전자 소자 패키지의 수동 소자의 확대도이다.<br>'
-            '도 3은 도 1의 전자 소자 패키지의 인터포저의 확대도이다.<br>'
-            '도 4는 도 3의 인터포저의 "B" 부분 확대도이다.<br>'
-            '도 5는 도 1의 고대역폭 메모리 소자의 확대도이다.<br>'
-            '도 6a 내지 도 6c는 본 발명의 기술적 사상의 전자 소자 패키지의 각 전자 요소들의 위치 관계를 설명하기 위한 레이아웃도이다.<br>'
-            '도 7은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이고, 도 8 및 도 9는 도 7의 "C"부분 확대도이다.<br>'
-            '도 10은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이다.<br>'
-            '도 11은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이다.<br>'
-            '도 12는 은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이다.<br>'
-            '도 13a는 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이고, 도 13b는 도 13a의 수동 소자의 요부 단면도이다.<br>'
-            '도 14a 및 14b는 각각 본 발명의 기술적 사상의 일 실시예에 따라 전자 소자 패키지에 이용될 수 있는 수동 소자를 설명하기 위한 부분 단면도 및 부분 평면도이다.<br>'
-            '도 15는 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 도시한 요부 단면도이다.<br>'
-            '도 16은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 포함하는 전자 시스템을 도시한 블록도이다.<br>'
-            '도 17은 본 발명의 기술적 사상의 일 실시예에 의한 전자 소자 패키지를 포함하는 전자 시스템을 도시한 블록도이다.'
-            '</div></div>',
+            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{drawing_desc_html}</div></div>',
             unsafe_allow_html=True,
         )
 
@@ -415,27 +369,14 @@ with left_col:
         )
         st.markdown(detail_html, unsafe_allow_html=True)
 
-    # 부호의 설명 (접기/펼치기 카드) - 전자 소자 패키지
+    # 부호의 설명 (접기/펼치기 카드)
+    symbols_html = "".join(
+        f'<div class="gazette-bib-item"><span class="gazette-bib-label">{num}</span> {desc}</div>'
+        for num, desc in GAZETTE_SYMBOLS
+    )
     with st.expander("🔢 부호의 설명", expanded=True):
         st.markdown(
-            '<div class="gazette-section">'
-            '<div class="gazette-bib" style="grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem;">'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">100</span> 전자 소자 패키지</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">102</span> 패키지 기판</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">104</span> 제1 연결 단자</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">106</span> 제1 배선층</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">110</span> 인터포저</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">112</span> 제2 연결 단자</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">113</span> 제1 관통 실리콘 비아</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">114</span> 제2 배선층</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">120</span> 프로세싱 소자</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">122</span> 제2 연결 단자</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">124</span> 전력 관리 집적 회로 소자</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">128</span> 고대역폭 메모리 소자</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">132</span> 수동 소자</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">136</span> 제2 관통 실리콘 비아들</div>'
-            '<div class="gazette-bib-item"><span class="gazette-bib-label">137</span> 재배선층</div>'
-            '</div></div>',
+            f'<div class="gazette-section"><div class="gazette-bib" style="grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem;">{symbols_html}</div></div>',
             unsafe_allow_html=True,
         )
 
