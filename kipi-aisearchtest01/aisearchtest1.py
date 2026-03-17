@@ -203,36 +203,45 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 발명의 3요소 (AI 요약) HTML — tab_summary와 right_sidebar에서 공통 사용
-SUMMARY_HTML = """
+# 대상 AI요약 표 형식 — tab_summary와 right_sidebar에서 공통 사용 (기술분야·문제점·해결과제·해결수단·핵심기술·효과·응용분야·보충설명)
+SUMMARY_TABLE_HTML = """
 <div style="font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; max-width: 600px;">
-    <div style="color: #1e3a8a; font-size: 1.15rem; font-weight: bold; margin-bottom: 16px;">
-        💡 발명의 3요소
-    </div>
-    <div style="background-color: #fdf2f2; border: 1.5px solid #fecaca; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
-        <div style="color: #b91c1c; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
-            ⚠️ 해결 과제 및 목적
-        </div>
-        <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
-            창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
-        </div>
-    </div>
-    <div style="background-color: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
-        <div style="color: #15803d; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
-            🎯 해결 수단
-        </div>
-        <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
-            베이스팬 내부에 관통형 가이드공을 형성하여 커텐프레임의 슬라이딩 기밀성을 극대화하고 외관을 미려하게 함.
-        </div>
-    </div>
-    <div style="background-color: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 8px; padding: 14px 12px; margin-bottom: 12px;">
-        <div style="color: #1d4ed8; font-weight: bold; font-size: 0.95rem; margin-bottom: 6px;">
-            ✨ 발명의 효과
-        </div>
-        <div style="color: #374151; font-size: 0.9rem; line-height: 1.6;">
-            부품 수 절감으로 제조 원가를 낮추며, 완벽한 밀폐를 통해 에어컨의 냉방 효율을 획기적으로 향상시킴.
-        </div>
-    </div>
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #dee2e6; font-size: 0.9rem;">
+        <tbody>
+            <tr>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; background: #f8fafc; width: 120px;"><strong>기술분야</strong></td>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; color: #374151; line-height: 1.6;">반도체 패키지 기술에 관한 것으로, 서로 다른 피치를 갖는 기판 패키지 사이에 인터포저를 배치하여 반도체 칩을 적층하는 스택 패키지 및 그 제조 방법</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; background: #f8fafc;"><strong>문제점</strong></td>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; color: #374151; line-height: 1.6;">기존 기술에서는 인터포저를 ABF 패키지 또는 HDI 패키지 중 하나에만 적용하는 경우 대면적 스택 패키지 제조 비용이 증가하거나 인터포저 내부에 수평 신호 라인을 형성해야 하므로 저항 증가로 인해 패키지 성능이 저하되는 문제</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; background: #f8fafc;"><strong>해결과제(목적)</strong></td>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; color: #374151; line-height: 1.6;">서로 다른 피치를 갖는 기판 패키지를 효율적으로 연결하면서 인터포저의 수평 신호 라인을 제거하여 제조 비용을 절감하고 성능을 향상시킨 스택 패키지를 제공</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; background: #f8fafc;"><strong>해결수단</strong></td>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; color: #374151; line-height: 1.6;">제1 피치의 패드를 갖는 ABF 기반 제1 기판 패키지(110)와 제2 피치의 패드를 갖는 HDI 기반 제2 기판 패키지(120)를 적층하고, 제1 기판 패키지 상부에 제3 피치의 패드를 갖는 인터포저(130)를 배치하며, 인터포저 내부에 수직 신호 라인(138)을 형성하여 제1·제2 기판 패키지와 반도체 칩(140)을 도전성 범프(170,172,174)로 전기적으로 연결하도록 구성</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; background: #f8fafc;"><strong>핵심기술</strong></td>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; color: #374151; line-height: 1.6;">•ABF 패키지와 HDI 패키지를 순차적으로 적층하고 그 사이에 인터포저를 배치하는 스택 패키지 구조<br>•ABF 패키지와 인터포저가 실질적으로 동일한 피치를 갖도록 하여 인터포저 내부의 수직 신호 라인만으로 전기 연결하는 기술<br>•제1·제2·제3 도전성 범프를 이용하여 기판 패키지와 인터포저 및 반도체 칩을 단계적으로 연결하는 패키지 구조<br>•인터포저 상부에 ASIC 및 HBM 반도체 칩을 배치하여 고대역폭 신호 연결을 구현하는 구조</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; background: #f8fafc;"><strong>효과</strong></td>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; color: #374151; line-height: 1.6;">인터포저에 수평 신호 라인을 형성할 필요가 없어 저항 증가를 방지하고 성능을 향상시키며 동시에 대면적 스택 패키지의 제조 비용을 절감</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; background: #f8fafc;"><strong>응용분야</strong></td>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; color: #374151; line-height: 1.6;">인공지능 디바이스, 네트워크 장치, 고대역폭 메모리 기반 고성능 반도체 패키지 등 고집적 반도체 시스템에 적용</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; background: #f8fafc;"><strong>보충설명</strong></td>
+                <td style="border: 1px solid #dee2e6; padding: 10px 12px; vertical-align: top; color: #374151; line-height: 1.6;">본 발명의 스택 패키지는 HDI 패키지, ABF 패키지, 인터포저 및 반도체 칩을 계단형 피라미드 구조로 적층하고 인터포저 내부의 수직 신호 라인을 이용해 전기적으로 연결하는 구조를 통해 신호 전달 효율을 향상시킨다</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 """
 
@@ -379,7 +388,7 @@ with claims_col:
             '<div id="panel-claim" class="claims-tab-panel">'
             '<div class="claims-panel">' + claims_items_html + extract_block + '</div>'
             '</div>'
-            '<div id="panel-summary" class="claims-tab-panel">' + SUMMARY_HTML + '</div>'
+            '<div id="panel-summary" class="claims-tab-panel">' + SUMMARY_TABLE_HTML + '</div>'
             '</div></div>',
             unsafe_allow_html=True,
         )
@@ -451,7 +460,7 @@ with right_sidebar:
         else:
             st.caption("`./data/drawing.jpg` 파일을 추가하면 대표도면이 표시됩니다.")
         
-        st.markdown(SUMMARY_HTML, unsafe_allow_html=True)
+        st.markdown(SUMMARY_TABLE_HTML, unsafe_allow_html=True)
         st.markdown(
             '</div>',
             unsafe_allow_html=True,
