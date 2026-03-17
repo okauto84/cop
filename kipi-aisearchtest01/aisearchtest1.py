@@ -61,11 +61,12 @@ st.markdown("""
     .main .block-container { padding-top: 3rem; }
     div[data-testid="stText"] { font-size: 14px; }
 
-    /* 메인 4열(좌측|대상|중앙|우측) 한 줄 고정 — 줄바꿈 방지 */
+    /* 메인 4열(좌측|대상|중앙|우측) 한 줄 고정, 상단 정렬 */
     div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) {
         flex-wrap: nowrap !important;
         display: flex !important;
         width: 100% !important;
+        align-items: flex-start !important;
     }
     div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"] {
         min-width: 0;
@@ -78,11 +79,11 @@ st.markdown("""
         padding-left: 0.1rem;
     }
     [data-testid="column"]:first-of-type { padding-left: 0; padding-right: 0.35rem; }
-    /* 우측 사이드바(대표도면 영역): 4열 행의 마지막 열만 적용, 고정 높이 + 스크롤바 */
+    /* 우측 사이드바(대표도면 영역): 4열 행의 마지막 열만 적용, 상단 맞춤 + 고정 높이 + 스크롤바 */
     div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:last-of-type {
         border-right: none;
         padding-right: 0;
-        padding-top: 0.5rem;
+        padding-top: 0;
         height: calc(100vh - 120px);
         max-height: calc(100vh - 120px);
         overflow-y: auto;
@@ -90,9 +91,10 @@ st.markdown("""
         min-height: 200px;
         flex-shrink: 0;
         min-width: 1rem;
+        align-self: flex-start;
     }
     div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:last-of-type > div {
-        padding-top: 0.25rem;
+        padding-top: 0;
         max-height: none;
     }
     div[data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:last-of-type .stMarkdown { animation: slideIn 0.3s ease-out; }
