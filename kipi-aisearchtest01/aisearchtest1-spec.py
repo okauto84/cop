@@ -235,7 +235,9 @@ with right_col:
         _tabs = st.tabs(_tab_names)
         for _tab, _img_path in zip(_tabs, _image_files):
             with _tab:
-                st.image(str(_img_path), use_container_width=True)
+                _col_img, _ = st.columns([0.7, 0.3])  # 이미지 30% 작게 (70% 너비)
+                with _col_img:
+                    st.image(str(_img_path), use_container_width=True)
     else:
         st.info("도면 이미지가 없습니다. `./data` 폴더에 이미지 파일(.png, .jpg 등)을 넣어 주세요.")
 
