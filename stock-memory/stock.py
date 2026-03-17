@@ -137,12 +137,12 @@ if load_clicked:
             st.session_state.sheet_table_total = sheet_table_total
             st.session_state.sheet_table_raw = sheet_table_raw if sheet_table_raw is not None else pd.DataFrame()
 
-            # RAW 시트에서 A1:F52 범위를 잘라 A1 행을 헤더로 사용하는 DataFrame 생성
+            # RAW 시트에서 A1부터 52행까지 전체 열을 잘라 A1 행을 헤더로 사용하는 DataFrame 생성 (거래량(1) 등 모든 열 포함)
             raw_df = st.session_state.sheet_table_raw
             raw_range_df = pd.DataFrame()
             if raw_df is not None and not raw_df.empty:
-                # A~F 열(0~5), 1행~52행 → index 기준 0~51
-                raw_slice = raw_df.iloc[0:52, 0:6].copy()
+                # 전체 열 사용(거래량(1) 등 포함), 1행~52행 → index 기준 0~51
+                raw_slice = raw_df.iloc[0:52, :].copy()
                 # 첫 행(원래 A1:F1)을 헤더로 사용하되, 중복 헤더는 _1, _2 ... 를 붙여 유니크하게 만든다.
                 header_row = raw_slice.iloc[0].astype(str).str.strip().tolist()
                 seen: dict[str, int] = {}
@@ -201,8 +201,7 @@ def _parse_sheet_to_objects(df: pd.DataFrame, empty_rows: int = 3) -> list[dict]
 
 
 if context_total is not None and len(context_total) > 0:
-    # Total 시트: 기존 stock.py의 Objects 렌더링 스타일을 그대로 사용하기 위해
-    # A/B 컬럼을 object 하나로 간주하여 dict 로 변환 (한 종목 row 라는 가정)
+    # Total 시트: A/B 컬럼을 object로 변환 + 3열 이후는 1행(헤더)·2행(값)으로 obj에 포함 (거래량(1) 등)
     col_a, col_b = context_total.columns[0], context_total.columns[1]
     obj: dict[str, str] = {}
     for _, row in context_total.iterrows():
@@ -213,6 +212,14 @@ if context_total is not None and len(context_total) > 0:
         if k_str == "" and v_str == "":
             continue
         obj[k_str] = v_str
+    # Total 시트에 3열 이상 있으면 1행을 키, 2행을 값으로 추가 (거래량(1) 등 C열 이후 표시)
+    if context_total.shape[1] > 2 and context_total.shape[0] >= 2:
+        for col_idx in range(2, context_total.shape[1]):
+            key = context_total.iloc[0, col_idx]
+            val = context_total.iloc[1, col_idx]
+            k_str = "" if pd.isna(key) else str(key).strip()
+            if k_str:
+                obj[k_str] = "" if pd.isna(val) else str(val).strip()
 
     # ===== 이평 배열 / 거래량 배열 계산 =====
     def _parse_num_for_ordering(s: str | None):
@@ -245,7 +252,7 @@ if context_total is not None and len(context_total) > 0:
 
     # 거래량 배열: 거래량(현재), 거래량(10), 거래량(30), 거래량(50) 큰 값 순서
     volume_order_targets = [
-        ("거래량(현재)", "거래량(현재)"),
+        ("거래량(1)", "거래량(1)"),
         ("거래량(10)", "거래량(10)"),
         ("거래량(30)", "거래량(30)"),
         ("거래량(50)", "거래량(50)"),
@@ -297,7 +304,7 @@ if context_total is not None and len(context_total) > 0:
                 "아래 Total_Object 객체 정보(요약 데이터)와 RAW_Table 시계열 데이터(종가, 이동평균선, 거래량, 거래량 평균)를 함께 분석하라. "
                 "다음 세 가지 분류 값을 각각 하나씩 선택해야 한다.\n\n"
                 "1) 이평 분류: 이동평균선 배열과 추세를 기준으로 아래 [이평 분류표] 중 1개 선택\n"
-                "2) 거래량 분류: 거래량 및 거래량(평균)을 기준으로 아래 [거래량 분류표] 중 1개 선택\n"
+                "2) 거래량 분류: 거래량(1) 이상 및 거래량(평균)을 기준으로 아래 [거래량 분류표] 중 1개 선택. 단, 거래량(현재)는 판단에서 제외\n"
                 "3) 종합 분류: 현재가, 이평, 거래량 등을 모두 고려한 종합 판단으로 [종합 분류표] 중 1개 선택\n\n"
                 "반드시 아래 JSON 형식으로만 답하라.\n"
                 '{\"ma_class\": \"<이평 분류표의 라벨 중 하나>\", '
@@ -387,8 +394,8 @@ if context_total is not None and len(context_total) > 0:
             except (ValueError, TypeError):
                 return None
 
-        # 거래량 막대 비교를 위한 값 수집
-        volume_keys_source = ["거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
+        # 거래량 막대 비교를 위한 값 수집 (거래량(1) 포함)
+        volume_keys_source = ["거래량(1)", "거래량(현재)", "거래량(10)", "거래량(30)", "거래량(50)"]
         volume_values_source = {vk: _parse_num(obj.get(vk)) for vk in volume_keys_source}
         max_vol = max((v for v in volume_values_source.values() if v is not None), default=None)
 
@@ -422,9 +429,7 @@ if context_total is not None and len(context_total) > 0:
             cell_b_html = None
             # --- 거래량 막대 ---
             src_key_for_volume = None
-            if k == "거래량(1)":
-                src_key_for_volume = "거래량(현재)"
-            elif k in volume_keys_source:
+            if k in volume_keys_source:
                 src_key_for_volume = k
 
             if src_key_for_volume and max_vol and volume_values_source.get(src_key_for_volume) is not None:
