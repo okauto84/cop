@@ -235,7 +235,7 @@ with right_col:
         _tabs = st.tabs(_tab_names)
         for _tab, _img_path in zip(_tabs, _image_files):
             with _tab:
-                _col_img, _ = st.columns([0.8, 0.2])  # 이미지 80% 너비
+                _col_img, _ = st.columns([0.9, 0.1])  # 이미지 80% 너비
                 with _col_img:
                     st.image(str(_img_path), use_container_width=True)
     else:
