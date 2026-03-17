@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import os
 import streamlit as st
 import pandas as pd
+
+# 스크립트 위치 기준 data 폴더 경로
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_DATA_DIR = os.path.join(_SCRIPT_DIR, "data")
 
 # AI분석 탭 - 발명 3요소 블록 스타일
 st.markdown("""
@@ -187,6 +192,25 @@ with right_col:
         unsafe_allow_html=True,
     )
 
+    # 도면 탭: data 폴더 내 drawing.jpg, drawing02.jpg ~ drawing06.jpg
+    drawing_files = [
+        "drawing.jpg",
+        "drawing02.jpg",
+        "drawing03.jpg",
+        "drawing04.jpg",
+        "drawing05.jpg",
+        "drawing06.jpg",
+    ]
+    tab_labels = ["도면 1", "도면 2", "도면 3", "도면 4", "도면 5", "도면 6"]
+    drawing_tabs = st.tabs(tab_labels)
+    for tab, fname in zip(drawing_tabs, drawing_files):
+        path = os.path.join(_DATA_DIR, fname)
+        with tab:
+            if os.path.isfile(path):
+                st.image(path, use_container_width=True)
+            else:
+                st.caption(f"파일 없음: {fname}")
+
     st.markdown("---")
     st.markdown("### 💡 구성요소 대비표 (Claim Analysis Table)")
     st.markdown(
@@ -194,10 +218,10 @@ with right_col:
         <table class="claim-table">
         <thead>
         <tr>
-        <th>출원발명 구성요소</th>
-        <th>인용발명 구성요소</th>
+        <th>출원발명</th>
+        <th>인용발명</th>
         <th>관련도</th>
-        <th>대비 결과 요약</th>
+        <th>대비결과</th>
         </tr>
         </thead>
         <tbody>
@@ -205,7 +229,7 @@ with right_col:
         <td>제 1 피치의 간격을 두고 배열된 제 1 패드들을 포함하는 제 1 기판 패키지</td>
         <td>전자 소자 패키지(100)의 하부에서 전자 요소들을 지지하고 전기적으로 연결되는 패키지 기판(102)</td>
         <td><a href="#focus-partial" class="tag-link"><span class="tag tag-partial">동일</span></a></td>
-        <td>출원발명의 제1 패드가 일정 피치 간격으로 배열된 제1 기판 패키지는 선행발명의 패키지 기판에 상부 패드가 배열되어 있는 구성과 구조적으로 대응한다ㅡㅜ</td>
+        <td>출원발명의 제1 패드가 일정 피치 간격으로 배열된 제1 기판 패키지는 선행발명의 패키지 기판에 상부 패드가 배열되어 있는 구성과 구조적으로 대응한다</td>
         </tr>
         <tr>
         <td>상기 제 1 기판 패키지의 하부에 배치되고, 상기 제 1 피치와 다른 제 2 피치의 간격을 두고 배열된 제 2 패드들을 포함하는 제 2 기판 패키지</td>
