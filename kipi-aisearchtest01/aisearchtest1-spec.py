@@ -448,6 +448,7 @@ st.components.v1.html(
     (function(){
         var win = window.parent;
         var doc = win.document;
+        var lastNeedle = "";
 
         function escapeHtml(s) {
             return String(s)
@@ -456,6 +457,10 @@ st.components.v1.html(
               .replace(/>/g, "&gt;")
               .replace(/"/g, "&quot;")
               .replace(/'/g, "&#039;");
+        }
+
+        function escapeRegExp(s) {
+            return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         }
 
         function getCitationCells() {
@@ -483,18 +488,25 @@ st.components.v1.html(
 
         function highlightAll(cells, needle) {
             if (!needle) return;
+            var re = new RegExp(escapeRegExp(needle), "gi"); // 대소문자 무시
             for (var i = 0; i < cells.length; i++) {
                 var orig = (cells[i].dataset && cells[i].dataset.origText !== undefined)
                   ? cells[i].dataset.origText
                   : (cells[i].textContent || "");
-                var safe = escapeHtml(orig);
-                var safeNeedle = escapeHtml(needle);
-                if (safeNeedle.length === 0) {
-                    cells[i].innerHTML = safe;
-                    continue;
+
+                var html = "";
+                var lastIndex = 0;
+                var m;
+                while ((m = re.exec(orig)) !== null) {
+                    var start = m.index;
+                    var end = start + m[0].length;
+                    html += escapeHtml(orig.slice(lastIndex, start));
+                    html += '<span class="cite-auto-hl">' + escapeHtml(orig.slice(start, end)) + "</span>";
+                    lastIndex = end;
+                    if (m[0].length === 0) break; // 안전장치
                 }
-                // split/join으로 전체 치환(정규식 이스케이프 불필요), 대소문자 구분
-                cells[i].innerHTML = safe.split(safeNeedle).join('<span class="cite-auto-hl">' + safeNeedle + "</span>");
+                html += escapeHtml(orig.slice(lastIndex));
+                cells[i].innerHTML = html;
             }
         }
 
@@ -518,17 +530,35 @@ st.components.v1.html(
             if (table.dataset && table.dataset.citeHlBound === "1") return true;
             if (table.dataset) table.dataset.citeHlBound = "1";
 
-            doc.addEventListener("mouseup", function(){
+            // 드래그 후 마우스업: 선택 텍스트 하이라이트
+            win.addEventListener("mouseup", function(){
                 var sel = win.getSelection ? win.getSelection() : null;
                 if (!sel) return;
                 if (!isSelectionInCitationColumn(sel)) return;
+
                 var text = (sel.toString ? sel.toString() : "").trim();
                 var _cells = getCitationCells();
                 ensureOrigText(_cells);
                 clearHighlights(_cells);
+                lastNeedle = "";
                 if (text.length > 0) {
+                    lastNeedle = text;
                     highlightAll(_cells, text);
                 }
+            }, true);
+
+            // 빈 곳 클릭 등으로 선택이 해제되면 하이라이트 제거
+            win.addEventListener("mousedown", function(){
+                win.setTimeout(function(){
+                    var sel = win.getSelection ? win.getSelection() : null;
+                    var text = sel && sel.toString ? sel.toString().trim() : "";
+                    if (text.length === 0 && lastNeedle) {
+                        var _cells = getCitationCells();
+                        ensureOrigText(_cells);
+                        clearHighlights(_cells);
+                        lastNeedle = "";
+                    }
+                }, 0);
             }, true);
 
             return true;
