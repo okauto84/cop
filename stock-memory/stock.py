@@ -301,17 +301,19 @@ if context_total is not None and len(context_total) > 0:
 
             system_msg = (
                 "당신은 마크 미너비니, 윌리엄 오닐을 존경하고 따르는 수제자로써, 추세 추종 돌파 매매 및 VCP 관점으로하는 전문 주식 투자자이다. "
-                "아래 Total_Object 객체 정보(요약 데이터)와 RAW_Table 시계열 데이터(종가, 이동평균선, 거래량, 거래량 평균)를 함께 분석하라. "
-                "다음 네 가지를 작성해야 한다.\n\n"
+                "아래 Total_Object 객체 정보(요약 데이터)와 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량, 거래량 평균)를 함께 분석하라. "
+                "다음 다섯 가지를 작성해야 한다.\n\n"
                 "1) 이평 분류(AI): 이동평균선 배열과 추세를 기준으로 아래 [이평 분류표] 중 1개 선택\n"
                 "2) 거래량 분류(AI): 거래량(1) 이상 및 거래량(평균)을 기준으로 아래 [거래량 분류표] 중 1개 선택. 단, 거래량(현재)는 판단에서 제외\n"
                 "3) 종합 분류(AI): 현재가, 이평, 거래량 등을 모두 고려한 종합 판단으로 [종합 분류표] 중 1개 선택\n"
-                "4) 요약 정리(AI): 해당 종목에 대한 주식 흐름에 대해서 너의 정보(지식)와 데이터를 바탕으로 종합 분석하여 150자 수준으로 요약 (한글 기준, 공백·기호 포함 150자 수준)\n\n"
+                "4) 요약 정리(AI): 해당 종목에 대한 주식 흐름에 대해서 너의 정보(지식)와 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량, 거래량 평균)를 함께 종합 분석하여 150자 수준으로 요약 (한글 기준, 공백·기호 포함 150자 수준)\n"
+                "5) 투자관점 정리(AI): 해당 종목에 대한 현재의 뉴스, 시장 상황 등과 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량, 거래량 평균)를 종합 분석하여 투자(매매)관점으로 300자 수준으로 요약 (한글 기준, 공백·기호 포함 150자 수준)\n\n"
                 "반드시 아래 JSON 형식으로만 답하라.\n"
                 '{\"ma_class\": \"<이평 분류표의 라벨 중 하나>\", '
                 '\"volume_class\": \"<거래량 분류표의 라벨 중 하나>\", '
                 '\"total_class\": \"<종합 분류표의 라벨 중 하나>\", '
                 '\"one_line_summary\": \"<150자 수준으로 요약 정리>\"}\n\n'
+                '\"total_summary\": \"<300자 수준으로 투자관점으로 정리>\"}\n\n'
                 "다른 설명, 문장, 코멘트는 절대 쓰지 마라.\n\n"
                 "[이평 분류표]\n- "
                 + "\n- ".join(ma_class_labels)
@@ -346,11 +348,13 @@ if context_total is not None and len(context_total) > 0:
                 vol_raw_label = str(parsed.get("volume_class", "")).strip()
                 total_raw_label = str(parsed.get("total_class", "")).strip()
                 one_line_raw = str(parsed.get("one_line_summary", "")).strip()
+                total_raw = str(parsed.get("total_summary", "")).strip()
             except Exception:
                 ma_raw_label = raw_content
                 vol_raw_label = raw_content
                 total_raw_label = raw_content
                 one_line_raw = ""
+                total_line_raw = ""
 
             for label in ma_class_labels:
                 if label in ma_raw_label or ma_raw_label == label:
@@ -373,6 +377,8 @@ if context_total is not None and len(context_total) > 0:
                 obj["종합 분류(AI)"] = total_chosen_label
             if one_line_raw:
                 obj["한줄 정리(AI)"] = one_line_raw[:150] if len(one_line_raw) > 150 else one_line_raw
+            if total_raw:
+                obj["투자관점 정리(AI)"] = total_raw[:300] if len(total_raw) > 300 else total_raw
 
             # 프롬프트 내용을 세션에 저장하여 화면 하단에 표시할 수 있도록 함
             st.session_state["classification_system_prompt"] = system_msg
@@ -390,7 +396,7 @@ if context_total is not None and len(context_total) > 0:
     if sheet_objects_total:
         st.markdown("#### Objects")
         obj = sheet_objects_total[0]
-        bold_keys = {"이평 배열", "이평 분류(AI)", "거래량 배열", "거래량 분류(AI)", "종합 분류(AI)", "한줄 정리(AI)"}
+        bold_keys = {"이평 배열", "이평 분류(AI)", "거래량 배열", "거래량 분류(AI)", "종합 분류(AI)", "한줄 정리(AI)", "투자관점 정리(AI)"}
 
         def _parse_num(s):
             if s is None or str(s).strip() == "":
