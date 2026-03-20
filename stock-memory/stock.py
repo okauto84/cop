@@ -495,11 +495,6 @@ if context_total is not None and len(context_total) > 0:
             # 컬럼명 앞뒤 공백 제거 (시트에서 공백 포함된 헤더 대응)
             df_chart.columns = [str(c).strip() for c in df_chart.columns]
 
-            # 디버그: RAW 컬럼 목록 확인용 expander
-            with st.expander("🔍 RAW 컬럼 목록 확인 (디버그)", expanded=False):
-                st.write("컬럼명:", df_chart.columns.tolist())
-                st.write("상위 3행:", df_chart.head(3))
-
             # X축: "거래일"/"날짜"/"일자"/"date" 포함 컬럼 → 없으면 첫 번째 컬럼
             date_col = next(
                 (c for c in df_chart.columns if any(kw in str(c).lower() for kw in ["거래일", "날짜", "일자", "date"])),
@@ -541,12 +536,35 @@ if context_total is not None and len(context_total) > 0:
                 df_chart[date_col] = pd.to_datetime(df_chart[date_col], errors="coerce")
                 df_chart = df_chart.dropna(subset=[date_col]).sort_values(date_col).reset_index(drop=True)
 
-                # X축 레이블: 연도 제외, MM/DD 형식
+                # ── 현재가 행 추가 ──────────────────────────────────────
+                # 거래일 0(마지막 RAW 행) 이후 오늘 날짜를 신규 행으로 삽입
+                # 종가 = 현재가(obj), 이동평균선 = NaN (거래일 1까지만 표시)
+                current_price_val = _parse_num(obj.get("현재가"))
+                today_ts = pd.Timestamp.today().normalize()
+                last_raw_ts = df_chart[date_col].iloc[-1]
+                # 오늘이 마지막 RAW 날짜와 같으면 +1일로 분리 표시
+                current_ts = today_ts if today_ts > last_raw_ts else last_raw_ts + pd.Timedelta(days=1)
+
+                if current_price_val is not None:
+                    new_row: dict = {col: pd.NA for col in df_chart.columns}
+                    new_row[date_col] = current_ts
+                    for c in close_cols:
+                        new_row[c] = current_price_val
+                    # MA 컬럼은 NA 유지 (이동평균선은 거래일 1까지만 표시)
+                    df_chart = pd.concat(
+                        [df_chart, pd.DataFrame([new_row])], ignore_index=True
+                    )
+
+                # X축 레이블: 연도 제외, MM/DD 형식 (마지막 행은 "현재" 표기)
                 df_chart["_x_label"] = df_chart[date_col].dt.strftime("%m/%d")
+                if current_price_val is not None:
+                    df_chart.loc[df_chart.index[-1], "_x_label"] = (
+                        f"현재({current_ts.strftime('%m/%d')})"
+                    )
 
                 fig = go.Figure()
 
-                # 종가: 빨간 실선
+                # 종가: 빨간 실선 (전체 구간 — 현재가 포인트 포함)
                 for c in close_cols:
                     valid = df_chart[c].notna().sum()
                     if valid == 0:
@@ -561,22 +579,25 @@ if context_total is not None and len(context_total) > 0:
                         showlegend=True,
                     ))
 
-                # 이동평균선: 파란 계열 실선 + 10거래일 간격 포인트 마커
+                # 이동평균선: 거래일 1(마지막 RAW 행)까지만 표시
+                # 현재가 행이 추가된 경우 마지막 행 제외, 아닌 경우 전체 사용
+                df_ma = df_chart.iloc[:-1] if current_price_val is not None else df_chart
+
                 ma_colors = ["#1f77b4", "#17becf", "#636efa", "#00cc96"]
                 for i, c in enumerate(ma_cols):
-                    valid = df_chart[c].notna().sum()
+                    valid = df_ma[c].notna().sum()
                     if valid == 0:
                         st.warning(f"'{c}' 컬럼 값이 모두 비어 있습니다.")
                         continue
                     color = ma_colors[i % len(ma_colors)]
-                    marker_mask = df_chart[c].notna()
-                    marker_idx = df_chart[marker_mask].index[::10]
-                    marker_x = df_chart.loc[marker_idx, "_x_label"].tolist()
-                    marker_y = df_chart.loc[marker_idx, c].tolist()
+                    marker_mask = df_ma[c].notna()
+                    marker_idx = df_ma[marker_mask].index[::10]
+                    marker_x = df_ma.loc[marker_idx, "_x_label"].tolist()
+                    marker_y = df_ma.loc[marker_idx, c].tolist()
 
                     fig.add_trace(go.Scatter(
-                        x=df_chart["_x_label"],
-                        y=df_chart[c],
+                        x=df_ma["_x_label"],
+                        y=df_ma[c],
                         mode="lines",
                         name=c,
                         line=dict(color=color, width=1.5),
