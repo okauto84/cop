@@ -492,23 +492,50 @@ if context_total is not None and len(context_total) > 0:
         if context_raw_range is not None and not context_raw_range.empty:
             df_chart = context_raw_range.copy()
 
-            # X축: "거래일"/"날짜"/"일자" 포함 컬럼 → 없으면 첫 번째 컬럼
+            # 컬럼명 앞뒤 공백 제거 (시트에서 공백 포함된 헤더 대응)
+            df_chart.columns = [str(c).strip() for c in df_chart.columns]
+
+            # 디버그: RAW 컬럼 목록 확인용 expander
+            with st.expander("🔍 RAW 컬럼 목록 확인 (디버그)", expanded=False):
+                st.write("컬럼명:", df_chart.columns.tolist())
+                st.write("상위 3행:", df_chart.head(3))
+
+            # X축: "거래일"/"날짜"/"일자"/"date" 포함 컬럼 → 없으면 첫 번째 컬럼
             date_col = next(
-                (c for c in df_chart.columns if any(kw in str(c) for kw in ["거래일", "날짜", "일자", "date"])),
+                (c for c in df_chart.columns if any(kw in str(c).lower() for kw in ["거래일", "날짜", "일자", "date"])),
                 df_chart.columns[0]
             )
 
-            # Y축: "종가" 컬럼 + "이평" 포함 컬럼 수집
-            close_cols = [c for c in df_chart.columns if "종가" in str(c)]
-            ma_cols = [c for c in df_chart.columns if "이평" in str(c)]
+            # 종가 컬럼: "종가"/"close"/"종" 포함
+            close_cols = [c for c in df_chart.columns if any(kw in str(c).lower() for kw in ["종가", "close"])]
+
+            # 이동평균 컬럼: "이평"/"이동평균"/"ma" 포함 (대소문자 무관)
+            ma_keywords = ["이평", "이동평균", "ma(", "ma5", "ma10", "ma20", "ma50"]
+            ma_cols = [
+                c for c in df_chart.columns
+                if any(kw in str(c).lower() for kw in ma_keywords)
+            ]
+
             y_cols = close_cols + ma_cols
 
-            if y_cols:
-                # 쉼표 제거 후 숫자형 변환
-                for col in y_cols:
-                    df_chart[col] = pd.to_numeric(
-                        df_chart[col].astype(str).str.replace(",", ""), errors="coerce"
+            if not y_cols:
+                st.warning(
+                    f"종가/이동평균 컬럼을 찾지 못했습니다. "
+                    f"RAW 시트 컬럼명을 확인하세요: {df_chart.columns.tolist()}"
+                )
+            else:
+                def _to_numeric_col(series: pd.Series) -> pd.Series:
+                    """쉼표·공백·기타 비숫자 문자를 제거 후 float 변환"""
+                    return pd.to_numeric(
+                        series.astype(str)
+                            .str.strip()
+                            .str.replace(",", "", regex=False)
+                            .str.replace(" ", "", regex=False),
+                        errors="coerce"
                     )
+
+                for col in y_cols:
+                    df_chart[col] = _to_numeric_col(df_chart[col])
 
                 # 날짜 파싱 → 이전→최신 오름차순 정렬
                 df_chart[date_col] = pd.to_datetime(df_chart[date_col], errors="coerce")
@@ -521,22 +548,32 @@ if context_total is not None and len(context_total) > 0:
 
                 # 종가: 빨간 실선
                 for c in close_cols:
+                    valid = df_chart[c].notna().sum()
+                    if valid == 0:
+                        st.warning(f"'{c}' 컬럼 값이 모두 비어 있습니다.")
+                        continue
                     fig.add_trace(go.Scatter(
                         x=df_chart["_x_label"],
                         y=df_chart[c],
                         mode="lines",
                         name=c,
                         line=dict(color="red", width=2),
+                        showlegend=True,
                     ))
 
-                # 이동평균선: 파란 실선 + 10거래일 간격 포인트 마커
+                # 이동평균선: 파란 계열 실선 + 10거래일 간격 포인트 마커
                 ma_colors = ["#1f77b4", "#17becf", "#636efa", "#00cc96"]
                 for i, c in enumerate(ma_cols):
+                    valid = df_chart[c].notna().sum()
+                    if valid == 0:
+                        st.warning(f"'{c}' 컬럼 값이 모두 비어 있습니다.")
+                        continue
                     color = ma_colors[i % len(ma_colors)]
-                    marker_x = df_chart["_x_label"].iloc[::10].tolist()
-                    marker_y = df_chart[c].iloc[::10].tolist()
+                    marker_mask = df_chart[c].notna()
+                    marker_idx = df_chart[marker_mask].index[::10]
+                    marker_x = df_chart.loc[marker_idx, "_x_label"].tolist()
+                    marker_y = df_chart.loc[marker_idx, c].tolist()
 
-                    # 선
                     fig.add_trace(go.Scatter(
                         x=df_chart["_x_label"],
                         y=df_chart[c],
@@ -545,7 +582,6 @@ if context_total is not None and len(context_total) > 0:
                         line=dict(color=color, width=1.5),
                         showlegend=True,
                     ))
-                    # 10거래일 간격 포인트
                     fig.add_trace(go.Scatter(
                         x=marker_x,
                         y=marker_y,
@@ -559,13 +595,22 @@ if context_total is not None and len(context_total) > 0:
                     xaxis_title="거래일",
                     yaxis_title="가격",
                     legend_title="항목",
-                    margin=dict(l=0, r=0, t=30, b=0),
+                    showlegend=True,
+                    legend=dict(
+                        orientation="v",
+                        x=1.01,
+                        y=1,
+                        xanchor="left",
+                        yanchor="top",
+                        bgcolor="rgba(255,255,255,0.7)",
+                        bordercolor="lightgrey",
+                        borderwidth=1,
+                    ),
+                    margin=dict(l=0, r=120, t=30, b=0),
                     height=420,
                     xaxis=dict(tickangle=-45),
                 )
                 st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.info("종가/이평 컬럼을 찾을 수 없습니다.")
         else:
             st.info("RAW 데이터가 없습니다. Google Sheet를 먼저 불러오세요.")
 
