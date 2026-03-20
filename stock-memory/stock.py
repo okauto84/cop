@@ -500,7 +500,7 @@ if context_total is not None and len(context_total) > 0:
         st.markdown(table_html, unsafe_allow_html=True)
 
         # ── Objects 아래: 종가 + 이동평균선 꺾은선 차트 ─────────────────
-        st.markdown("##### 종가, 이동평균선 차트")
+        st.markdown("##### 종가, 이동평균선(현재 시점) 차트")
         if context_raw_range is not None and not context_raw_range.empty:
             df_chart = context_raw_range.copy()
 
@@ -620,6 +620,16 @@ if context_total is not None and len(context_total) > 0:
                         showlegend=False,
                     ))
 
+                # 현재가 수평 점선
+                shapes = []
+                if current_price_val is not None:
+                    shapes.append(dict(
+                        type="line",
+                        xref="paper", x0=0, x1=1,
+                        yref="y", y0=current_price_val, y1=current_price_val,
+                        line=dict(color="red", width=1.2, dash="dot"),
+                    ))
+
                 fig.update_layout(
                     xaxis_title="",
                     yaxis_title="",
@@ -635,6 +645,7 @@ if context_total is not None and len(context_total) > 0:
                         bordercolor="lightgrey",
                         borderwidth=1,
                     ),
+                    shapes=shapes,
                     margin=dict(l=0, r=0, t=60, b=0),
                     height=420,
                     xaxis=dict(tickangle=-45),
