@@ -31,7 +31,6 @@ except:
 
 # 사이드바 제거 후 사용하던 설정값 (메인에서 기본값으로 사용)
 output_method = "실시간 출력"
-small_model_name = "gpt-5-mini"
 model_name = "gpt-5.4"
 
 # 메인 화면
@@ -399,30 +398,6 @@ if context_total is not None and len(context_total) > 0:
         st.markdown("#### Objects")
         obj = sheet_objects_total[0]
 
-        # objects data 로드 후 '종목' key 값이 존재하면 한글 종목명으로 변환
-        try:
-            ticker_val = str(obj.get("종목", "")).strip()
-            if API_KEY and ticker_val:
-                _client_small = OpenAI(api_key=API_KEY)
-                _name_resp = _client_small.chat.completions.create(
-                    model=small_model_name,
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": (
-                                "종목코드를 보고 한국 주식시장 기준 "
-                                "공식 한글 종목명만 반환하라. "
-                                "다른 설명, 부연, 기호는 절대 쓰지 마라."
-                            ),
-                        },
-                        {"role": "user", "content": ticker_val},
-                    ],
-                )
-                korean_name = (_name_resp.choices[0].message.content or "").strip()
-                if korean_name:
-                    obj["종목"] = korean_name
-        except Exception:
-            pass
         bold_keys = {"이평 배열", "이평 분류(AI)", "거래량 배열", "거래량 분류(AI)", "종합 분류(AI)", "한줄 정리(AI)", "투자관점 정리(AI)"}
 
         def _parse_num(s):
