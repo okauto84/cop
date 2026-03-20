@@ -8,6 +8,7 @@ import re
 import json
 import html
 import plotly.express as px
+import plotly.graph_objects as go
 
 # 페이지 설정
 st.set_page_config(
@@ -498,8 +499,9 @@ if context_total is not None and len(context_total) > 0:
             )
 
             # Y축: "종가" 컬럼 + "이평" 포함 컬럼 수집
-            y_cols = [c for c in df_chart.columns if "종가" in str(c)]
-            y_cols += [c for c in df_chart.columns if "이평" in str(c)]
+            close_cols = [c for c in df_chart.columns if "종가" in str(c)]
+            ma_cols = [c for c in df_chart.columns if "이평" in str(c)]
+            y_cols = close_cols + ma_cols
 
             if y_cols:
                 # 쉼표 제거 후 숫자형 변환
@@ -507,20 +509,60 @@ if context_total is not None and len(context_total) > 0:
                     df_chart[col] = pd.to_numeric(
                         df_chart[col].astype(str).str.replace(",", ""), errors="coerce"
                     )
-                fig = px.line(
-                    df_chart,
-                    x=date_col,
-                    y=y_cols,
-                    labels={"value": "가격", "variable": "항목", date_col: "거래일"},
-                )
+
+                # 날짜 파싱 → 이전→최신 오름차순 정렬
+                df_chart[date_col] = pd.to_datetime(df_chart[date_col], errors="coerce")
+                df_chart = df_chart.dropna(subset=[date_col]).sort_values(date_col).reset_index(drop=True)
+
+                # X축 레이블: 연도 제외, MM/DD 형식
+                df_chart["_x_label"] = df_chart[date_col].dt.strftime("%m/%d")
+
+                fig = go.Figure()
+
+                # 종가: 빨간 실선
+                for c in close_cols:
+                    fig.add_trace(go.Scatter(
+                        x=df_chart["_x_label"],
+                        y=df_chart[c],
+                        mode="lines",
+                        name=c,
+                        line=dict(color="red", width=2),
+                    ))
+
+                # 이동평균선: 파란 실선 + 10거래일 간격 포인트 마커
+                ma_colors = ["#1f77b4", "#17becf", "#636efa", "#00cc96"]
+                for i, c in enumerate(ma_cols):
+                    color = ma_colors[i % len(ma_colors)]
+                    marker_x = df_chart["_x_label"].iloc[::10].tolist()
+                    marker_y = df_chart[c].iloc[::10].tolist()
+
+                    # 선
+                    fig.add_trace(go.Scatter(
+                        x=df_chart["_x_label"],
+                        y=df_chart[c],
+                        mode="lines",
+                        name=c,
+                        line=dict(color=color, width=1.5),
+                        showlegend=True,
+                    ))
+                    # 10거래일 간격 포인트
+                    fig.add_trace(go.Scatter(
+                        x=marker_x,
+                        y=marker_y,
+                        mode="markers",
+                        name=f"{c} (포인트)",
+                        marker=dict(color=color, size=6, symbol="circle"),
+                        showlegend=False,
+                    ))
+
                 fig.update_layout(
                     xaxis_title="거래일",
                     yaxis_title="가격",
                     legend_title="항목",
                     margin=dict(l=0, r=0, t=30, b=0),
                     height=420,
+                    xaxis=dict(tickangle=-45),
                 )
-                fig.update_xaxes(tickangle=-45)
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("종가/이평 컬럼을 찾을 수 없습니다.")
