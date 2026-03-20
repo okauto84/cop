@@ -488,7 +488,7 @@ if context_total is not None and len(context_total) > 0:
         st.markdown(table_html, unsafe_allow_html=True)
 
         # ── Objects 아래: 종가 + 이동평균선 꺾은선 차트 ─────────────────
-        st.markdown("#### 가격 / 이동평균선 차트")
+        st.markdown("##### 종가, 이동평균선 차트")
         if context_raw_range is not None and not context_raw_range.empty:
             df_chart = context_raw_range.copy()
 
@@ -555,12 +555,8 @@ if context_total is not None and len(context_total) > 0:
                         [df_chart, pd.DataFrame([new_row])], ignore_index=True
                     )
 
-                # X축 레이블: 연도 제외, MM/DD 형식 (마지막 행은 "현재" 표기)
+                # X축 레이블: 연도 제외, MM/DD 형식 (현재 날짜 포함 모두 동일 형식)
                 df_chart["_x_label"] = df_chart[date_col].dt.strftime("%m/%d")
-                if current_price_val is not None:
-                    df_chart.loc[df_chart.index[-1], "_x_label"] = (
-                        f"현재({current_ts.strftime('%m/%d')})"
-                    )
 
                 fig = go.Figure()
 
@@ -579,9 +575,9 @@ if context_total is not None and len(context_total) > 0:
                         showlegend=True,
                     ))
 
-                # 이동평균선: 거래일 1(마지막 RAW 행)까지만 표시
-                # 현재가 행이 추가된 경우 마지막 행 제외, 아닌 경우 전체 사용
-                df_ma = df_chart.iloc[:-1] if current_price_val is not None else df_chart
+                # 이동평균선: RAW data 거래일 1까지만 표시
+                # 현재가 행(+1) + 거래일 0(+1) 총 마지막 2행 제외
+                df_ma = df_chart.iloc[:-2] if current_price_val is not None else df_chart.iloc[:-1]
 
                 ma_colors = ["#1f77b4", "#17becf", "#636efa", "#00cc96"]
                 for i, c in enumerate(ma_cols):
