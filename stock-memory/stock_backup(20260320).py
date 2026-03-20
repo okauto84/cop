@@ -31,7 +31,7 @@ except:
 
 # 사이드바 제거 후 사용하던 설정값 (메인에서 기본값으로 사용)
 output_method = "실시간 출력"
-small_model_name = "gpt-5-mini"
+# model_name = "gpt-5-mini"
 model_name = "gpt-5.4"
 
 # 메인 화면
@@ -389,31 +389,6 @@ if context_total is not None and len(context_total) > 0:
         # 분류 실패 시 조용히 무시 (이평/거래량 분류 미설정)
         pass
 
-    # '종목' key 값을 한글 종목명으로 변환 (small_model_name API 호출)
-    try:
-        ticker_val = str(obj.get("종목", "")).strip()
-        if API_KEY and ticker_val:
-            _client_small = OpenAI(api_key=API_KEY)
-            _name_resp = _client_small.chat.completions.create(
-                model=small_model_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "종목코드 또는 종목명을 입력하면 한국 주식시장 기준 "
-                            "공식 한글 종목명만 반환하라. "
-                            "다른 설명, 부연, 기호는 절대 쓰지 마라."
-                        ),
-                    },
-                    {"role": "user", "content": ticker_val},
-                ],
-            )
-            korean_name = (_name_resp.choices[0].message.content or "").strip()
-            if korean_name:
-                obj["종목"] = korean_name
-    except Exception:
-        pass
-
     sheet_objects_total = [obj]
     if "sheet_objects_total_json" not in st.session_state:
         st.session_state.sheet_objects_total_json = []
@@ -634,8 +609,8 @@ if context_total is not None and len(context_total) > 0:
                     ))
 
                 fig.update_layout(
-                    xaxis_title="",
-                    yaxis_title="",
+                    xaxis_title="거래일",
+                    yaxis_title="가격",
                     legend_title="항목",
                     showlegend=True,
                     legend=dict(
