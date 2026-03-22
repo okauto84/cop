@@ -655,6 +655,102 @@ if context_total is not None and len(context_total) > 0:
         else:
             st.info("RAW 데이터가 없습니다. Google Sheet를 먼저 불러오세요.")
 
+        # ── 코스피 / RS 차트 (종가·이평 차트 바로 아래) ─────────────────
+        st.markdown("##### 코스피 / RS 차트")
+        if context_raw_range is not None and not context_raw_range.empty:
+            df_kr = context_raw_range.copy()
+            df_kr.columns = [str(c).strip() for c in df_kr.columns]
+
+            date_col_kr = next(
+                (c for c in df_kr.columns if any(kw in str(c).lower() for kw in ["거래일", "날짜", "일자", "date"])),
+                df_kr.columns[0]
+            )
+            kospi_cols = [c for c in df_kr.columns if "코스피" in str(c)]
+            rs_cols = [
+                c for c in df_kr.columns
+                if str(c).strip().upper() == "RS" or (str(c).strip().upper().startswith("RS") and len(str(c).strip()) <= 4)
+            ]
+
+            if not kospi_cols and not rs_cols:
+                st.warning(f"코스피/RS 컬럼을 찾지 못했습니다. RAW 시트 컬럼명을 확인하세요: {df_kr.columns.tolist()}")
+            else:
+                def _to_numeric_kr(series: pd.Series) -> pd.Series:
+                    return pd.to_numeric(
+                        series.astype(str).str.strip()
+                            .str.replace(",", "", regex=False)
+                            .str.replace(" ", "", regex=False),
+                        errors="coerce"
+                    )
+
+                for col in kospi_cols + rs_cols:
+                    df_kr[col] = _to_numeric_kr(df_kr[col])
+
+                df_kr[date_col_kr] = pd.to_datetime(df_kr[date_col_kr], errors="coerce")
+                df_kr = df_kr.dropna(subset=[date_col_kr]).sort_values(date_col_kr).reset_index(drop=True)
+                df_kr["_x_label"] = df_kr[date_col_kr].dt.strftime("%m/%d")
+
+                fig_kr = go.Figure()
+
+                for c in kospi_cols:
+                    if df_kr[c].notna().sum() == 0:
+                        continue
+                    fig_kr.add_trace(go.Scatter(
+                        x=df_kr["_x_label"],
+                        y=df_kr[c],
+                        mode="lines",
+                        name=c,
+                        line=dict(color="#2196F3", width=1.5),
+                        yaxis="y1",
+                    ))
+
+                for c in rs_cols:
+                    if df_kr[c].notna().sum() == 0:
+                        continue
+                    fig_kr.add_trace(go.Scatter(
+                        x=df_kr["_x_label"],
+                        y=df_kr[c],
+                        mode="lines",
+                        name=c,
+                        line=dict(color="#FF9800", width=2),
+                        yaxis="y2",
+                    ))
+
+                kospi_vals = pd.concat([df_kr[c] for c in kospi_cols if df_kr[c].notna().sum() > 0], ignore_index=True).dropna() if kospi_cols else pd.Series(dtype=float)
+                rs_vals = pd.concat([df_kr[c] for c in rs_cols if df_kr[c].notna().sum() > 0], ignore_index=True).dropna() if rs_cols else pd.Series(dtype=float)
+
+                kospi_range = [kospi_vals.min() * 0.995, kospi_vals.max() * 1.005] if not kospi_vals.empty else [None, None]
+                rs_range = [rs_vals.min() * 0.995, rs_vals.max() * 1.005] if not rs_vals.empty else [None, None]
+
+                fig_kr.update_layout(
+                    xaxis=dict(tickangle=-45),
+                    yaxis=dict(
+                        title="코스피",
+                        side="left",
+                        range=kospi_range if kospi_range[0] is not None else None,
+                        showgrid=True,
+                        gridcolor="rgba(200,200,200,0.3)",
+                    ),
+                    yaxis2=dict(
+                        title="RS",
+                        side="right",
+                        overlaying="y",
+                        range=rs_range if rs_range[0] is not None else None,
+                        showgrid=False,
+                    ),
+                    legend=dict(
+                        orientation="h",
+                        x=0, y=1.12,
+                        xanchor="left", yanchor="top",
+                        bgcolor="rgba(255,255,255,0.7)",
+                        bordercolor="lightgrey", borderwidth=1,
+                    ),
+                    margin=dict(l=0, r=0, t=60, b=0),
+                    height=320,
+                )
+                st.plotly_chart(fig_kr, use_container_width=True)
+        else:
+            st.info("RAW 데이터가 없습니다. Google Sheet를 먼저 불러오세요.")
+
     # RAW 시트 DataFrame 출력 (하단 유지)
     if context_raw_range is not None and not context_raw_range.empty:
         st.markdown("##### RAW Data")
