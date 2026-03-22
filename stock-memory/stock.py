@@ -653,25 +653,37 @@ if context_total is not None and len(context_total) > 0:
                 (c for c in df_kr.columns if any(kw in str(c).lower() for kw in ["거래일", "날짜", "일자", "date"])),
                 df_kr.columns[0]
             )
-            kospi_cols = [c for c in df_kr.columns if "코스피" in str(c)]
+            kospi_cols = [
+                c for c in df_kr.columns
+                if "코스피" in str(c) or "kospi" in str(c).lower()
+            ]
             rs_cols = [
                 c for c in df_kr.columns
-                if str(c).strip().upper() == "RS" or (str(c).strip().upper().startswith("RS") and len(str(c).strip()) <= 4)
+                if str(c).strip().upper() == "RS"
+                or (str(c).strip().upper().startswith("RS") and len(str(c).strip()) <= 4)
             ]
 
             if not kospi_cols and not rs_cols:
                 st.warning(f"코스피/RS 컬럼을 찾지 못했습니다. RAW 시트 컬럼명을 확인하세요: {df_kr.columns.tolist()}")
+            elif not kospi_cols:
+                st.warning(f"KOSPI 컬럼을 찾지 못했습니다. RAW 시트 컬럼명을 확인하세요: {df_kr.columns.tolist()}")
             else:
                 def _to_numeric_kr(series: pd.Series) -> pd.Series:
                     return pd.to_numeric(
                         series.astype(str).str.strip()
                             .str.replace(",", "", regex=False)
-                            .str.replace(" ", "", regex=False),
+                            .str.replace(" ", "", regex=False)
+                            .str.replace("%", "", regex=False),
                         errors="coerce"
                     )
 
                 for col in kospi_cols + rs_cols:
                     df_kr[col] = _to_numeric_kr(df_kr[col])
+
+                # KOSPI 컬럼에 유효 값이 없으면 경고 표시
+                for col in kospi_cols:
+                    if df_kr[col].notna().sum() == 0:
+                        st.warning(f"'{col}' 컬럼이 모두 비어 있거나 숫자로 변환할 수 없습니다. 샘플 값: {list(context_raw_range[col].head(3))}")
 
                 df_kr[date_col_kr] = pd.to_datetime(df_kr[date_col_kr], errors="coerce")
                 df_kr = df_kr.dropna(subset=[date_col_kr]).sort_values(date_col_kr).reset_index(drop=True)
@@ -712,7 +724,7 @@ if context_total is not None and len(context_total) > 0:
                 fig_kr.update_layout(
                     xaxis=dict(tickangle=-45),
                     yaxis=dict(
-                        title="코스피",
+                        title="KOSPI",
                         side="left",
                         range=kospi_range if kospi_range[0] is not None else None,
                         showgrid=True,
