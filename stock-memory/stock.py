@@ -301,26 +301,21 @@ if context_total is not None and len(context_total) > 0:
                 "🔍 [관망] 확실한 신호 대기",
             ]
 
-            # 원본 종목코드 보존 (종목명 변환 후 "(종목코드)" 접미 표시용)
-            _ticker_code = str(obj.get("종목", "")).strip()
-
             system_msg = (
                 "당신은 마크 미너비니, 윌리엄 오닐을 존경하고 따르는 수제자로써, 추세 추종 돌파 매매 및 VCP 관점으로하는 전문 주식 투자자이다. "
-                "아래 Total_Object 객체 정보(요약 데이터)와 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량)를 함께 분석하라. "
-                "다음 여섯 가지를 작성해야 한다.\n\n"
+                "아래 Total_Object 객체 정보(요약 데이터)와 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량, 코스피, RS)를 함께 분석하라. "
+                "다음 다섯 가지를 작성해야 한다.\n\n"
                 "1) 이평 분류(AI): 이동평균선 배열과 추세를 기준으로 아래 [이평 분류표] 중 1개 선택\n"
                 "2) 거래량 분류(AI): 거래량(1) 이상 및 거래량(평균)을 기준으로 아래 [거래량 분류표] 중 1개 선택. 단, 거래량(현재)는 판단에서 제외\n"
                 "3) 종합 분류(AI): 현재가, 이평, 거래량 등을 모두 고려한 종합 판단으로 [종합 분류표] 중 1개 선택\n"
                 "4) 요약 정리(AI): 해당 종목에 대한 주식 흐름에 대해서 너의 정보(지식)와 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량)를 함께 종합 분석하여 150자 수준으로 요약 (한글 기준, 공백·기호 포함 150자 수준)\n"
-                "5) 투자관점 정리(AI): 해당 종목에 대한 현재의 뉴스 기사, 시장 상황, KOSPI 지수, RS 지수, 현재가, 거래량(현재) 등과 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량)를 함께 종합하여 분석하여 투자(매매)관점으로 액션에 대해서 300자 수준으로 요약 (한글 기준, 공백·기호 포함 150자 수준)\n"
-                "6) 종목명(stock_name): Total_Object의 '종목' 값(KRX 종목코드)을 보고 한국 주식시장 기준 공식 한글 종목명만 반환하라. 알 수 없으면 빈 문자열로 반환\n\n"
+                "5) 투자관점 정리(AI): 해당 종목에 대한 현재의 뉴스 기사, 시장 상황, 현재 KOSPI 지수, 현재가, 거래량 등과 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량, 코스피, RS)를 함께 종합하여 분석하여 투자(매매)관점으로 액션에 대해서 300자 수준으로 요약 (한글 기준, 공백·기호 포함 150자 수준)\n\n"
                 "반드시 아래 JSON 형식으로만 답하라.\n"
                 '{\"ma_class\": \"<이평 분류표의 라벨 중 하나>\", '
                 '\"volume_class\": \"<거래량 분류표의 라벨 중 하나>\", '
                 '\"total_class\": \"<종합 분류표의 라벨 중 하나>\", '
                 '\"one_line_summary\": \"<150자 수준으로 요약 정리>\", '
-                '\"total_summary\": \"<300자 수준으로 투자관점으로 정리>\", '
-                '\"stock_name\": \"<한글 종목명>\"}\n\n'
+                '\"total_summary\": \"<300자 수준으로 투자관점으로 정리>\"}\n\n'
                 "다른 설명, 문장, 코멘트는 절대 쓰지 마라.\n\n"
                 "[이평 분류표]\n- "
                 + "\n- ".join(ma_class_labels)
@@ -356,14 +351,12 @@ if context_total is not None and len(context_total) > 0:
                 total_raw_label = str(parsed.get("total_class", "")).strip()
                 one_line_raw = str(parsed.get("one_line_summary", "")).strip()
                 total_raw = str(parsed.get("total_summary", "")).strip()
-                stock_name_raw = str(parsed.get("stock_name", "")).strip()
             except Exception:
                 ma_raw_label = raw_content
                 vol_raw_label = raw_content
                 total_raw_label = raw_content
                 one_line_raw = ""
                 total_raw = ""
-                stock_name_raw = ""
 
             for label in ma_class_labels:
                 if label in ma_raw_label or ma_raw_label == label:
@@ -388,11 +381,6 @@ if context_total is not None and len(context_total) > 0:
                 obj["한줄 정리(AI)"] = one_line_raw[:150] if len(one_line_raw) > 150 else one_line_raw
             if total_raw:
                 obj["투자관점 정리(AI)"] = total_raw[:300] if len(total_raw) > 300 else total_raw
-            # 종목 value → "종목명(종목코드)" 형식으로 업데이트
-            if stock_name_raw and _ticker_code:
-                obj["종목"] = f"{stock_name_raw}({_ticker_code})"
-            elif stock_name_raw:
-                obj["종목"] = stock_name_raw
 
             # 프롬프트 내용을 세션에 저장하여 화면 하단에 표시할 수 있도록 함
             st.session_state["classification_system_prompt"] = system_msg
@@ -816,7 +804,7 @@ if prompt := st.chat_input("질문해보세요!"):
         }
         system_prompt = (
             "당신은 마크 미너비니, 윌리엄 오닐을 존경하고 따르는 수제자로써, 추세 추종 돌파 매매 및 VCP 관점으로 하는 전문 주식 투자자로서, 아래 objects / RAW data를 참고하여 질문에 답변하고 조언을 하시오. "
-            "Objects 데이터는 종목별 요약 객체 목록이며, RAW 데이터는 거래일 날자별 종가, 이동평균선, 거래량, 거래량, 거래량(평균)의 원천 데이터 테이블입니다. "
+            "Objects 데이터는 종목별 요약 객체 목록이며, RAW 데이터는 거래일 날자별 종가, 이동평균선, 거래량, 거래량, 거래량(평균), KOSPI, RS의 원천 데이터 테이블입니다. "
             "이평 분류(AI), 거래량 분류(AI), 종합 분류(AI) 값 등에 구애받지 말고, 너의 정보(지식)과 두 데이터를 함께 고려해 사용자 질의에 맞게 구체적으로 답변하세요. \n\n"
             "[참고 데이터]\n"
             + (json.dumps(objects_data, ensure_ascii=False, indent=2) if objects_data else "(데이터 없음 - 먼저 Google Sheet를 불러오세요.)")
