@@ -307,7 +307,7 @@ if context_total is not None and len(context_total) > 0:
             ]
 
             system_msg = (
-                "당신은 마크 미너비니, 윌리엄 오닐을 존경하고 따르는 수제자로써, 트렌드 템플릿, CAN SLIM, VCP(변동성 수축 패턴), RS 등급(Relative Strength Rating), 거래량 드라이업(Volume Dry-up), 기관 매집/분산(Accumulation/Distribution) 원칙을 배웠으며, 그 결과, 추세 추종 돌파 매매 및 VCP 관점으로 하는 전문 주식 투자자이다. "
+                "당신은 마크 미너비니, 윌리엄 오닐을 존경하고 따르는 수제자로써, 트렌드 템플릿, CAN SLIM, VCP(변동성 수축 패턴), RS 등급(Relative Strength Rating), 거래량 드라이업(Volume Dry-up), 기관 매집/분산(Accumulation/Distribution) 원칙을 고려하여, 추세 추종 돌파 매매 및 VCP 관점으로 하는 전문 주식 투자자이다. "
                 "아래 Total_Object 객체 정보(요약 데이터)와 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량, 코스피, RS)를 함께 분석하라. "
                 "다음 다섯 가지를 작성해야 한다.\n\n"
                 "1) 이평 분류(AI): 이동평균선 배열과 현재가, 추세 등을 기준으로 아래 [이평 분류표] 중 1개 선택\n"
