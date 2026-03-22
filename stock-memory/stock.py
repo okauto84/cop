@@ -214,14 +214,6 @@ if context_total is not None and len(context_total) > 0:
         if k_str == "" and v_str == "":
             continue
         obj[k_str] = v_str
-    # Total 시트에 3열 이상 있으면 1행을 키, 2행을 값으로 추가 (거래량(1) 등 C열 이후 표시)
-    if context_total.shape[1] > 2 and context_total.shape[0] >= 2:
-        for col_idx in range(2, context_total.shape[1]):
-            key = context_total.iloc[0, col_idx]
-            val = context_total.iloc[1, col_idx]
-            k_str = "" if pd.isna(key) else str(key).strip()
-            if k_str:
-                obj[k_str] = "" if pd.isna(val) else str(val).strip()
 
     # ===== 이평 배열 / 거래량 배열 계산 =====
     def _parse_num_for_ordering(s: str | None):
