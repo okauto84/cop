@@ -316,9 +316,9 @@ if context_total is not None and len(context_total) > 0:
                 "4) 요약 정리(AI): 해당 종목에 대한 주식 흐름에 대해서 너의 정보(지식)와 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량, KOSPI, RS)를 함께 종합 분석하여 150자 수준으로 요약 (한글 기준, 공백·기호 포함 150자 수준)\n"
                 "5) 투자관점 정리(AI): 해당 종목에 대한 현재의 뉴스 기사, 시장 상황, 현재 KOSPI 지수, 현재가, 거래량 등과 RAW_Table 시계열 데이터(날짜, 종가, 이동평균선, 거래량, 코스피, RS)를 함께 종합하여 분석하여 투자(매매)관점으로 액션에 대해서 300자 수준으로 요약 (한글 기준, 공백·기호 포함 150자 수준)\n\n"
                 "반드시 아래 JSON 형식으로만 답하라.\n"
-                '{\"ma_class\": \"<이평 분류표의 라벨 중 하나>\", '
-                '\"volume_class\": \"<거래량 분류표의 라벨 중 하나>\", '
-                '\"total_class\": \"<종합 분류표의 라벨 중 하나>\", '
+                '{\"ma_class\": \"<[이평 분류표]의 라벨 중 하나>\", '
+                '\"volume_class\": \"<[거래량 분류표]의 라벨 중 하나>\", '
+                '\"total_class\": \"<[종합 분류표]의 라벨 중 하나>\", '
                 '\"one_line_summary\": \"<150자 수준으로 요약 정리>\", '
                 '\"total_summary\": \"<300자 수준으로 투자관점으로 정리>\"}\n\n'
                 "다른 설명, 문장, 코멘트는 절대 쓰지 마라.\n\n"
@@ -387,9 +387,6 @@ if context_total is not None and len(context_total) > 0:
             if total_raw:
                 obj["투자관점 정리(AI)"] = total_raw[:300] if len(total_raw) > 300 else total_raw
 
-            # 프롬프트 내용을 세션에 저장하여 화면 하단에 표시할 수 있도록 함
-            st.session_state["classification_system_prompt"] = system_msg
-            st.session_state["classification_user_prompt"] = user_msg
     except Exception:
         # 분류 실패 시 조용히 무시 (이평/거래량 분류 미설정)
         pass
@@ -760,18 +757,6 @@ if context_total is not None and len(context_total) > 0:
     if context_raw_range is not None and not context_raw_range.empty:
         st.markdown("##### RAW Data")
         st.dataframe(context_raw_range)
-
-    # OpenAI 분류 프롬프트 출력 (RAW Data 표 아래)
-    sys_prompt = st.session_state.get("classification_system_prompt", "")
-    usr_prompt = st.session_state.get("classification_user_prompt", "")
-    if sys_prompt or usr_prompt:
-        with st.expander("📋 OpenAI 분류 프롬프트 (최종 전송 내용)", expanded=False):
-            if sys_prompt:
-                st.markdown("**[System]**")
-                st.text(sys_prompt)
-            if usr_prompt:
-                st.markdown("**[User]**")
-                st.text(usr_prompt)
 else:
     st.info("Google Sheet를 불러오기 클릭하면 여기에 내용이 표시됩니다.")
 
