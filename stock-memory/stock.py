@@ -138,13 +138,14 @@ if load_clicked:
             st.session_state.sheet_table_total = sheet_table_total
             st.session_state.sheet_table_raw = sheet_table_raw if sheet_table_raw is not None else pd.DataFrame()
 
-            # RAW 시트에서 A1부터 52행까지 전체 열을 잘라 A1 행을 헤더로 사용하는 DataFrame 생성 (거래량(1) 등 모든 열 포함)
+            # RAW 시트에서 A열~H열(최대 8열)의 모든 행을 읽어 A1 행을 헤더로 사용하는 DataFrame 생성
             raw_df = st.session_state.sheet_table_raw
             raw_range_df = pd.DataFrame()
             if raw_df is not None and not raw_df.empty:
-                # 전체 열 사용(거래량(1) 등 포함), 1행~52행 → index 기준 0~51
-                raw_slice = raw_df.iloc[0:52, :].copy()
-                # 첫 행(원래 A1:F1)을 헤더로 사용하되, 중복 헤더는 _1, _2 ... 를 붙여 유니크하게 만든다.
+                # A열~H열(인덱스 0~7)까지, 전체 행 사용
+                n_cols = min(8, raw_df.shape[1])
+                raw_slice = raw_df.iloc[:, :n_cols].copy()
+                # 첫 행(원래 A1:H1)을 헤더로 사용하되, 중복 헤더는 _1, _2 ... 를 붙여 유니크하게 만든다.
                 header_row = raw_slice.iloc[0].astype(str).str.strip().tolist()
                 seen: dict[str, int] = {}
                 unique_headers: list[str] = []
