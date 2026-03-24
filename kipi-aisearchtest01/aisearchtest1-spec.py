@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import base64
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 from pathlib import Path
 from PIL import Image
@@ -181,6 +183,11 @@ div[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-o
 </style>
 """, unsafe_allow_html=True)
 
+try:
+    _script_dir = Path(__file__).resolve().parent
+except NameError:
+    _script_dir = Path.cwd()
+
 # 좌측: 공보 | 우측: AI분석 (동시 표시)
 left_col, right_col = st.columns(2)
 
@@ -221,10 +228,6 @@ with right_col:
     st.markdown("### 💡 도면")
 
     # ./data 폴더 이미지 파일 목록 (스크립트 위치 기준, exec 시 __file__ 전달됨)
-    try:
-        _script_dir = Path(__file__).resolve().parent
-    except NameError:
-        _script_dir = Path.cwd()
     _data_dir = _script_dir / "data"
     _img_ext = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
     _image_files = []
@@ -308,6 +311,17 @@ with right_col:
 with left_col:
     # 제목 영역 + 분류코드
     st.markdown("### 💡 특허 공보")
+    _gazette_pdf = _script_dir / "pdf" / "1020160184354A.pdf"
+    if _gazette_pdf.is_file():
+        _pdf_b64 = base64.standard_b64encode(_gazette_pdf.read_bytes()).decode("ascii")
+        _pdf_html = (
+            f'<iframe title="특허 공보 PDF" src="data:application/pdf;base64,{_pdf_b64}" '
+            'width="100%" height="100%" style="min-height:520px;border:none;display:block;"></iframe>'
+        )
+        components.html(_pdf_html, height=560, scrolling=True)
+    else:
+        st.warning(f"PDF를 찾을 수 없습니다: `{_gazette_pdf}` (`./pdf/1020160184354A.pdf` 확인)")
+
     st.markdown(
         '<div class="gazette-title-ko">전자 소자 패키지</div>'
         '<div class="gazette-title-en">Electronic device package</div>'
