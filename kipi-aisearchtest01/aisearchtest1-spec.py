@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import base64
+import importlib.util
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -33,16 +33,69 @@ except ImportError:
     GAZETTE_SYMBOLS = []
     GAZETTE_DETAIL = ""
 
+# PDF.js(components.html)로 넣을 수 있는 대략적 상한 — 초과 시 PyMuPDF 설치 안내
+_PDFJS_EMBED_MAX_BYTES = 5 * 1024 * 1024
+_PDFJS_CDN_VER = "2.16.105"
 
-def display_pdf(file_path):
-    """로컬 PDF를 읽어 base64로 임베드한 iframe으로 표시 (브라우저 기본 PDF 뷰어)."""
-    with open(file_path, "rb") as f:
-        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
-    pdf_display = (
-        f'<iframe src="data:application/pdf;base64,{base64_pdf}" '
-        'width="100%" height="800" type="application/pdf"></iframe>'
-    )
-    st.markdown(pdf_display, unsafe_allow_html=True)
+
+def _display_pdf_pymupdf(pdf_bytes: bytes, zoom: float = 1.35) -> None:
+    import fitz  # PyMuPDF
+
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    try:
+        mat = fitz.Matrix(zoom, zoom)
+        for i in range(len(doc)):
+            page = doc.load_page(i)
+            pix = page.get_pixmap(matrix=mat, alpha=False)
+            st.image(pix.tobytes("png"), use_container_width=True)
+    finally:
+        doc.close()
+
+
+def _display_pdf_pdfjs_components(pdf_bytes: bytes, height: int = 760) -> None:
+    """Chrome이 막는 data: PDF iframe 대신, PDF.js로 캔버스 렌더링 (components.html, CDN 필요)."""
+    import base64
+
+    import streamlit.components.v1 as components
+
+    b64 = base64.standard_b64encode(pdf_bytes).decode("ascii")
+    base = f"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/{_PDFJS_CDN_VER}"
+    html = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"/>
+<style>body{{margin:0;background:#525659;}} #pdf-pages canvas{{display:block;margin:0 auto 8px auto;box-shadow:0 1px 4px rgba(0,0,0,.4);}}</style>
+<script src="{base}/pdf.min.js"></script>
+</head><body>
+<div id="err" style="color:#fec;padding:10px;font-family:sans-serif;font-size:13px;"></div>
+<div id="pdf-pages"></div>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "{base}/pdf.worker.min.js";
+const b64 = "{b64}";
+(async function () {{
+  const el = document.getElementById("err");
+  try {{
+    const raw = atob(b64);
+    const data = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) data[i] = raw.charCodeAt(i);
+    const pdf = await pdfjsLib.getDocument({{ data: data }}).promise;
+    const container = document.getElementById("pdf-pages");
+    const scale = 1.25;
+    for (let p = 1; p <= pdf.numPages; p++) {{
+      const page = await pdf.getPage(p);
+      const vp = page.getViewport({{ scale: scale }});
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.height = vp.height;
+      canvas.width = vp.width;
+      await page.render({{ canvasContext: ctx, viewport: vp }}).promise;
+      container.appendChild(canvas);
+    }}
+  }} catch (e) {{
+    el.textContent = "PDF 로드 실패: " + (e && e.message ? e.message : e);
+  }}
+}})();
+</script>
+</body></html>"""
+    components.html(html, height=height, scrolling=True)
 
 
 # AI분석 탭 - 발명 3요소 블록 스타일
@@ -325,9 +378,54 @@ with left_col:
     _gazette_pdf = _script_dir / "pdf" / "1020160184354A.pdf"
     if _gazette_pdf.is_file():
         try:
-            display_pdf(_gazette_pdf)
-        except FileNotFoundError:
-            st.error("PDF 파일을 찾을 수 없습니다. 경로를 확인해 주세요.")
+            _pdf_bytes = _gazette_pdf.read_bytes()
+        except OSError:
+            st.error("PDF 파일을 읽을 수 없습니다. 경로·권한을 확인해 주세요.")
+        else:
+            if importlib.util.find_spec("fitz") is not None:
+                try:
+                    _display_pdf_pymupdf(_pdf_bytes)
+                except Exception as e:
+                    st.error(f"PyMuPDF로 PDF를 표시하지 못했습니다: {e}")
+                    st.download_button(
+                        label="원본 PDF 다운로드",
+                        data=_pdf_bytes,
+                        file_name=_gazette_pdf.name,
+                        mime="application/pdf",
+                        key="dl_gazette_pdf_err",
+                    )
+                else:
+                    st.download_button(
+                        label="원본 PDF 다운로드",
+                        data=_pdf_bytes,
+                        file_name=_gazette_pdf.name,
+                        mime="application/pdf",
+                        key="dl_gazette_pdf",
+                    )
+            elif len(_pdf_bytes) <= _PDFJS_EMBED_MAX_BYTES:
+                st.caption(
+                    "PyMuPDF가 없어 **PDF.js**(CDN)로 표시합니다. 오프라인·CDN 차단 시 `pip install pymupdf` 권장."
+                )
+                _display_pdf_pdfjs_components(_pdf_bytes)
+                st.download_button(
+                    label="원본 PDF 다운로드",
+                    data=_pdf_bytes,
+                    file_name=_gazette_pdf.name,
+                    mime="application/pdf",
+                    key="dl_gazette_pdf_js",
+                )
+            else:
+                st.warning(
+                    f"PDF 크기({len(_pdf_bytes) // (1024 * 1024)}MB)가 커서 브라우저 임베드 한도를 넘습니다. "
+                    "`pip install pymupdf` 후 다시 실행해 주세요."
+                )
+                st.download_button(
+                    label="원본 PDF 다운로드",
+                    data=_pdf_bytes,
+                    file_name=_gazette_pdf.name,
+                    mime="application/pdf",
+                    key="dl_gazette_pdf_large",
+                )
     else:
         st.warning(f"PDF를 찾을 수 없습니다: `{_gazette_pdf}` (`./pdf/1020160184354A.pdf` 확인)")
 
