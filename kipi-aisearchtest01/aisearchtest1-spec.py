@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import base64
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -31,6 +32,18 @@ except ImportError:
     GAZETTE_DRAWING_DESC_LINES = []
     GAZETTE_SYMBOLS = []
     GAZETTE_DETAIL = ""
+
+
+def display_pdf(file_path):
+    """로컬 PDF를 읽어 base64로 임베드한 iframe으로 표시 (브라우저 기본 PDF 뷰어)."""
+    with open(file_path, "rb") as f:
+        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+    pdf_display = (
+        f'<iframe src="data:application/pdf;base64,{base64_pdf}" '
+        'width="100%" height="800" type="application/pdf"></iframe>'
+    )
+    st.markdown(pdf_display, unsafe_allow_html=True)
+
 
 # AI분석 탭 - 발명 3요소 블록 스타일
 st.markdown("""
@@ -311,42 +324,10 @@ with left_col:
     st.markdown("### 💡 특허 공보")
     _gazette_pdf = _script_dir / "pdf" / "1020160184354A.pdf"
     if _gazette_pdf.is_file():
-        # Chrome 등은 iframe + data:application/pdf URL을 차단함 → PyMuPDF로 페이지를 래스터화해 표시
         try:
-            import fitz  # PyMuPDF
-        except ImportError:
-            st.error(
-                "PDF 뷰어 표시에 **PyMuPDF**가 필요합니다. 터미널에서 "
-                "`pip install pymupdf` 후 다시 실행해 주세요."
-            )
-            st.download_button(
-                label="원본 PDF 다운로드",
-                data=_gazette_pdf.read_bytes(),
-                file_name=_gazette_pdf.name,
-                mime="application/pdf",
-                key="dl_gazette_pdf_no_fitz",
-            )
-        else:
-            _pdf_zoom = 1.35
-            _doc = fitz.open(_gazette_pdf)
-            try:
-                _mat = fitz.Matrix(_pdf_zoom, _pdf_zoom)
-                for _pi in range(_doc.page_count):
-                    _page = _doc.load_page(_pi)
-                    _pix = _page.get_pixmap(matrix=_mat, alpha=False)
-                    st.image(
-                        _pix.tobytes("png"),
-                        use_container_width=True,
-                    )
-            finally:
-                _doc.close()
-            st.download_button(
-                label="원본 PDF 다운로드",
-                data=_gazette_pdf.read_bytes(),
-                file_name=_gazette_pdf.name,
-                mime="application/pdf",
-                key="dl_gazette_pdf",
-            )
+            display_pdf(_gazette_pdf)
+        except FileNotFoundError:
+            st.error("PDF 파일을 찾을 수 없습니다. 경로를 확인해 주세요.")
     else:
         st.warning(f"PDF를 찾을 수 없습니다: `{_gazette_pdf}` (`./pdf/1020160184354A.pdf` 확인)")
 
