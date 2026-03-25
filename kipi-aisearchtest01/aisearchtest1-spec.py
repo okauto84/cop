@@ -244,6 +244,49 @@ div[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-o
 .gazette-claim-btns { font-size: 0.8rem; }
 .gazette-claim-item { margin-bottom: 0.5rem; padding: 0.5rem; background: white; border-radius: 6px; border: 1px solid #eee; }
 .gazette-claim-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+/* 구조 탭: 카드 제목 목차 트리 */
+.gazette-tree-wrap {
+    background: #f5f7fa;
+    border: 1px solid #e3e8ef;
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem 0.75rem;
+    margin-bottom: 0.65rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+.gazette-tree-title {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #546e7a;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.45rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid #dde4ec;
+}
+.gazette-tree-root { list-style: none; margin: 0; padding: 0; }
+.gazette-tree-root > li { padding: 0.12rem 0; }
+.gazette-tree-root ul {
+    list-style: none;
+    margin: 0.2rem 0 0 0;
+    padding: 0 0 0 0.85rem;
+    border-left: 2px solid #cfd8dc;
+}
+.gazette-tree-root ul li {
+    position: relative;
+    padding: 0.1rem 0 0.1rem 0.65rem;
+}
+.gazette-tree-root ul li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.72em;
+    width: 0.5rem;
+    margin-left: -0.85rem;
+    border-top: 2px solid #cfd8dc;
+}
+.gazette-tree-node { color: #263238; }
+.gazette-tree-node.muted { color: #78909c; font-style: italic; font-size: 0.92em; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -441,6 +484,36 @@ with left_col:
             '<span class="gazette-tag gazette-tag-cpc">H01L 25/10</span>'
             '<span class="gazette-tag gazette-tag-cpc">H01L 23/00</span>'
             '</div>',
+            unsafe_allow_html=True,
+        )
+
+        _n_claims = len(GAZETTE_CLAIMS)
+        if _n_claims:
+            _claim_tree_sub = "".join(
+                f'<li><span class="gazette-tree-node">청구항 {i}</span></li>'
+                for i in range(1, _n_claims + 1)
+            )
+        else:
+            _claim_tree_sub = (
+                '<li><span class="gazette-tree-node muted">(항목 없음)</span></li>'
+            )
+        st.markdown(
+            '<div class="gazette-tree-wrap">'
+            '<div class="gazette-tree-title">목차 · 구조</div>'
+            '<ul class="gazette-tree-root">'
+            '<li><span class="gazette-tree-node">📋 서지 정보</span></li>'
+            '<li><span class="gazette-tree-node">📄 초록</span></li>'
+            '<li><span class="gazette-tree-node">📌 청구항</span>'
+            f'<ul>{_claim_tree_sub}</ul></li>'
+            '<li><span class="gazette-tree-node">🔬 기술분야</span></li>'
+            '<li><span class="gazette-tree-node">📖 배경기술</span></li>'
+            '<li><span class="gazette-tree-node">🎯 해결하고자 하는 과제</span></li>'
+            '<li><span class="gazette-tree-node">⚙️ 해결수단</span></li>'
+            '<li><span class="gazette-tree-node">⭐ 효과</span></li>'
+            '<li><span class="gazette-tree-node">🖼️ 도면의 간단한 설명</span></li>'
+            '<li><span class="gazette-tree-node">📝 발명의 상세한 설명</span></li>'
+            '<li><span class="gazette-tree-node">🔢 부호의 설명</span></li>'
+            "</ul></div>",
             unsafe_allow_html=True,
         )
 
