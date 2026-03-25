@@ -373,163 +373,155 @@ with right_col:
 
 # ========== 좌측: 공보 ==========
 with left_col:
-    # 제목 영역 + 분류코드
-    st.markdown("### 💡 특허 공보")
-    _gazette_pdf = _script_dir / "pdf" / "1020160184354A.pdf"
-    if _gazette_pdf.is_file():
-        try:
-            _pdf_bytes = _gazette_pdf.read_bytes()
-        except OSError:
-            st.error("PDF 파일을 읽을 수 없습니다. 경로·권한을 확인해 주세요.")
-        else:
-            if importlib.util.find_spec("fitz") is not None:
-                try:
-                    _display_pdf_pymupdf(_pdf_bytes)
-                except Exception as e:
-                    st.error(f"PyMuPDF로 PDF를 표시하지 못했습니다: {e}")
+    st.markdown("### 💡 특허 공보(XML 뷰어)")
+    _tab_orig, _tab_struct = st.tabs(["원본", "구조"])
+
+    with _tab_orig:
+        _gazette_pdf = _script_dir / "pdf" / "1020160184354A.pdf"
+        if _gazette_pdf.is_file():
+            try:
+                _pdf_bytes = _gazette_pdf.read_bytes()
+            except OSError:
+                st.error("PDF 파일을 읽을 수 없습니다. 경로·권한을 확인해 주세요.")
+            else:
+                if importlib.util.find_spec("fitz") is not None:
+                    try:
+                        _display_pdf_pymupdf(_pdf_bytes)
+                    except Exception as e:
+                        st.error(f"PyMuPDF로 PDF를 표시하지 못했습니다: {e}")
+                        st.download_button(
+                            label="원본 PDF 다운로드",
+                            data=_pdf_bytes,
+                            file_name=_gazette_pdf.name,
+                            mime="application/pdf",
+                            key="dl_gazette_pdf_err",
+                        )
+                    else:
+                        st.download_button(
+                            label="원본 PDF 다운로드",
+                            data=_pdf_bytes,
+                            file_name=_gazette_pdf.name,
+                            mime="application/pdf",
+                            key="dl_gazette_pdf",
+                        )
+                elif len(_pdf_bytes) <= _PDFJS_EMBED_MAX_BYTES:
+                    st.caption(
+                        "PyMuPDF가 없어 **PDF.js**(CDN)로 표시합니다. 오프라인·CDN 차단 시 `pip install pymupdf` 권장."
+                    )
+                    _display_pdf_pdfjs_components(_pdf_bytes)
                     st.download_button(
                         label="원본 PDF 다운로드",
                         data=_pdf_bytes,
                         file_name=_gazette_pdf.name,
                         mime="application/pdf",
-                        key="dl_gazette_pdf_err",
+                        key="dl_gazette_pdf_js",
                     )
                 else:
+                    st.warning(
+                        f"PDF 크기({len(_pdf_bytes) // (1024 * 1024)}MB)가 커서 브라우저 임베드 한도를 넘습니다. "
+                        "`pip install pymupdf` 후 다시 실행해 주세요."
+                    )
                     st.download_button(
                         label="원본 PDF 다운로드",
                         data=_pdf_bytes,
                         file_name=_gazette_pdf.name,
                         mime="application/pdf",
-                        key="dl_gazette_pdf",
+                        key="dl_gazette_pdf_large",
                     )
-            elif len(_pdf_bytes) <= _PDFJS_EMBED_MAX_BYTES:
-                st.caption(
-                    "PyMuPDF가 없어 **PDF.js**(CDN)로 표시합니다. 오프라인·CDN 차단 시 `pip install pymupdf` 권장."
-                )
-                _display_pdf_pdfjs_components(_pdf_bytes)
-                st.download_button(
-                    label="원본 PDF 다운로드",
-                    data=_pdf_bytes,
-                    file_name=_gazette_pdf.name,
-                    mime="application/pdf",
-                    key="dl_gazette_pdf_js",
-                )
-            else:
-                st.warning(
-                    f"PDF 크기({len(_pdf_bytes) // (1024 * 1024)}MB)가 커서 브라우저 임베드 한도를 넘습니다. "
-                    "`pip install pymupdf` 후 다시 실행해 주세요."
-                )
-                st.download_button(
-                    label="원본 PDF 다운로드",
-                    data=_pdf_bytes,
-                    file_name=_gazette_pdf.name,
-                    mime="application/pdf",
-                    key="dl_gazette_pdf_large",
-                )
-    else:
-        st.warning(f"PDF를 찾을 수 없습니다: `{_gazette_pdf}` (`./pdf/1020160184354A.pdf` 확인)")
+        else:
+            st.warning(f"PDF를 찾을 수 없습니다: `{_gazette_pdf}` (`./pdf/1020160184354A.pdf` 확인)")
 
-    st.markdown(
-        '<div class="gazette-title-ko">전자 소자 패키지</div>'
-        '<div class="gazette-title-en">Electronic device package</div>'
-        '<div class="gazette-tag-row">'
-        '<span class="gazette-tag gazette-tag-cpc">H01L 25/06</span>'
-        '<span class="gazette-tag gazette-tag-cpc">H01L 23/52</span>'
-        '<span class="gazette-tag gazette-tag-cpc">H01L 25/10</span>'
-        '<span class="gazette-tag gazette-tag-cpc">H01L 23/00</span>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("---")
-
-    # 서지 정보 (접기/펼치기 카드)
-    bib_html = "".join(
-        f'<div class="gazette-bib-item"><span class="gazette-bib-label">{label}</span> {value}</div>'
-        for label, value in GAZETTE_BIB_ITEMS
-    ) + '<div class="gazette-bib-item"></div>'
-    with st.expander("📋 서지 정보", expanded=True):
+    with _tab_struct:
         st.markdown(
-            f'<div class="gazette-section"><div class="gazette-bib">{bib_html}</div></div>',
+            '<div class="gazette-title-ko">전자 소자 패키지</div>'
+            '<div class="gazette-title-en">Electronic device package</div>'
+            '<div class="gazette-tag-row">'
+            '<span class="gazette-tag gazette-tag-cpc">H01L 25/06</span>'
+            '<span class="gazette-tag gazette-tag-cpc">H01L 23/52</span>'
+            '<span class="gazette-tag gazette-tag-cpc">H01L 25/10</span>'
+            '<span class="gazette-tag gazette-tag-cpc">H01L 23/00</span>'
+            '</div>',
             unsafe_allow_html=True,
         )
 
-    # 초록 (접기/펼치기 카드)
-    with st.expander("📄 초록", expanded=True):
-        st.markdown(
-            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_ABSTRACT}</div></div>',
-            unsafe_allow_html=True,
-        )
+        st.markdown("---")
 
-    # 청구항 (접기/펼치기 카드, 내부에 청구항 1~6 각각 expander)
-    with st.expander("📌 청구항", expanded=True):
-        for i, claim_text in enumerate(GAZETTE_CLAIMS, start=1):
-            with st.expander(f"청구항 {i}", expanded=True):
-                st.markdown(
-                    f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim_text}</div></div>',
-                    unsafe_allow_html=True,
-                )
+        bib_html = "".join(
+            f'<div class="gazette-bib-item"><span class="gazette-bib-label">{label}</span> {value}</div>'
+            for label, value in GAZETTE_BIB_ITEMS
+        ) + '<div class="gazette-bib-item"></div>'
+        with st.expander("📋 서지 정보", expanded=True):
+            st.markdown(
+                f'<div class="gazette-section"><div class="gazette-bib">{bib_html}</div></div>',
+                unsafe_allow_html=True,
+            )
 
-    # 기술분야 (접기/펼치기 카드)
-    with st.expander("🔬 기술분야", expanded=True):
-        st.markdown(
-            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_TECHNICAL_FIELD}</div></div>',
-            unsafe_allow_html=True,
-        )
+        with st.expander("📄 초록", expanded=True):
+            st.markdown(
+                f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_ABSTRACT}</div></div>',
+                unsafe_allow_html=True,
+            )
 
-    # 배경기술 (접기/펼치기 카드)
-    with st.expander("📖 배경기술", expanded=True):
-        st.markdown(
-            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_BACKGROUND}</div></div>',
-            unsafe_allow_html=True,
-        )
+        with st.expander("📌 청구항", expanded=True):
+            for i, claim_text in enumerate(GAZETTE_CLAIMS, start=1):
+                with st.expander(f"청구항 {i}", expanded=True):
+                    st.markdown(
+                        f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{claim_text}</div></div>',
+                        unsafe_allow_html=True,
+                    )
 
-    # 해결하고자 하는 과제 (접기/펼치기 카드)
-    with st.expander("🎯 해결하고자 하는 과제", expanded=True):
-        st.markdown(
-            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_PROBLEM}</div></div>',
-            unsafe_allow_html=True,
-        )
+        with st.expander("🔬 기술분야", expanded=True):
+            st.markdown(
+                f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_TECHNICAL_FIELD}</div></div>',
+                unsafe_allow_html=True,
+            )
 
-    # 해결수단 (접기/펼치기 카드)
-    with st.expander("⚙️ 해결수단", expanded=True):
-        st.markdown(
-            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_SOLUTION}</div></div>',
-            unsafe_allow_html=True,
-        )
+        with st.expander("📖 배경기술", expanded=True):
+            st.markdown(
+                f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_BACKGROUND}</div></div>',
+                unsafe_allow_html=True,
+            )
 
-    # 효과 (접기/펼치기 카드)
-    with st.expander("⭐ 효과", expanded=True):
-        st.markdown(
-            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_EFFECT}</div></div>',
-            unsafe_allow_html=True,
-        )
+        with st.expander("🎯 해결하고자 하는 과제", expanded=True):
+            st.markdown(
+                f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_PROBLEM}</div></div>',
+                unsafe_allow_html=True,
+            )
 
-    # 도면의 간단한 설명 (접기/펼치기 카드)
-    drawing_desc_html = "<br>".join(GAZETTE_DRAWING_DESC_LINES)
-    with st.expander("🖼️ 도면의 간단한 설명", expanded=True):
-        st.markdown(
-            f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{drawing_desc_html}</div></div>',
-            unsafe_allow_html=True,
-        )
+        with st.expander("⚙️ 해결수단", expanded=True):
+            st.markdown(
+                f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_SOLUTION}</div></div>',
+                unsafe_allow_html=True,
+            )
 
-    # 발명의 상세한 설명 (접기/펼치기 카드)
-    with st.expander("📝 발명의 상세한 설명", expanded=False):
-        detail_html = (
-            '<div class="gazette-section">'
-            '<div style="font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;">'
-            + GAZETTE_DETAIL.replace("\n", "<br>")
-            + "</div></div>"
-        )
-        st.markdown(detail_html, unsafe_allow_html=True)
+        with st.expander("⭐ 효과", expanded=True):
+            st.markdown(
+                f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{GAZETTE_EFFECT}</div></div>',
+                unsafe_allow_html=True,
+            )
 
-    # 부호의 설명 (접기/펼치기 카드)
-    symbols_html = "".join(
-        f'<div class="gazette-bib-item"><span class="gazette-bib-label">{num}</span> {desc}</div>'
-        for num, desc in GAZETTE_SYMBOLS
-    )
-    with st.expander("🔢 부호의 설명", expanded=True):
-        st.markdown(
-            f'<div class="gazette-section"><div class="gazette-bib" style="grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem;">{symbols_html}</div></div>',
-            unsafe_allow_html=True,
+        drawing_desc_html = "<br>".join(GAZETTE_DRAWING_DESC_LINES)
+        with st.expander("🖼️ 도면의 간단한 설명", expanded=True):
+            st.markdown(
+                f'<div class="gazette-section"><div style="font-size: 0.95rem; line-height: 1.6;">{drawing_desc_html}</div></div>',
+                unsafe_allow_html=True,
+            )
+
+        with st.expander("📝 발명의 상세한 설명", expanded=False):
+            detail_html = (
+                '<div class="gazette-section">'
+                '<div style="font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;">'
+                + GAZETTE_DETAIL.replace("\n", "<br>")
+                + "</div></div>"
+            )
+            st.markdown(detail_html, unsafe_allow_html=True)
+
+        symbols_html = "".join(
+            f'<div class="gazette-bib-item"><span class="gazette-bib-label">{num}</span> {desc}</div>'
+            for num, desc in GAZETTE_SYMBOLS
         )
+        with st.expander("🔢 부호의 설명", expanded=True):
+            st.markdown(
+                f'<div class="gazette-section"><div class="gazette-bib" style="grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem;">{symbols_html}</div></div>',
+                unsafe_allow_html=True,
+            )
