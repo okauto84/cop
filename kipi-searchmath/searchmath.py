@@ -222,6 +222,19 @@ def parse_search_query_blocks(text: str) -> list[tuple[str, str]]:
             pairs.append((desc, query))
     return pairs
 
+def split_nonempty_lines(s: str) -> list[str]:
+    return [ln.strip() for ln in s.splitlines() if ln.strip()]
+
+def build_search_query_text_from_lines(desc_lines: list[str], query_lines: list[str]) -> str:
+    n = max(len(desc_lines), len(query_lines))
+    blocks: list[str] = []
+    for i in range(n):
+        d = desc_lines[i] if i < len(desc_lines) else ""
+        q = query_lines[i] if i < len(query_lines) else ""
+        if d or q:
+            blocks.append(f"● {d}\n{q}")
+    return "\n\n".join(blocks)
+
 # PDF 첨부 버튼 영역 (파일 업로더로 구현; 미선택 시 기본 PDF 자동 로드)
 st.markdown("#### PDF 첨부")
 uploaded_file = st.file_uploader(
@@ -249,12 +262,9 @@ if pdf_source is not None:
         st.session_state.last_file_id = current_file_id
         if "search_query_result" in st.session_state:
             del st.session_state.search_query_result
-        for _i in range(12):
-            _qk = f"sq_query_{_i}"
-            if _qk in st.session_state:
-                del st.session_state[_qk]
-        if "sq_query_fallback" in st.session_state:
-            del st.session_state["sq_query_fallback"]
+        for _k in ("sq_desc_area", "sq_query_area", "sq_query_fallback"):
+            if _k in st.session_state:
+                del st.session_state[_k]
         if "chat_messages" in st.session_state:
             del st.session_state["chat_messages"]
     
@@ -284,34 +294,44 @@ if pdf_source is not None:
             st.markdown("##### 특허검색식")
             _pairs = parse_search_query_blocks(st.session_state.search_query_result)
             if not _pairs:
-                st.caption("검색식 (● 형식으로 인식되지 않은 경우 전체)")
+                st.markdown("**검색식**")
+                st.caption("● 형식으로 인식되지 않은 경우 전체가 아래 한 칸에 표시됩니다.")
                 _single = st.text_area(
                     "검색식",
                     value=st.session_state.search_query_result,
-                    height=140,
+                    height=420,
                     key="sq_query_fallback",
                     label_visibility="collapsed",
                 )
                 if _single != st.session_state.search_query_result:
                     st.session_state.search_query_result = _single
             else:
-                _edited_queries: list[str] = []
-                for _i, (_desc, _q) in enumerate(_pairs):
-                    with st.container():
-                        st.caption(_desc if _desc.strip() else "—")
-                        _qv = st.text_area(
-                            "검색식",
-                            value=_q,
-                            height=72,
-                            key=f"sq_query_{_i}",
-                            label_visibility="collapsed",
-                        )
-                        _edited_queries.append(_qv)
-                    if _i < len(_pairs) - 1:
-                        st.markdown('<div style="height:0.75rem"></div>', unsafe_allow_html=True)
+                _desc_default = "\n".join(d for d, _ in _pairs)
+                _query_default = "\n".join(q for _, q in _pairs)
 
-                _merged = "\n\n".join(
-                    f"● {d}\n{qv}" for (d, _), qv in zip(_pairs, _edited_queries)
+                _c_sq1, _c_sq2 = st.columns(2, gap="large")
+                with _c_sq1:
+                    st.markdown("**설명**")
+                    _d_edit = st.text_area(
+                        "설명",
+                        value=_desc_default,
+                        height=480,
+                        key="sq_desc_area",
+                        label_visibility="collapsed",
+                    )
+                with _c_sq2:
+                    st.markdown("**검색식**")
+                    _q_edit = st.text_area(
+                        "검색식",
+                        value=_query_default,
+                        height=480,
+                        key="sq_query_area",
+                        label_visibility="collapsed",
+                    )
+
+                _merged = build_search_query_text_from_lines(
+                    split_nonempty_lines(_d_edit),
+                    split_nonempty_lines(_q_edit),
                 )
                 if _merged != st.session_state.search_query_result:
                     st.session_state.search_query_result = _merged
