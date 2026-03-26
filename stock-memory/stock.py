@@ -717,6 +717,40 @@ if context_total is not None and len(context_total) > 0:
                         yaxis="y2",
                     ))
 
+                # KOSPI 구간 최고가·최저가 시점 ↔ 마지막(현재) 시점 빨간 점선
+                kc0 = next((c for c in kospi_cols if df_kr[c].notna().sum() > 0), None)
+                if kc0 is not None:
+                    valid_idx = df_kr.index[df_kr[kc0].notna()]
+                    if len(valid_idx) > 0:
+                        high_i = df_kr[kc0].idxmax()
+                        low_i = df_kr[kc0].idxmin()
+                        curr_i = valid_idx[-1]
+                        x_h = df_kr.loc[high_i, "_x_label"]
+                        x_l = df_kr.loc[low_i, "_x_label"]
+                        x_c = df_kr.loc[curr_i, "_x_label"]
+                        y_h = float(df_kr.loc[high_i, kc0])
+                        y_l = float(df_kr.loc[low_i, kc0])
+                        y_c = float(df_kr.loc[curr_i, kc0])
+                        red_dot = dict(color="red", width=1.5, dash="dot")
+                        fig_kr.add_trace(go.Scatter(
+                            x=[x_h, x_c],
+                            y=[y_h, y_c],
+                            mode="lines",
+                            line=red_dot,
+                            name="KOSPI 최고→현재",
+                            yaxis="y1",
+                            showlegend=True,
+                        ))
+                        fig_kr.add_trace(go.Scatter(
+                            x=[x_l, x_c],
+                            y=[y_l, y_c],
+                            mode="lines",
+                            line=red_dot,
+                            name="KOSPI 최저→현재",
+                            yaxis="y1",
+                            showlegend=True,
+                        ))
+
                 kospi_vals = pd.concat([df_kr[c] for c in kospi_cols if df_kr[c].notna().sum() > 0], ignore_index=True).dropna() if kospi_cols else pd.Series(dtype=float)
                 rs_vals = pd.concat([df_kr[c] for c in rs_cols if df_kr[c].notna().sum() > 0], ignore_index=True).dropna() if rs_cols else pd.Series(dtype=float)
 
