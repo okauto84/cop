@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import io
+from pathlib import Path
+
 import streamlit as st
 from openai import OpenAI
 from pypdf import PdfReader
-import io
+
+# 최초 로딩 시 사용할 기본 PDF (프로젝트 루트 기준 ./data/)
+BASE_DIR = Path(__file__).resolve().parent
+DEFAULT_PDF_PATH = BASE_DIR / "data" / "1020200026921A.pdf"
 
 # 페이지 설정
 st.set_page_config(
@@ -30,10 +36,14 @@ with st.sidebar:
 st.markdown("# SearchMath")
 
 # PDF 파싱 함수
-def parse_pdf(uploaded_file) -> str:
-    """업로드된 PDF 파일에서 텍스트 추출"""
+def parse_pdf(file_source) -> str:
+    """PDF 바이트 또는 업로드 파일 객체에서 텍스트 추출"""
     try:
-        reader = PdfReader(io.BytesIO(uploaded_file.read()))
+        if isinstance(file_source, bytes):
+            data = file_source
+        else:
+            data = file_source.read()
+        reader = PdfReader(io.BytesIO(data))
         text_parts = []
         for page in reader.pages:
             t = page.extract_text()
@@ -134,24 +144,36 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
             return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
         return f"❌ API 호출 오류: {err}"
 
-# PDF 첨부 버튼 영역 (파일 업로더로 구현)
+# PDF 첨부 버튼 영역 (파일 업로더로 구현; 미선택 시 기본 PDF 자동 로드)
 st.markdown("#### PDF 첨부")
 uploaded_file = st.file_uploader(
     "특허/출원 문서 PDF를 선택하세요",
     type=["pdf"],
-    help="PDF를 선택하면 자동으로 파싱 후 발명의 효과와 청구항 중심 핵심 기술 내용을 분석하고, 이를 바탕으로 특허검색식을 생성합니다."
+    help="PDF를 선택하면 자동으로 파싱 후 발명의 효과와 청구항 중심 핵심 기술 내용을 분석하고, 이를 바탕으로 특허검색식을 생성합니다. "
+         "선택하지 않으면 최초 로딩 시 ./data/1020200026921A.pdf 가 자동으로 사용됩니다."
 )
 
+pdf_source = None
 if uploaded_file is not None:
+    pdf_source = uploaded_file
+elif DEFAULT_PDF_PATH.is_file():
+    pdf_source = DEFAULT_PDF_PATH.read_bytes()
+
+if pdf_source is not None:
+    if uploaded_file is None:
+        st.caption(f"기본 PDF 사용: `data/{DEFAULT_PDF_PATH.name}` (업로드 없음)")
     # 파일이 변경되었는지 확인하여 세션 상태 초기화
-    current_file_id = f"{uploaded_file.name}_{uploaded_file.size}"
+    if uploaded_file is not None:
+        current_file_id = f"{uploaded_file.name}_{uploaded_file.size}"
+    else:
+        current_file_id = f"default_{DEFAULT_PDF_PATH.name}_{len(pdf_source)}"
     if "last_file_id" not in st.session_state or st.session_state.last_file_id != current_file_id:
         st.session_state.last_file_id = current_file_id
         if "search_query_result" in st.session_state:
             del st.session_state.search_query_result
     
     with st.spinner("PDF를 파싱하고 있습니다..."):
-        extracted_text = parse_pdf(uploaded_file)
+        extracted_text = parse_pdf(pdf_source)
 
     if not extracted_text.strip():
         st.error("PDF에서 텍스트를 추출할 수 없습니다. 스캔 이미지 PDF인 경우 OCR이 필요할 수 있습니다.")
