@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import io
+import re
 from pathlib import Path
 
 import streamlit as st
@@ -96,43 +97,42 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
         return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
     try:
         client = OpenAI(api_key=api_key)
-        system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 특허 검색을 위해 [검색식 설명]과 [검색식 작성 기준]에 따라서 주어진 LLM 분석 결과(발명의 효과 및 청구항 중심 핵심 기술 내용)를 바탕으로 다양한 분석 방향성에 따라, 유사 특허 검색을 위한 효과적인 특허 검색식을 생성하세요.
+        system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 주어진 LLM 분석 결과(발명의 효과 및 청구항 중심 핵심 기술 내용)를 바탕으로, 서로 다른 검색 방향을 가진 **유사 특허 검색용 검색식**을 작성하세요.
 
-[특허 검색식에 대한 설명입니다.]:
-1. 핵심 기술 키워드와 동의어/유의어를 포함합니다.
-2. 기술 분야별 주요 용어 조합합니다.
-3. 한글, 영문, 숫자를 이용할 수 있으며 구문검색("") 및 논리연산자(AND, OR, NOT, NEAR, 절단자)를 사용하면 더 구체적인 검색이 가능합니다.
-4. 검색식은 명확하고 실행 가능한 형태로 작성합니다.
+[검색식 작성 시 참고]:
+1. 핵심 기술 키워드와 동의어·유의어를 반영합니다.
+2. 기술 분야별 용어를 조합합니다.
+3. 한글·영문·숫자를 사용할 수 있으며, 구문검색 및 논리연산(AND *, OR +, NOT !, NEAR ^, 절단자 등)으로 구체화할 수 있습니다.
+4. 검색식은 명확하고 실행 가능한 한 줄 문자열로 작성합니다.
+5. 단어 구분을 위해 단어 앞뒤에 싱글/쌍따옴표를 넣지 않습니다.
 
-[특허 검색식 작성 기준에 대한 설명입니다.]:
-1. 단어 검색
-  - 상세내용 : 단어 검색	특정 단어가 포함된 검색
-  - 예시 : 디스크
-2. 구문 검색
-  - 상세내용 : 검색어가 순서대로 인접하여 나열되도록 검색 (공백, 복합명사, 조사, 특수문자가 포함된 경우도 검색 가능)	
-  - 예시 : 데이터 신호
-3. 논리연산 AND : *
-  - 상세내용 : 입력된 키워드가 모두 포함되도록 검색	
-  - 예시 : 휴대폰*케이스
-4. 논리연산 OR : +
-  - 상세내용 : 입력된 키워드 중 하나라도 포함된 검색	
-5. 논리연산 NOT : !
-  - 상세내용 : 입력된 키워드 중 NOT(!) 연산자 뒤의 키워드는 포함하지 않는 검색 (단독 사용 불가, AND(*)와 함께 사용 가능)	
-  - 예시 : 자동차*!엔진
-6. 논리연산 NEAR : ^
-  - 상세내용 : 첫 번째 검색어와 두 번째 검색어 사이의 거리(단어 수)를 지정하여 검색 (1~3단어 거리까지 지원, 단어 순서 고려)	
-  - 예시 : 자동차^2각도
-7. 단어를 구분하려는 용도로 단어 앞뒤에 싱글 따옴표('), 쌍따옴표(")를 넣지 않습니다.
+[특허 검색식 작성 기준 요약]:
+- 단어 검색, 구문 검색(인접 나열), AND(*), OR(+), NOT(!, AND와 함께), NEAR(^, 1~3단어 거리) 등을 활용할 수 있습니다.
 
-출력은 반드시 다음 형식으로 작성하세요:
-(내용)
+[출력 형식 — 반드시 준수]:
+1. **검색식 항목 개수는 반드시 10개 미만**입니다. (1개 이상 9개 이하. 중복·유사한 방향은 하나로 묶지 말고, 서로 다른 검색 관점으로 나눕니다.)
+2. 각 항목은 **정확히 두 줄**로만 씁니다.
+   - **첫째 줄**: 문장 맨 앞에 `● `(중점·공백)으로 시작하고, **그 검색식이 다루는 관점에 대한 간략한 설명**을 한 줄로 씁니다. 필요하면 괄호로 보조 설명을 붙입니다.
+   - **둘째 줄**: 위 설명에 대응하는 **특허 검색식**을 한 줄로 씁니다. (줄바꿈 없음)
+3. 항목과 항목 사이에는 **빈 줄 하나**를 넣습니다.
+4. 위 형식 외의 머리말·요약·번호 목록·마크다운 제목 등은 넣지 않습니다.
+
+[출력 예시]
+● 층간 도전성 범프 크기 구배(범프 크기 변화로 적층 연결)
+ABF+Ajinomoto*Build-up*Film*인터포저*(TSV+Through-Silicon*Via)*수직*신호라인*연결*스택*패키지*패드*피치
+
+● 인터포저를 통한 ASIC과 HBM 전기적 결합 (인터포저 내부라인/TSV 활용)
+HBM+High*Bandwidth*Memory*ASIC*(Application*Specific*Integrated*Circuit)*인터포저*내부*연결*전기적*결합*(TSV+Through-Silicon*Via)*(내부라인+routing+interconnect)
+
+● 상부 패드 피치와 인터포저 피치 일치
+P1=P3*패드*피치*인터포저*상부*하부*스택*패키지
 
 """
         response = client.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"다음 LLM 분석 결과를 바탕으로 특허 검색식을 생성해 주세요.\n\n{analysis_result}"}
+                {"role": "user", "content": f"다음 LLM 분석 결과를 바탕으로, 지정한 출력 형식(● 설명 한 줄 + 검색식 한 줄, 항목 10개 미만)으로 특허 검색식을 생성해 주세요.\n\n{analysis_result}"}
             ],
         )
         return response.choices[0].message.content
@@ -143,6 +143,37 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
         if "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
             return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
         return f"❌ API 호출 오류: {err}"
+
+def parse_search_query_blocks(text: str) -> list[tuple[str, str]]:
+    """● 설명\\n검색식 형태의 LLM 출력을 (설명, 검색식) 목록으로 분리"""
+    text = (text or "").strip()
+    if not text:
+        return []
+    parts = re.split(r"(?m)^●\s*", text)
+    pairs: list[tuple[str, str]] = []
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        lines = part.split("\n", 1)
+        desc = lines[0].strip()
+        query = lines[1].strip() if len(lines) > 1 else ""
+        if desc or query:
+            pairs.append((desc, query))
+    return pairs
+
+def split_nonempty_lines(s: str) -> list[str]:
+    return [ln.strip() for ln in s.splitlines() if ln.strip()]
+
+def build_search_query_text_from_lines(desc_lines: list[str], query_lines: list[str]) -> str:
+    n = max(len(desc_lines), len(query_lines))
+    blocks: list[str] = []
+    for i in range(n):
+        d = desc_lines[i] if i < len(desc_lines) else ""
+        q = query_lines[i] if i < len(query_lines) else ""
+        if d or q:
+            blocks.append(f"● {d}\n{q}")
+    return "\n\n".join(blocks)
 
 # PDF 첨부 버튼 영역 (파일 업로더로 구현; 미선택 시 기본 PDF 자동 로드)
 st.markdown("#### PDF 첨부")
@@ -171,6 +202,9 @@ if pdf_source is not None:
         st.session_state.last_file_id = current_file_id
         if "search_query_result" in st.session_state:
             del st.session_state.search_query_result
+        for _k in ("sq_desc_area", "sq_query_area"):
+            if _k in st.session_state:
+                del st.session_state[_k]
     
     with st.spinner("PDF를 파싱하고 있습니다..."):
         extracted_text = parse_pdf(pdf_source)
@@ -194,21 +228,42 @@ if pdf_source is not None:
             if "search_query_result" not in st.session_state:
                 with st.spinner("특허검색식 생성 중..."):
                     st.session_state.search_query_result = call_openai_for_search_query(API_KEY, model_name, result)
-            
-            with st.expander("특허검색식", expanded=True):
-                # 검색식 수정 가능한 text_area
-                edited_search_query = st.text_area(
-                    "검색식", 
-                    value=st.session_state.search_query_result, 
-                    height=280, 
-                    disabled=False, 
+
+            st.markdown("##### 특허검색식")
+            _pairs = parse_search_query_blocks(st.session_state.search_query_result)
+            if not _pairs:
+                _desc_default = ""
+                _query_default = st.session_state.search_query_result
+            else:
+                _desc_default = "\n".join(d for d, _ in _pairs)
+                _query_default = "\n".join(q for _, q in _pairs)
+
+            _c_sq1, _c_sq2 = st.columns(2, gap="large")
+            with _c_sq1:
+                st.markdown("**설명**")
+                _d_edit = st.text_area(
+                    "설명",
+                    value=_desc_default,
+                    height=320,
+                    key="sq_desc_area",
                     label_visibility="collapsed",
-                    key="search_query_editor"
                 )
-                
-                # 수정된 내용을 세션 상태에 저장
-                if edited_search_query != st.session_state.search_query_result:
-                    st.session_state.search_query_result = edited_search_query
+            with _c_sq2:
+                st.markdown("**검색식**")
+                _q_edit = st.text_area(
+                    "검색식",
+                    value=_query_default,
+                    height=320,
+                    key="sq_query_area",
+                    label_visibility="collapsed",
+                )
+
+            _merged = build_search_query_text_from_lines(
+                split_nonempty_lines(_d_edit),
+                split_nonempty_lines(_q_edit),
+            )
+            if _merged != st.session_state.search_query_result:
+                st.session_state.search_query_result = _merged
 
         # st.markdown("---")
 
