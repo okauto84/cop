@@ -100,7 +100,7 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
         system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 주어진 LLM 분석 결과(발명의 효과 및 청구항 중심 핵심 기술 내용)를 바탕으로, 서로 다른 검색 방향을 가진 **유사 특허 검색용 검색식**을 작성하세요.
 
 [검색식 작성 시 참고]:
-1. 핵심 기술 키워드와 동의어·유의어를 반영합니다.
+1. 핵심 기술 키워드와 동의어·유의어를 되도록 많이 반영합니다.
 2. 기술 분야별 용어를 조합합니다.
 3. 한글·영문·숫자를 사용할 수 있으며, 구문검색 및 논리연산(AND *, OR +, NOT !, NEAR ^, 절단자 등)으로 구체화할 수 있습니다.
 4. 검색식은 명확하고 실행 가능한 한 줄 문자열로 작성합니다.
@@ -162,19 +162,6 @@ def parse_search_query_blocks(text: str) -> list[tuple[str, str]]:
             pairs.append((desc, query))
     return pairs
 
-def split_nonempty_lines(s: str) -> list[str]:
-    return [ln.strip() for ln in s.splitlines() if ln.strip()]
-
-def build_search_query_text_from_lines(desc_lines: list[str], query_lines: list[str]) -> str:
-    n = max(len(desc_lines), len(query_lines))
-    blocks: list[str] = []
-    for i in range(n):
-        d = desc_lines[i] if i < len(desc_lines) else ""
-        q = query_lines[i] if i < len(query_lines) else ""
-        if d or q:
-            blocks.append(f"● {d}\n{q}")
-    return "\n\n".join(blocks)
-
 # PDF 첨부 버튼 영역 (파일 업로더로 구현; 미선택 시 기본 PDF 자동 로드)
 st.markdown("#### PDF 첨부")
 uploaded_file = st.file_uploader(
@@ -202,9 +189,12 @@ if pdf_source is not None:
         st.session_state.last_file_id = current_file_id
         if "search_query_result" in st.session_state:
             del st.session_state.search_query_result
-        for _k in ("sq_desc_area", "sq_query_area"):
-            if _k in st.session_state:
-                del st.session_state[_k]
+        for _i in range(12):
+            _qk = f"sq_query_{_i}"
+            if _qk in st.session_state:
+                del st.session_state[_qk]
+        if "sq_query_fallback" in st.session_state:
+            del st.session_state["sq_query_fallback"]
     
     with st.spinner("PDF를 파싱하고 있습니다..."):
         extracted_text = parse_pdf(pdf_source)
@@ -232,38 +222,37 @@ if pdf_source is not None:
             st.markdown("##### 특허검색식")
             _pairs = parse_search_query_blocks(st.session_state.search_query_result)
             if not _pairs:
-                _desc_default = ""
-                _query_default = st.session_state.search_query_result
-            else:
-                _desc_default = "\n".join(d for d, _ in _pairs)
-                _query_default = "\n".join(q for _, q in _pairs)
-
-            _c_sq1, _c_sq2 = st.columns(2, gap="large")
-            with _c_sq1:
-                st.markdown("**설명**")
-                _d_edit = st.text_area(
-                    "설명",
-                    value=_desc_default,
-                    height=320,
-                    key="sq_desc_area",
-                    label_visibility="collapsed",
-                )
-            with _c_sq2:
-                st.markdown("**검색식**")
-                _q_edit = st.text_area(
+                st.caption("검색식 (● 형식으로 인식되지 않은 경우 전체)")
+                _single = st.text_area(
                     "검색식",
-                    value=_query_default,
-                    height=320,
-                    key="sq_query_area",
+                    value=st.session_state.search_query_result,
+                    height=140,
+                    key="sq_query_fallback",
                     label_visibility="collapsed",
                 )
+                if _single != st.session_state.search_query_result:
+                    st.session_state.search_query_result = _single
+            else:
+                _edited_queries: list[str] = []
+                for _i, (_desc, _q) in enumerate(_pairs):
+                    with st.container():
+                        st.caption(_desc if _desc.strip() else "—")
+                        _qv = st.text_area(
+                            "검색식",
+                            value=_q,
+                            height=72,
+                            key=f"sq_query_{_i}",
+                            label_visibility="collapsed",
+                        )
+                        _edited_queries.append(_qv)
+                    if _i < len(_pairs) - 1:
+                        st.markdown('<div style="height:0.75rem"></div>', unsafe_allow_html=True)
 
-            _merged = build_search_query_text_from_lines(
-                split_nonempty_lines(_d_edit),
-                split_nonempty_lines(_q_edit),
-            )
-            if _merged != st.session_state.search_query_result:
-                st.session_state.search_query_result = _merged
+                _merged = "\n\n".join(
+                    f"● {d}\n{qv}" for (d, _), qv in zip(_pairs, _edited_queries)
+                )
+                if _merged != st.session_state.search_query_result:
+                    st.session_state.search_query_result = _merged
 
         # st.markdown("---")
 
