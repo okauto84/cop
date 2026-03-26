@@ -33,6 +33,10 @@ with st.sidebar:
         ["gpt-5-mini"],
         index=0
     )
+    st.markdown("---")
+    if st.button("검색식 Q&A 대화 초기화", help="챗봇 대화 기록만 지웁니다. 검색식 목록은 유지됩니다."):
+        st.session_state.chat_messages = []
+        st.rerun()
 
 st.markdown("# SearchMath")
 
@@ -145,6 +149,60 @@ P1=P3*패드*피치*인터포저*상부*하부*스택*패키지
             return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
         return f"❌ API 호출 오류: {err}"
 
+# 챗봇·컨텍스트용: 특허 검색식 작성 기준 요약 (생성 프롬프트와 일치)
+SEARCH_QUERY_CRITERIA_CONTEXT = """[검색식 작성 참고]
+1. 핵심 기술 키워드의 동의어·유의어를 반영한다.
+2. 기술 분야별 용어를 조합한다.
+3. 한글·영문·숫자, 구문검색 및 논리연산(AND *, OR +, NOT !, NEAR ^, 절단자 등)으로 구체화할 수 있다.
+4. 검색식은 명확하고 실행 가능한 한 줄 문자열로 작성한다.
+5. 단어 구분을 위해 단어 앞뒤에 싱글/쌍따옴표를 넣지 않는다.
+
+[특허 검색식 작성 기준 요약]
+- 단어 검색, 구문 검색(인접 나열), AND(*), OR(+), NOT(!, AND와 함께), NEAR(^, 1~3단어 거리) 등을 활용할 수 있다.
+
+[출력 형식(목록 생성 시)]
+- 항목마다 첫 줄: 간략한 설명, 둘째 줄: 검색식 한 줄. 항목은 여러 개일 수 있으며 우선순위 순으로 나열한다."""
+
+def call_openai_search_query_chat(
+    api_key: str,
+    model: str,
+    search_query_text: str,
+    criteria_context: str,
+    history: list[dict],
+) -> str:
+    """생성된 검색식 목록과 기준을 컨텍스트로 하여 대화 응답"""
+    if not api_key or api_key == "":
+        return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
+    try:
+        client = OpenAI(api_key=api_key)
+        system_prompt = f"""당신은 특허청 소속 특허 심사·검색 경험이 있는 도우미입니다. 사용자의 질문에 답할 때 아래 [검색식 기준]과 [현재 특허 검색식 목록]을 반드시 근거로 삼으세요.
+
+- 목록에 없는 검색식을 사실인 것처럼 꾸며 내지 마세요. 제안·수정이 필요하면 기준에 맞게 이유를 짧게 설명하세요.
+- 검색식 문법(연산자 *, +, !, ^ 등)이나 키워드 선택에 대한 질문에는 기준과 목록을 연결해 답하세요.
+- 목록이 비어 있거나 형식이 깨진 경우 그 사실을 알리고, 기준만으로 답할 수 있는 범위에서 도우세요.
+
+[검색식 기준]
+{criteria_context}
+
+[현재 특허 검색식 목록 — 사용자가 화면에서 편집한 최종 문자열]
+{search_query_text}
+"""
+        messages: list[dict] = [{"role": "system", "content": system_prompt}]
+        for m in history:
+            role = m.get("role")
+            content = m.get("content", "")
+            if role in ("user", "assistant") and content:
+                messages.append({"role": role, "content": content})
+        response = client.chat.completions.create(model=model, messages=messages)
+        return response.choices[0].message.content or ""
+    except Exception as e:
+        err = str(e)
+        if "API_KEY" in err or "authentication" in err.lower() or "invalid" in err.lower():
+            return f"🔑 API 키 오류: API 키를 확인해주세요.\n\n에러: {err}"
+        if "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
+            return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
+        return f"❌ API 호출 오류: {err}"
+
 def parse_search_query_blocks(text: str) -> list[tuple[str, str]]:
     """● 설명\\n검색식 형태의 LLM 출력을 (설명, 검색식) 목록으로 분리"""
     text = (text or "").strip()
@@ -196,6 +254,8 @@ if pdf_source is not None:
                 del st.session_state[_qk]
         if "sq_query_fallback" in st.session_state:
             del st.session_state["sq_query_fallback"]
+        if "chat_messages" in st.session_state:
+            del st.session_state["chat_messages"]
     
     with st.spinner("PDF를 파싱하고 있습니다..."):
         extracted_text = parse_pdf(pdf_source)
@@ -254,6 +314,33 @@ if pdf_source is not None:
                 )
                 if _merged != st.session_state.search_query_result:
                     st.session_state.search_query_result = _merged
+
+            st.divider()
+            st.markdown("##### 검색식 Q&A (챗봇)")
+            st.caption(
+                "위에서 생성·편집한 검색식 목록과 검색식 작성 기준을 바탕으로 질문하면 답변합니다. "
+                "사이드바에서 대화를 초기화할 수 있습니다."
+            )
+            if "chat_messages" not in st.session_state:
+                st.session_state.chat_messages = []
+
+            for _msg in st.session_state.chat_messages:
+                with st.chat_message(_msg["role"]):
+                    st.markdown(_msg["content"])
+
+            _chat_prompt = st.chat_input("검색식·검색 기준에 대해 질문하세요")
+            if _chat_prompt:
+                st.session_state.chat_messages.append({"role": "user", "content": _chat_prompt})
+                with st.spinner("답변 생성 중..."):
+                    _reply = call_openai_search_query_chat(
+                        API_KEY,
+                        model_name,
+                        st.session_state.search_query_result,
+                        SEARCH_QUERY_CRITERIA_CONTEXT,
+                        st.session_state.chat_messages,
+                    )
+                st.session_state.chat_messages.append({"role": "assistant", "content": _reply})
+                st.rerun()
 
         # st.markdown("---")
 
