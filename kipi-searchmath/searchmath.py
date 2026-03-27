@@ -67,8 +67,8 @@ def call_openai_for_patent(api_key: str, model: str, document_text: str) -> str:
         client = OpenAI(api_key=api_key)
         system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 주어진 문서 텍스트에서 아래 두 가지를 명확히 추출·정리하여 답변하세요.
 
-1. **발명의 효과**: 해당 발명이 달성하는 핵심적인 기술적 효과를 글자 수 200자 수준으로 서술하세요.
-2. **청구항 중심으로 핵심 기술 내용**: 독립 청구항 및 필요 시 종속 청구항을 중심으로, 핵심 기술 구성과 요지를 글자 수 200자 수준으로 정리하세요.
+1. **발명의 효과**: 해당 발명이 달성하는 핵심적인 기술적 효과를 글자 수 400자 수준으로 서술하세요.
+2. **청구항 중심으로 핵심 기술 내용**: 독립 청구항 및 필요 시 종속 청구항을 중심으로, 핵심 기술 구성과 요지를 글자 수 400자 수준으로 정리하세요.
 
 출력은 반드시 다음 형식으로 작성하세요:
 ---
@@ -167,26 +167,33 @@ SEARCH_QUERY_CRITERIA_CONTEXT = """[검색식 작성 참고]
 def call_openai_search_query_chat(
     api_key: str,
     model: str,
+    llm_analysis_text: str,
     search_query_text: str,
     criteria_context: str,
     history: list[dict],
 ) -> str:
-    """생성된 검색식 목록과 기준을 컨텍스트로 하여 대화 응답"""
+    """LLM 분석 결과·특허검색식·기준을 컨텍스트로 하여 대화 응답"""
     if not api_key or api_key == "":
         return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
     try:
         client = OpenAI(api_key=api_key)
-        system_prompt = f"""당신은 특허청 소속 특허 심사·검색 경험이 있는 도우미입니다. 사용자의 질문에 답할 때 아래 [검색식 기준]과 [현재 특허 검색식 목록]을 반드시 근거로 삼으세요.
+        _analysis = (llm_analysis_text or "").strip() or "(분석 결과 없음)"
+        _queries = (search_query_text or "").strip() or "(특허검색식 없음)"
+        system_prompt = f"""당신은 특허청 소속 특허 심사·검색 경험이 있는 도우미입니다. 사용자의 질문에 답할 때 아래 **[LLM 분석 결과]**, **[특허검색식 결과]**, **[검색식 기준]**을 모두 참고하세요. 세 가지가 서로 보완 관계이므로, 분석에서 드러난 발명의 요지·효과·청구 방향과 실제 검색식 문자열·검색 연산 규칙을 일관되게 연결해 설명하세요.
 
-- 목록에 없는 검색식을 사실인 것처럼 꾸며 내지 마세요. 제안·수정이 필요하면 기준에 맞게 이유를 짧게 설명하세요.
-- 검색식 문법(연산자 *, +, !, ^ 등)이나 키워드 선택에 대한 질문에는 기준과 목록을 연결해 답하세요.
-- 목록이 비어 있거나 형식이 깨진 경우 그 사실을 알리고, 기준만으로 답할 수 있는 범위에서 도우세요.
+- [LLM 분석 결과]는 출원 문서를 바탕으로 한 발명의 효과·청구항 중심 요약입니다. [특허검색식 결과]는 그 분석을 토대로 생성·편집된 검색식 목록(내부 저장 형식일 수 있음)입니다. 질문 유형에 따라 둘 중 어느 쪽을 더 강조할지 판단하세요.
+- 검색식 목록에 없는 식을 사실처럼 만들지 마세요. 제안·수정 시 [검색식 기준]에 맞게 이유를 짧게 덧붙이세요.
+- 분석 결과와 검색식이 어긋나 보이면, 그 차이를 짚고 기준에 맞게 조정 방향을 제안할 수 있습니다.
+- 일부가 비어 있으면 그 한계를 밝히고, 주어진 정보만으로 답할 수 있는 범위에서 도우세요.
+
+[LLM 분석 결과 — 발명의 효과·청구항 중심 핵심 기술 등]
+{_analysis}
+
+[특허검색식 결과 — 사용자가 화면에서 편집한 최종 문자열(● 또는 (설명)/(검색식) 등 저장 형식)]
+{_queries}
 
 [검색식 기준]
 {criteria_context}
-
-[현재 특허 검색식 목록 — 사용자가 화면에서 편집한 최종 문자열]
-{search_query_text}
 """
         messages: list[dict] = [{"role": "system", "content": system_prompt}]
         for m in history:
@@ -222,18 +229,73 @@ def parse_search_query_blocks(text: str) -> list[tuple[str, str]]:
             pairs.append((desc, query))
     return pairs
 
-def split_nonempty_lines(s: str) -> list[str]:
-    return [ln.strip() for ln in s.splitlines() if ln.strip()]
+def pairs_to_bullet_format(pairs: list[tuple[str, str]]) -> str:
+    """내부 저장·API·챗봇용: ● 설명\\n검색식 블록"""
+    return "\n\n".join(f"● {d}\n{q}" for d, q in pairs if d or q)
 
-def build_search_query_text_from_lines(desc_lines: list[str], query_lines: list[str]) -> str:
-    n = max(len(desc_lines), len(query_lines))
-    blocks: list[str] = []
-    for i in range(n):
-        d = desc_lines[i] if i < len(desc_lines) else ""
-        q = query_lines[i] if i < len(query_lines) else ""
-        if d or q:
-            blocks.append(f"● {d}\n{q}")
+def parse_paren_labeled_format(text: str) -> list[tuple[str, str]]:
+    """(설명) … / (검색식) … 블록 파싱. 항목은 빈 줄로 구분."""
+    text = (text or "").strip()
+    if not text:
+        return []
+    pairs: list[tuple[str, str]] = []
+    for block in re.split(r"\n\s*\n+", text):
+        block = block.strip()
+        if not block:
+            continue
+        desc = ""
+        query_parts: list[str] = []
+        mode = None
+        for line in block.split("\n"):
+            s = line.strip()
+            if not s:
+                continue
+            if s.startswith("(설명)"):
+                desc = s[len("(설명)") :].strip()
+                mode = "desc"
+            elif s.startswith("(검색식)"):
+                query_parts.append(s[len("(검색식)") :].strip())
+                mode = "query"
+            elif mode == "query":
+                query_parts.append(s)
+        query = "\n".join(query_parts) if query_parts else ""
+        if desc or query:
+            pairs.append((desc, query))
+    return pairs
+
+def pairs_to_paren_labeled_format(pairs: list[tuple[str, str]]) -> str:
+    """화면 표시용: 예시와 동일한 (설명)/(검색식) 텍스트"""
+    blocks = []
+    for d, q in pairs:
+        if not d and not q:
+            continue
+        blocks.append(f"(설명) {d}\n(검색식) {q}")
     return "\n\n".join(blocks)
+
+def search_query_to_pairs(raw: str) -> list[tuple[str, str]]:
+    """● 형식 우선, 없으면 (설명)/(검색식) 형식"""
+    pairs = parse_search_query_blocks(raw)
+    if pairs:
+        return pairs
+    return parse_paren_labeled_format(raw)
+
+def display_paren_labeled_from_stored(raw: str) -> str:
+    pairs = search_query_to_pairs(raw)
+    if pairs:
+        return pairs_to_paren_labeled_format(pairs)
+    return raw or ""
+
+def sync_editor_to_search_query_result(editor_text: str) -> None:
+    """편집 내용을 search_query_result(● 내부 형식)에 반영"""
+    pp = parse_paren_labeled_format(editor_text)
+    if pp:
+        st.session_state.search_query_result = pairs_to_bullet_format(pp)
+        return
+    bp = parse_search_query_blocks(editor_text)
+    if bp:
+        st.session_state.search_query_result = pairs_to_bullet_format(bp)
+        return
+    st.session_state.search_query_result = editor_text
 
 # PDF 첨부 버튼 영역 (파일 업로더로 구현; 미선택 시 기본 PDF 자동 로드)
 st.markdown("#### PDF 첨부")
@@ -262,9 +324,10 @@ if pdf_source is not None:
         st.session_state.last_file_id = current_file_id
         if "search_query_result" in st.session_state:
             del st.session_state.search_query_result
-        for _k in ("sq_desc_area", "sq_query_area", "sq_query_fallback"):
-            if _k in st.session_state:
-                del st.session_state[_k]
+        if "patent_analysis_result" in st.session_state:
+            del st.session_state.patent_analysis_result
+        if "sq_paren_area" in st.session_state:
+            del st.session_state["sq_paren_area"]
         if "chat_messages" in st.session_state:
             del st.session_state["chat_messages"]
     
@@ -286,61 +349,32 @@ if pdf_source is not None:
 
         # LLM 분석 결과를 바탕으로 특허검색식 생성
         if result and not result.startswith("⚠️") and not result.startswith("🔑") and not result.startswith("📊") and not result.startswith("❌"):
+            st.session_state.patent_analysis_result = result
             # 세션 상태 초기화 또는 새로 생성
             if "search_query_result" not in st.session_state:
                 with st.spinner("특허검색식 생성 중..."):
                     st.session_state.search_query_result = call_openai_for_search_query(API_KEY, model_name, result)
 
             st.markdown("##### 특허검색식")
-            _pairs = parse_search_query_blocks(st.session_state.search_query_result)
-            if not _pairs:
-                st.markdown("**검색식**")
-                st.caption("● 형식으로 인식되지 않은 경우 전체가 아래 한 칸에 표시됩니다.")
-                _single = st.text_area(
-                    "검색식",
-                    value=st.session_state.search_query_result,
-                    height=420,
-                    key="sq_query_fallback",
-                    label_visibility="collapsed",
-                )
-                if _single != st.session_state.search_query_result:
-                    st.session_state.search_query_result = _single
-            else:
-                _desc_default = "\n".join(d for d, _ in _pairs)
-                _query_default = "\n".join(q for _, q in _pairs)
-
-                _c_sq1, _c_sq2 = st.columns(2, gap="large")
-                with _c_sq1:
-                    st.markdown("**설명**")
-                    _d_edit = st.text_area(
-                        "설명",
-                        value=_desc_default,
-                        height=480,
-                        key="sq_desc_area",
-                        label_visibility="collapsed",
-                    )
-                with _c_sq2:
-                    st.markdown("**검색식**")
-                    _q_edit = st.text_area(
-                        "검색식",
-                        value=_query_default,
-                        height=480,
-                        key="sq_query_area",
-                        label_visibility="collapsed",
-                    )
-
-                _merged = build_search_query_text_from_lines(
-                    split_nonempty_lines(_d_edit),
-                    split_nonempty_lines(_q_edit),
-                )
-                if _merged != st.session_state.search_query_result:
-                    st.session_state.search_query_result = _merged
+            _paren_display = display_paren_labeled_from_stored(st.session_state.search_query_result)
+            st.caption(
+                "항목마다 `(설명) …` 다음 줄에 `(검색식) …` 형식으로 작성합니다. "
+                "항목 사이는 빈 줄로 구분합니다."
+            )
+            _sq_edit = st.text_area(
+                "특허검색식",
+                value=_paren_display,
+                height=520,
+                key="sq_paren_area",
+                label_visibility="collapsed",
+            )
+            sync_editor_to_search_query_result(_sq_edit)
 
             st.divider()
             st.markdown("##### 검색식 Q&A")
             st.caption(
-                "위에서 생성·편집한 검색식 목록과 검색식 작성 기준을 바탕으로 질문하면 답변합니다. "
-                "사이드바에서 대화를 초기화할 수 있습니다."
+                "현재 문서에 대한 LLM 분석 결과와 특허검색식·검색식 작성 기준을 함께 참고하여 질문할 수 있습니다. "
+                "사이드바에서 대화만 초기화할 수 있습니다."
             )
             if "chat_messages" not in st.session_state:
                 st.session_state.chat_messages = []
@@ -356,6 +390,7 @@ if pdf_source is not None:
                     _reply = call_openai_search_query_chat(
                         API_KEY,
                         model_name,
+                        st.session_state.get("patent_analysis_result", ""),
                         st.session_state.search_query_result,
                         SEARCH_QUERY_CRITERIA_CONTEXT,
                         st.session_state.chat_messages,
