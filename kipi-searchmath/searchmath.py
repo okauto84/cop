@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import io
-import re
 from pathlib import Path
 
 import streamlit as st
@@ -30,7 +29,8 @@ with st.sidebar:
     st.markdown("### 설정")
     model_name = st.selectbox(
         "모델 선택",
-        ["gpt-5-mini"],
+        # ["gpt-5-mini"],
+        ["gpt-5.4"],
         index=0
     )
     st.markdown("---")
@@ -188,7 +188,7 @@ def call_openai_search_query_chat(
 [LLM 분석 결과 — 발명의 효과·청구항 중심 핵심 기술 등]
 {_analysis}
 
-[특허검색식 결과 — 사용자가 화면에서 편집한 최종 문자열(● 또는 (설명)/(검색식) 등 저장 형식)]
+[특허검색식 결과 — 사용자가 화면에서 편집한 최종 문자열]
 {_queries}
 
 [검색식 기준]
@@ -209,85 +209,6 @@ def call_openai_search_query_chat(
         if "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
             return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
         return f"❌ API 호출 오류: {err}"
-
-def parse_search_query_blocks(text: str) -> list[tuple[str, str]]:
-    """● 설명\\n검색식 형태의 LLM 출력을 (설명, 검색식) 목록으로 분리"""
-    text = (text or "").strip()
-    if not text:
-        return []
-    parts = re.split(r"(?m)^●\s*", text)
-    pairs: list[tuple[str, str]] = []
-    for part in parts:
-        part = part.strip()
-        if not part:
-            continue
-        lines = part.split("\n", 1)
-        desc = lines[0].strip()
-        query = lines[1].strip() if len(lines) > 1 else ""
-        if desc or query:
-            pairs.append((desc, query))
-    return pairs
-
-def pairs_to_bullet_format(pairs: list[tuple[str, str]]) -> str:
-    """내부 저장·API·챗봇용: ● 설명\\n검색식 블록"""
-    return "\n\n".join(f"● {d}\n{q}" for d, q in pairs if d or q)
-
-def parse_paren_labeled_format(text: str) -> list[tuple[str, str]]:
-    """(설명) … / (검색식) … 블록 파싱. 항목은 빈 줄로 구분."""
-    text = (text or "").strip()
-    if not text:
-        return []
-    pairs: list[tuple[str, str]] = []
-    for block in re.split(r"\n\s*\n+", text):
-        block = block.strip()
-        if not block:
-            continue
-        desc = ""
-        query_parts: list[str] = []
-        mode = None
-        for line in block.split("\n"):
-            s = line.strip()
-            if not s:
-                continue
-            if s.startswith("(설명)"):
-                desc = s[len("(설명)") :].strip()
-                mode = "desc"
-            elif s.startswith("(검색식)"):
-                query_parts.append(s[len("(검색식)") :].strip())
-                mode = "query"
-            elif mode == "query":
-                query_parts.append(s)
-        query = "\n".join(query_parts) if query_parts else ""
-        if desc or query:
-            pairs.append((desc, query))
-    return pairs
-
-def search_query_to_pairs(raw: str) -> list[tuple[str, str]]:
-    """● 형식 우선, 없으면 (설명)/(검색식) 형식"""
-    pairs = parse_search_query_blocks(raw)
-    if pairs:
-        return pairs
-    return parse_paren_labeled_format(raw)
-
-def text_area_height_px(
-    text: str,
-    *,
-    min_px: int = 72,
-    max_px: int = 1200,
-    line_height_px: int = 21,
-    chars_per_wrap_line: int = 90,
-) -> int:
-    """텍스트 길이·줄 수에 맞춰 st.text_area 높이(px)를 잡는다(가로 줄바꿈 가정)."""
-    if not (text or "").strip():
-        return min_px
-    total_lines = 0
-    for line in (text or "").splitlines():
-        if len(line) <= chars_per_wrap_line:
-            total_lines += 1
-        else:
-            total_lines += max(1, (len(line) + chars_per_wrap_line - 1) // chars_per_wrap_line)
-    h = total_lines * line_height_px + 48
-    return int(max(min_px, min(max_px, h)))
 
 # PDF 첨부 버튼 영역 (파일 업로더로 구현; 미선택 시 기본 PDF 자동 로드)
 st.markdown("#### PDF 첨부")
@@ -318,13 +239,8 @@ if pdf_source is not None:
             del st.session_state.search_query_result
         if "patent_analysis_result" in st.session_state:
             del st.session_state.patent_analysis_result
-        for _i in range(12):
-            for _pfx in ("sq_desc_", "sq_query_"):
-                _qk = f"{_pfx}{_i}"
-                if _qk in st.session_state:
-                    del st.session_state[_qk]
-        if "sq_query_fallback" in st.session_state:
-            del st.session_state["sq_query_fallback"]
+        if "search_query_editor" in st.session_state:
+            del st.session_state["search_query_editor"]
         if "chat_messages" in st.session_state:
             del st.session_state["chat_messages"]
     
@@ -352,56 +268,16 @@ if pdf_source is not None:
                 with st.spinner("특허검색식 생성 중..."):
                     st.session_state.search_query_result = call_openai_for_search_query(API_KEY, model_name, result)
 
-            st.markdown("##### 특허검색식")
-            _pairs_sq = search_query_to_pairs(st.session_state.search_query_result)
-            if not _pairs_sq:
-                _fb = st.text_area(
-                    "검색식 (전체)",
+            with st.expander("특허검색식", expanded=True):
+                _sq_ed = st.text_area(
+                    "결과",
                     value=st.session_state.search_query_result,
-                    height=text_area_height_px(
-                        st.session_state.search_query_result,
-                        min_px=120,
-                        max_px=1200,
-                    ),
-                    key="sq_query_fallback",
+                    height=280,
+                    key="search_query_editor",
+                    label_visibility="collapsed",
                 )
-                if _fb != st.session_state.search_query_result:
-                    st.session_state.search_query_result = _fb
-            else:
-                _edited_d: list[str] = []
-                _edited_q: list[str] = []
-                for _i, (_d, _q) in enumerate(_pairs_sq):
-                    with st.container():
-                        _dv = st.text_area(
-                            "설명",
-                            value=_d if _d.strip() else "—",
-                            height=text_area_height_px(
-                                _d if _d.strip() else "—",
-                                min_px=72,
-                                max_px=800,
-                            ),
-                            key=f"sq_desc_{_i}",
-                        )
-                        _edited_d.append(_dv)
-                        _qv = st.text_area(
-                            "검색식",
-                            value=_q,
-                            height=text_area_height_px(_q, min_px=72, max_px=1200),
-                            key=f"sq_query_{_i}",
-                        )
-                        _edited_q.append(_qv)
-                    if _i < len(_pairs_sq) - 1:
-                        st.markdown('<div style="height:0.75rem"></div>', unsafe_allow_html=True)
-                # 편집값이 "—" placeholder인 경우 빈 설명으로 저장
-                _fixed_pairs = []
-                for d, qv in zip(_edited_d, _edited_q):
-                    _dd = d.strip()
-                    if _dd == "—":
-                        _dd = ""
-                    _fixed_pairs.append((_dd, qv))
-                _merged_sq = pairs_to_bullet_format(_fixed_pairs)
-                if _merged_sq != st.session_state.search_query_result:
-                    st.session_state.search_query_result = _merged_sq
+                if _sq_ed != st.session_state.search_query_result:
+                    st.session_state.search_query_result = _sq_ed
 
             st.divider()
             st.markdown("##### 검색식 Q&A")
