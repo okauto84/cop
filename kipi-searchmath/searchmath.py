@@ -122,13 +122,13 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
 5. 가장 중요하다고 판단하는 순위부터 보여줍니다.
 
 [출력 예시]
-● 층간 도전성 범프 크기 구배(범프 크기 변화로 적층 연결)
+1. 층간 도전성 범프 크기 구배(범프 크기 변화로 적층 연결)
 ABF+Ajinomoto*Build-up*Film*인터포저*(TSV+Through-Silicon*Via)*수직*신호라인*연결*스택*패키지*패드*피치
 
-● 인터포저를 통한 ASIC과 HBM 전기적 결합 (인터포저 내부라인/TSV 활용)
+2. 인터포저를 통한 ASIC과 HBM 전기적 결합 (인터포저 내부라인/TSV 활용)
 HBM+High*Bandwidth*Memory*ASIC*(Application*Specific*Integrated*Circuit)*인터포저*내부*연결*전기적*결합*(TSV+Through-Silicon*Via)*(내부라인+routing+interconnect)
 
-● 상부 패드 피치와 인터포저 피치 일치
+3. 상부 패드 피치와 인터포저 피치 일치
 P1=P3*패드*피치*인터포저*상부*하부*스택*패키지
 
 """
