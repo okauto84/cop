@@ -114,10 +114,9 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
 - 단어 검색, 구문 검색(인접 나열), AND(*), OR(+), NOT(!, AND와 함께), NEAR(^, 1~3단어 거리) 등을 활용할 수 있습니다.
 
 [출력 형식 — 반드시 준수]:
-1. **검색식 항목 개수는 반드시 7개 미만**입니다. (1개 이상 7개 이하. 중복·유사한 방향은 하나로 묶지 말고, 서로 다른 검색 관점으로 나눕니다.)
-2. 각 항목은 **정확히 두 줄**로만 씁니다.
-   - **첫째 줄**: **그 검색식이 다루는 관점에 대한 간략한 설명**을 한 줄로 씁니다. 필요하면 괄호로 보조 설명을 붙입니다.
-   - **둘째 줄**: 위 설명에 대응하는 **특허 검색식**을 한 줄로 씁니다. (줄바꿈 없음)
+1. **검색식 항목 개수는 반드시 6개 미만**입니다. (1개 이상 6개 미만. 중복·유사한 방향은 하나로 묶지 말고, 서로 다른 검색 관점으로 나눕니다.)
+2. **첫째 줄**: **그 검색식이 다루는 관점에 대한 간략한 설명**을 한 줄로 씁니다. 필요하면 괄호로 보조 설명을 붙입니다.
+3. **둘째 줄**: 위 설명에 대응하는 **특허 검색식**을 한 줄로 씁니다. (줄바꿈 없음)
 3. 항목과 항목 사이에는 **빈 줄 하나**를 넣습니다.
 4. 위 형식 외의 머리말·요약·번호 목록·마크다운 제목 등은 넣지 않습니다.
 5. 가장 중요하다고 판단하는 순위부터 보여줍니다.
@@ -263,39 +262,12 @@ def parse_paren_labeled_format(text: str) -> list[tuple[str, str]]:
             pairs.append((desc, query))
     return pairs
 
-def pairs_to_paren_labeled_format(pairs: list[tuple[str, str]]) -> str:
-    """화면 표시용: 예시와 동일한 (설명)/(검색식) 텍스트"""
-    blocks = []
-    for d, q in pairs:
-        if not d and not q:
-            continue
-        blocks.append(f"(설명) {d}\n(검색식) {q}")
-    return "\n\n".join(blocks)
-
 def search_query_to_pairs(raw: str) -> list[tuple[str, str]]:
     """● 형식 우선, 없으면 (설명)/(검색식) 형식"""
     pairs = parse_search_query_blocks(raw)
     if pairs:
         return pairs
     return parse_paren_labeled_format(raw)
-
-def display_paren_labeled_from_stored(raw: str) -> str:
-    pairs = search_query_to_pairs(raw)
-    if pairs:
-        return pairs_to_paren_labeled_format(pairs)
-    return raw or ""
-
-def sync_editor_to_search_query_result(editor_text: str) -> None:
-    """편집 내용을 search_query_result(● 내부 형식)에 반영"""
-    pp = parse_paren_labeled_format(editor_text)
-    if pp:
-        st.session_state.search_query_result = pairs_to_bullet_format(pp)
-        return
-    bp = parse_search_query_blocks(editor_text)
-    if bp:
-        st.session_state.search_query_result = pairs_to_bullet_format(bp)
-        return
-    st.session_state.search_query_result = editor_text
 
 # PDF 첨부 버튼 영역 (파일 업로더로 구현; 미선택 시 기본 PDF 자동 로드)
 st.markdown("#### PDF 첨부")
@@ -326,8 +298,12 @@ if pdf_source is not None:
             del st.session_state.search_query_result
         if "patent_analysis_result" in st.session_state:
             del st.session_state.patent_analysis_result
-        if "sq_paren_area" in st.session_state:
-            del st.session_state["sq_paren_area"]
+        for _i in range(12):
+            _qk = f"sq_query_{_i}"
+            if _qk in st.session_state:
+                del st.session_state[_qk]
+        if "sq_query_fallback" in st.session_state:
+            del st.session_state["sq_query_fallback"]
         if "chat_messages" in st.session_state:
             del st.session_state["chat_messages"]
     
@@ -356,19 +332,37 @@ if pdf_source is not None:
                     st.session_state.search_query_result = call_openai_for_search_query(API_KEY, model_name, result)
 
             st.markdown("##### 특허검색식")
-            _paren_display = display_paren_labeled_from_stored(st.session_state.search_query_result)
-            st.caption(
-                "항목마다 `(설명) …` 다음 줄에 `(검색식) …` 형식으로 작성합니다. "
-                "항목 사이는 빈 줄로 구분합니다."
-            )
-            _sq_edit = st.text_area(
-                "특허검색식",
-                value=_paren_display,
-                height=520,
-                key="sq_paren_area",
-                label_visibility="collapsed",
-            )
-            sync_editor_to_search_query_result(_sq_edit)
+            _pairs_sq = search_query_to_pairs(st.session_state.search_query_result)
+            if not _pairs_sq:
+                st.markdown("####### 설명")
+                _fb = st.text_area(
+                    "검색식",
+                    value=st.session_state.search_query_result,
+                    height=360,
+                    key="sq_query_fallback",
+                )
+                if _fb != st.session_state.search_query_result:
+                    st.session_state.search_query_result = _fb
+            else:
+                _edited_q: list[str] = []
+                for _i, (_d, _q) in enumerate(_pairs_sq):
+                    with st.container():
+                        st.markdown("####### 설명")
+                        st.markdown(_d if _d.strip() else "—")
+                        _qv = st.text_area(
+                            "검색식",
+                            value=_q,
+                            height=120,
+                            key=f"sq_query_{_i}",
+                        )
+                        _edited_q.append(_qv)
+                    if _i < len(_pairs_sq) - 1:
+                        st.markdown('<div style="height:0.75rem"></div>', unsafe_allow_html=True)
+                _merged_sq = pairs_to_bullet_format(
+                    [(d, qv) for (d, _), qv in zip(_pairs_sq, _edited_q)]
+                )
+                if _merged_sq != st.session_state.search_query_result:
+                    st.session_state.search_query_result = _merged_sq
 
             st.divider()
             st.markdown("##### 검색식 Q&A")
