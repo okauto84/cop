@@ -21,17 +21,7 @@ try:
 except Exception:
     API_KEY = ""
 
-with st.sidebar:
-    st.markdown("### 설정")
-    model_name = st.selectbox(
-        "모델 선택",
-        ["gpt-5-mini"],
-        index=0
-    )
-    st.markdown("---")
-    if st.button("대화 초기화", help="챗봇 대화 기록을 지웁니다."):
-        st.session_state.chat_messages = []
-        st.rerun()
+model_name = "gpt-5.4"
 
 st.markdown("# PatentComp")
 
@@ -117,8 +107,13 @@ if pdf_source is not None:
 
         # ── 챗봇 ──────────────────────────────────────────────
         st.divider()
-        st.markdown("##### Q&A")
-        st.caption("첨부된 문서를 바탕으로 질문하면 답변합니다. 사이드바에서 대화를 초기화할 수 있습니다.")
+        _col_title, _col_btn = st.columns([6, 1])
+        with _col_title:
+            st.markdown("##### Q&A")
+        with _col_btn:
+            if st.button("대화 초기화", help="챗봇 대화 기록을 지웁니다."):
+                st.session_state.chat_messages = []
+                st.rerun()
 
         if "chat_messages" not in st.session_state:
             st.session_state.chat_messages = []
