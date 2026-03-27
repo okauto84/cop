@@ -269,6 +269,26 @@ def search_query_to_pairs(raw: str) -> list[tuple[str, str]]:
         return pairs
     return parse_paren_labeled_format(raw)
 
+def text_area_height_px(
+    text: str,
+    *,
+    min_px: int = 72,
+    max_px: int = 1200,
+    line_height_px: int = 21,
+    chars_per_wrap_line: int = 90,
+) -> int:
+    """텍스트 길이·줄 수에 맞춰 st.text_area 높이(px)를 잡는다(가로 줄바꿈 가정)."""
+    if not (text or "").strip():
+        return min_px
+    total_lines = 0
+    for line in (text or "").splitlines():
+        if len(line) <= chars_per_wrap_line:
+            total_lines += 1
+        else:
+            total_lines += max(1, (len(line) + chars_per_wrap_line - 1) // chars_per_wrap_line)
+    h = total_lines * line_height_px + 48
+    return int(max(min_px, min(max_px, h)))
+
 # PDF 첨부 버튼 영역 (파일 업로더로 구현; 미선택 시 기본 PDF 자동 로드)
 st.markdown("#### PDF 첨부")
 uploaded_file = st.file_uploader(
@@ -299,9 +319,10 @@ if pdf_source is not None:
         if "patent_analysis_result" in st.session_state:
             del st.session_state.patent_analysis_result
         for _i in range(12):
-            _qk = f"sq_query_{_i}"
-            if _qk in st.session_state:
-                del st.session_state[_qk]
+            for _pfx in ("sq_desc_", "sq_query_"):
+                _qk = f"{_pfx}{_i}"
+                if _qk in st.session_state:
+                    del st.session_state[_qk]
         if "sq_query_fallback" in st.session_state:
             del st.session_state["sq_query_fallback"]
         if "chat_messages" in st.session_state:
@@ -334,33 +355,51 @@ if pdf_source is not None:
             st.markdown("##### 특허검색식")
             _pairs_sq = search_query_to_pairs(st.session_state.search_query_result)
             if not _pairs_sq:
-                st.markdown("####### 설명")
                 _fb = st.text_area(
-                    "검색식",
+                    "검색식 (전체)",
                     value=st.session_state.search_query_result,
-                    height=360,
+                    height=text_area_height_px(
+                        st.session_state.search_query_result,
+                        min_px=120,
+                        max_px=1200,
+                    ),
                     key="sq_query_fallback",
                 )
                 if _fb != st.session_state.search_query_result:
                     st.session_state.search_query_result = _fb
             else:
+                _edited_d: list[str] = []
                 _edited_q: list[str] = []
                 for _i, (_d, _q) in enumerate(_pairs_sq):
                     with st.container():
-                        st.markdown("####### 설명")
-                        st.markdown(_d if _d.strip() else "—")
+                        _dv = st.text_area(
+                            "설명",
+                            value=_d if _d.strip() else "—",
+                            height=text_area_height_px(
+                                _d if _d.strip() else "—",
+                                min_px=72,
+                                max_px=800,
+                            ),
+                            key=f"sq_desc_{_i}",
+                        )
+                        _edited_d.append(_dv)
                         _qv = st.text_area(
                             "검색식",
                             value=_q,
-                            height=120,
+                            height=text_area_height_px(_q, min_px=72, max_px=1200),
                             key=f"sq_query_{_i}",
                         )
                         _edited_q.append(_qv)
                     if _i < len(_pairs_sq) - 1:
                         st.markdown('<div style="height:0.75rem"></div>', unsafe_allow_html=True)
-                _merged_sq = pairs_to_bullet_format(
-                    [(d, qv) for (d, _), qv in zip(_pairs_sq, _edited_q)]
-                )
+                # 편집값이 "—" placeholder인 경우 빈 설명으로 저장
+                _fixed_pairs = []
+                for d, qv in zip(_edited_d, _edited_q):
+                    _dd = d.strip()
+                    if _dd == "—":
+                        _dd = ""
+                    _fixed_pairs.append((_dd, qv))
+                _merged_sq = pairs_to_bullet_format(_fixed_pairs)
                 if _merged_sq != st.session_state.search_query_result:
                     st.session_state.search_query_result = _merged_sq
 
