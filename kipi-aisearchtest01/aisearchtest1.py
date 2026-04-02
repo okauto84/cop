@@ -49,6 +49,28 @@ def show_spec_popup():
         if _orig is not None:
             st.set_page_config = _orig
 
+
+@st.dialog("문장 검색", width="small")
+def show_sentence_search_popup():
+    st.markdown("입력한 문장으로 유사 문서를 찾습니다.")
+    st.caption("AND(&), OR(|) 연산자는 사용할 수 없습니다.")
+    sentence = st.text_area(
+        "검색 문장",
+        placeholder="검색할 문장을 입력하세요.",
+        height=120,
+        label_visibility="collapsed",
+        key="search_sentence_popup",
+    )
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("검색", type="primary", use_container_width=True):
+            st.session_state["search_sentence"] = sentence
+            st.rerun()
+    with col2:
+        if st.button("닫기", use_container_width=True):
+            st.rerun()
+
+
 # CSS: 헤더 아래로 메인 화면 내려서 탭 클릭 가능하게, 시인성, 구분 라인, 우측 사이드바, 가로 스크롤 방지
 st.markdown("""
     <style>
@@ -443,13 +465,8 @@ with left_col:
     st.markdown("**⚙️ 심사 대상 건 입력**")
     st.text_input("출원번호", value="1020200026921", label_visibility="collapsed")
     
-    st.text_area(
-        "문장 검색",
-        placeholder="입력한 문장으로 유사 문서를 찾습니다. AND(&), OR(|) 연산자는 사용할 수 없습니다.",
-        height=100,
-        label_visibility="collapsed",
-        key="search_sentence"
-    )
+    if st.button("🔎 문장 검색", use_container_width=True, key="btn_sentence_search"):
+        show_sentence_search_popup()
         
     st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
     
