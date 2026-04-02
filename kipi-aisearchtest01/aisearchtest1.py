@@ -498,10 +498,7 @@ with left_col:
         show_sentence_search_popup()
 
     # 검색 일자
-    st.markdown(
-        '<div style="border-left:3px solid #4a90d9; padding-left:7px; margin:8px 0 4px 0; font-weight:600; font-size:13px;">검색 일자</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown("**⚙️ 검색 일자**")
     st.selectbox(
         "일자 유형",
         ["출원일자", "공개일자", "등록일자"],
