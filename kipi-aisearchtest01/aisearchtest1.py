@@ -496,7 +496,24 @@ with left_col:
     
     if st.button("🔎 문장 검색", use_container_width=True, key="btn_sentence_search"):
         show_sentence_search_popup()
-        
+
+    # 검색 일자
+    st.markdown(
+        '<div style="border-left:3px solid #4a90d9; padding-left:7px; margin:8px 0 4px 0; font-weight:600; font-size:13px;">검색 일자</div>',
+        unsafe_allow_html=True,
+    )
+    st.selectbox(
+        "일자 유형",
+        ["출원일자", "공개일자", "등록일자"],
+        label_visibility="collapsed",
+        key="date_type",
+    )
+    d_col1, d_col2 = st.columns(2)
+    with d_col1:
+        st.date_input("시작일", value=None, label_visibility="collapsed", key="date_from", format="YYYY-MM-DD")
+    with d_col2:
+        st.date_input("종료일", value=None, label_visibility="collapsed", key="date_to", format="YYYY-MM-DD")
+
     st.markdown('<hr style="border:1px solid #ddd; margin: 5px 0px;">', unsafe_allow_html=True)
     
     st.markdown("**⚙️ 기술 구성요소**")
