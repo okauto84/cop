@@ -579,11 +579,11 @@ with right_col:
         # 일괄조회 버튼 행
         bulk_c1, bulk_c2, bulk_c3, bulk_spacer = st.columns([1.5, 1.5, 1.5, 5.5])
         with bulk_c1:
-            st.button("☰ 대표 도면", use_container_width=True, key="btn_bulk_drawing")
+            st.button("대표 도면", use_container_width=True, key="btn_bulk_drawing")
         with bulk_c2:
-            st.button("⚗ 화학식", use_container_width=True, key="btn_bulk_chemical")
+            st.button("화학식", use_container_width=True, key="btn_bulk_chemical")
         with bulk_c3:
-            st.button("📋 청구항", use_container_width=True, key="btn_bulk_claims")
+            st.button("청구항", use_container_width=True, key="btn_bulk_claims")
 
         # 게시판(검색 결과) — 행 클릭 시 우측 사이드바 표시 (Streamlit 1.35+)
         event = st.dataframe(
