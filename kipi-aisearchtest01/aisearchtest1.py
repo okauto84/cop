@@ -494,7 +494,7 @@ with left_col:
     st.markdown("**⚙️ 심사 대상 건 입력**")
     st.text_input("출원번호", value="1020200026921", label_visibility="collapsed")
     
-    if st.button("🔎 문장 검색", use_container_width=True, key="btn_sentence_search"):
+    if st.button("🔎 문장 입력", use_container_width=True, key="btn_sentence_search"):
         show_sentence_search_popup()
 
     # 검색 일자
@@ -576,6 +576,15 @@ with right_col:
         pass
 
     with tab_result:
+        # 일괄조회 버튼 행
+        bulk_c1, bulk_c2, bulk_c3, bulk_spacer = st.columns([1.5, 1.5, 1.5, 5.5])
+        with bulk_c1:
+            st.button("☰ 대표 도면 일괄조회", use_container_width=True, key="btn_bulk_drawing")
+        with bulk_c2:
+            st.button("⚗ 화학식 일괄조회", use_container_width=True, key="btn_bulk_chemical")
+        with bulk_c3:
+            st.button("📋 청구항 일괄조회", use_container_width=True, key="btn_bulk_claims")
+
         # 게시판(검색 결과) — 행 클릭 시 우측 사이드바 표시 (Streamlit 1.35+)
         event = st.dataframe(
             df_display,
