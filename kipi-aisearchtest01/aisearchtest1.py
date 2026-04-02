@@ -52,6 +52,14 @@ def show_spec_popup():
 
 @st.dialog("문장 검색", width="large")
 def show_sentence_search_popup():
+    st.markdown("""
+        <style>
+        div[data-testid="stDialog"] > div[role="dialog"] {
+            max-width: 50vw !important;
+            width: 50vw !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
     # 초기값 세팅
     def _default(key, val=""):
         if key not in st.session_state:
