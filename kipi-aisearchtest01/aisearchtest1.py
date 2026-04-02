@@ -570,7 +570,7 @@ with claims_col:
 # 우측 패널: 검색 결과 데이터프레임
 # ==========================================
 with right_col:
-    tab_result, tab_info = st.tabs(["1020200091668 검색 결과 ✕", "⌂ INFO"])
+    tab_result, tab_info = st.tabs(["1020200091668 검색 결과 ✕", "1020110141402 검색 결과 ✕"])
 
     with tab_info:
         pass
