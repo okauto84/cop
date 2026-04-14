@@ -608,7 +608,7 @@ with right_col:
         with bulk_refine_in:
             st.text_input(
                 "결과 내 재검색",
-                placeholder="키워드 입력",
+                placeholder="검색식 입력",
                 key="result_refine_input",
                 label_visibility="collapsed",
             )
