@@ -401,6 +401,9 @@ if "sidebar_visible" not in st.session_state:
     # 최초 진입 시부터 우측 대표도면/발명의 3요소 영역이 열려 있도록 기본값을 True로 설정
     st.session_state.sidebar_visible = True
 
+if "result_refine_applied" not in st.session_state:
+    st.session_state.result_refine_applied = ""
+
 
 def toggle_claims():
     st.session_state.claims_visible = not st.session_state.claims_visible
@@ -412,6 +415,22 @@ def show_sidebar():
 
 def hide_sidebar():
     st.session_state.sidebar_visible = False
+
+
+def apply_result_refine():
+    st.session_state.result_refine_applied = st.session_state.get("result_refine_input", "").strip()
+
+
+def _filter_result_display(df: pd.DataFrame, query: str) -> pd.DataFrame:
+    """결과 내 재검색: 모든 열 문자열에 부분 일치(대소문자 무시)."""
+    if not query:
+        return df
+    q = query.lower()
+    mask = pd.Series(False, index=df.index)
+    for col in df.columns:
+        mask |= df[col].astype(str).str.lower().str.contains(q, na=False, regex=False)
+    return df.loc[mask]
+
 
 # 기술 구성요소 목록 (요소 추가 시 마지막에 빈칸 추가)
 DEFAULT_COMPONENTS = [
@@ -576,18 +595,38 @@ with right_col:
         pass
 
     with tab_result:
-        # 일괄조회 버튼 행
-        bulk_c1, bulk_c2, bulk_c3, bulk_spacer = st.columns([1.5, 1.5, 1.5, 5.5])
+        # 일괄조회 버튼 행 + 결과 내 재검색
+        bulk_c1, bulk_c2, bulk_c3, bulk_refine_in, bulk_refine_btn = st.columns(
+            [1.35, 1.35, 1.35, 3.4, 1.25]
+        )
         with bulk_c1:
             st.button("대표 도면", use_container_width=True, key="btn_bulk_drawing")
         with bulk_c2:
             st.button("화학식", use_container_width=True, key="btn_bulk_chemical")
         with bulk_c3:
             st.button("청구항", use_container_width=True, key="btn_bulk_claims")
+        with bulk_refine_in:
+            st.text_input(
+                "결과 내 재검색",
+                placeholder="키워드 입력",
+                key="result_refine_input",
+                label_visibility="collapsed",
+            )
+        with bulk_refine_btn:
+            st.button(
+                "결과 내 재검색",
+                use_container_width=True,
+                key="btn_result_refine",
+                on_click=apply_result_refine,
+            )
+
+        df_display_filtered = _filter_result_display(
+            df_display, st.session_state.result_refine_applied
+        )
 
         # 게시판(검색 결과) — 행 클릭 시 우측 사이드바 표시 (Streamlit 1.35+)
         event = st.dataframe(
-            df_display,
+            df_display_filtered,
             key="result_table",
             selection_mode="single-row",
             on_select="rerun",
