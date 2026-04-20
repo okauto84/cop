@@ -8,6 +8,7 @@ Market Breadth 트래커 (올인원) — Premium Edition
 
 설치:  pip install openpyxl finance-datareader pandas
 실행:  python market_breadth.py
+웹 UI:  streamlit run market_breadth_app.py  (첫 로드 시 캐시·데이터를 자동으로 불러와 차트 표시)
 자동화: Windows 작업 스케줄러 or crontab → 매일 15:40 실행
 
 © 올투스탁랩 ALLTOO STOCK LAB

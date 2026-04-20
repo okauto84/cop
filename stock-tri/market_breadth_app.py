@@ -29,6 +29,7 @@ for key, default in (
     ("mb_kospi_recs", None),
     ("mb_kosdaq_recs", None),
     ("mb_xlsx_bytes", None),
+    ("_mb_autoload_once", False),  # 세션당 자동 로드는 1회만 시도
 ):
     if key not in st.session_state:
         st.session_state[key] = default
@@ -50,6 +51,32 @@ def records_to_frame(records: list, idx_df: pd.DataFrame | None, tail_days: int)
         if "Close" in idx.columns:
             df = df.join(idx[["Close"]].rename(columns={"Close": "지수종가"}), how="left")
     return df
+
+
+def _run_market_pipeline(days: int, *, from_button: bool) -> None:
+    """데이터 수집 + Breadth 계산 후 세션에 저장. 실패 시 메시지만 표시."""
+    st.session_state.mb_xlsx_bytes = None
+    progress_slot = st.empty()
+    try:
+        with st.spinner("시장 데이터를 가져오는 중… (최초·증분 수집은 수 분~수십 분 걸릴 수 있습니다)"):
+            loaded = get_market_data(days=days)
+        if loaded is None:
+            st.error("데이터를 가져오지 못했습니다. 네트워크·모듈 설치 상태를 확인하세요.")
+            return
+        k_r, q_r = run_breadth_calculations(loaded, progress_slot)
+        if not k_r and not q_r:
+            st.error("계산된 Breadth 데이터가 없습니다.")
+            return
+        st.session_state.mb_data = loaded
+        st.session_state.mb_kospi_recs = k_r
+        st.session_state.mb_kosdaq_recs = q_r
+        if from_button:
+            st.success("계산이 완료되었습니다.")
+        else:
+            st.success("초기 데이터를 불러왔습니다. 차트를 확인하세요.")
+    except Exception as e:  # noqa: BLE001
+        progress_slot.empty()
+        st.exception(e)
 
 
 def run_breadth_calculations(data: dict, progress_ph) -> tuple[list, list]:
@@ -146,42 +173,31 @@ with st.sidebar:
     )
 
     run_clicked = st.button(
-        "데이터 로드 및 Breadth 계산",
+        "데이터 다시 로드 및 계산",
         type="primary",
         use_container_width=True,
+        help="슬라이더의 영업일 수를 바꾼 뒤 여기서 다시 불러올 수 있습니다.",
     )
 
 # ── 본문 ──
 st.title("Market Breadth — 웹 패널")
-st.caption("로컬 `market_breadth.py`와 동일한 수집·계산 로직 (FinanceDataReader + 피클 캐시)")
+st.caption("로컬 `market_breadth.py`와 동일한 수집·계산 로직 (FinanceDataReader + 피클 캐시) · **첫 방문 시 자동으로 데이터를 불러옵니다.**")
 
 if run_clicked:
-    st.session_state.mb_xlsx_bytes = None
-    progress_slot = st.empty()
-    try:
-        with st.spinner("시장 데이터를 가져오는 중… (최초·증분 수집은 수 분~수십 분 걸릴 수 있습니다)"):
-            loaded = get_market_data(days=days)
-        if loaded is None:
-            st.error("데이터를 가져오지 못했습니다. 네트워크·모듈 설치 상태를 확인하세요.")
-        else:
-            k_r, q_r = run_breadth_calculations(loaded, progress_slot)
-            if not k_r and not q_r:
-                st.error("계산된 Breadth 데이터가 없습니다.")
-            else:
-                st.session_state.mb_data = loaded
-                st.session_state.mb_kospi_recs = k_r
-                st.session_state.mb_kosdaq_recs = q_r
-                st.success("계산이 완료되었습니다.")
-    except Exception as e:  # noqa: BLE001
-        progress_slot.empty()
-        st.exception(e)
+    _run_market_pipeline(days, from_button=True)
+elif st.session_state.mb_data is None and not st.session_state._mb_autoload_once:
+    st.session_state._mb_autoload_once = True
+    _run_market_pipeline(days, from_button=False)
 
 data = st.session_state.mb_data
 kospi_recs = st.session_state.mb_kospi_recs
 kosdaq_recs = st.session_state.mb_kosdaq_recs
 
 if data is None:
-    st.info("왼쪽에서 **데이터 로드 및 Breadth 계산**을 실행하세요.")
+    st.warning(
+        "표시할 데이터가 없습니다. 자동 로드에 실패했거나 캐시가 비어 있을 수 있습니다. "
+        "왼쪽에서 **데이터 다시 로드 및 계산**을 눌러 재시도하세요."
+    )
     st.stop()
 
 if not show_kospi and not show_kosdaq:
