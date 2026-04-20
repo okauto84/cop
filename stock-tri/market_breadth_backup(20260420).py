@@ -282,7 +282,7 @@ def get_market_data(days=201):
 #  2. Breadth 계산
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def calc_breadth(pivot_df, label="", progress_callback=None):
+def calc_breadth(pivot_df, label=""):
     print(f"\n  [{label}] Breadth 계산 중...", flush=True)
     # 오류 데이터 제거 (공휴일, 비거래일 등)
     skip_dates = {"2025-06-17"}
@@ -318,8 +318,6 @@ def calc_breadth(pivot_df, label="", progress_callback=None):
 
         if (i + 1) % 20 == 0 or i == len(pivot_df) - 1:
             print(f"    {i+1}/{len(pivot_df)}일 완료", flush=True)
-            if progress_callback is not None:
-                progress_callback(i + 1, len(pivot_df), label)
     return records
 
 
@@ -452,8 +450,7 @@ def make_nhnl_chart(mkt, ws, start_r, max_r):
 #  4. 엑셀 생성
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def build_excel(data, kospi_records, kosdaq_records, excel_path=None):
-    out_file = excel_path if excel_path is not None else EXCEL_FILE
+def build_excel(data, kospi_records, kosdaq_records):
     wb = Workbook()
 
     hdr_fill = PatternFill('solid', fgColor=C_NAVY)
@@ -630,8 +627,8 @@ def build_excel(data, kospi_records, kosdaq_records, excel_path=None):
     for i, (text, font) in enumerate(usage, 1):
         wi.cell(row=i, column=1, value=text).font = font
 
-    wb.save(out_file)
-    print(f"\n✅ 엑셀 저장: {out_file}", flush=True)
+    wb.save(EXCEL_FILE)
+    print(f"\n✅ 엑셀 저장: {EXCEL_FILE}", flush=True)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
