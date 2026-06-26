@@ -1,37 +1,36 @@
 # -*- coding: utf-8 -*-
 """
-로봇 잡기 멀티플레이어 아케이드 게임
+로봇 잡기 멀티플레이어 아케이드 (Streamlit)
 
-실행:
-    python kipi-game.py
-
-브라우저에서 http://localhost:8765 접속
+Streamlit Cloud / 로컬 모두:
+    streamlit run kipi-game.py
 """
 
 from __future__ import annotations
 
-import argparse
-import asyncio
-import json
 import math
 import random
+import threading
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
-from aiohttp import WSMsgType, web
+import plotly.graph_objects as go
+import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 
 # ── 게임 설정 ────────────────────────────────────────────────────────────────
 ARENA_W = 900
 ARENA_H = 520
 ROBOT_RADIUS = 28
-HIT_RADIUS = 42
 TARGET_SCORE = 10
 MAX_ROBOTS = 10
-TICK_MS = 50
-PORT = 8765
+TICK_MS = 120
 
-# ── 게임 상태 ────────────────────────────────────────────────────────────────
+st.set_page_config(page_title="kipi-game", page_icon="🤖", layout="wide")
+
+
+# ── 게임 상태 (앱 전체 공유 — Streamlit Cloud 단일 워커 기준) ─────────────────
 @dataclass
 class Robot:
     rid: str
@@ -46,7 +45,6 @@ class Player:
     pid: str
     name: str
     score: int = 0
-    ws: web.WebSocketResponse | None = None
 
 
 @dataclass
@@ -54,7 +52,7 @@ class GameState:
     robots: dict[str, Robot] = field(default_factory=dict)
     players: dict[str, Player] = field(default_factory=dict)
     winner: str | None = None
-    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    lock: threading.Lock = field(default_factory=threading.Lock)
 
     def spawn_robot(self) -> None:
         margin = ROBOT_RADIUS + 8
@@ -79,7 +77,7 @@ class GameState:
         if self.winner:
             return
         margin = ROBOT_RADIUS
-        for bot in list(self.robots.values()):
+        for bot in self.robots.values():
             bot.x += bot.vx
             bot.y += bot.vy
             if bot.x < margin:
@@ -102,74 +100,41 @@ class GameState:
                 bot.vx *= scale
                 bot.vy *= scale
 
-    def snapshot(self) -> dict[str, Any]:
-        board = sorted(
+    def leaderboard(self) -> list[dict[str, Any]]:
+        return sorted(
             [{"name": p.name, "score": p.score} for p in self.players.values()],
             key=lambda r: (-r["score"], r["name"]),
         )
-        return {
-            "type": "state",
-            "arena": {"w": ARENA_W, "h": ARENA_H},
-            "robots": [
-                {"id": r.rid, "x": round(r.x, 1), "y": round(r.y, 1)}
-                for r in self.robots.values()
-            ],
-            "leaderboard": board,
-            "target": TARGET_SCORE,
-            "winner": self.winner,
-        }
 
-    def try_catch(self, player_id: str, x: float, y: float) -> str | None:
+    def try_catch_by_id(self, player_id: str, robot_id: str) -> bool:
         if self.winner or player_id not in self.players:
-            return None
-        best_id: str | None = None
-        best_dist = HIT_RADIUS + 1
-        for rid, bot in self.robots.items():
-            d = math.hypot(bot.x - x, bot.y - y)
-            if d <= HIT_RADIUS and d < best_dist:
-                best_dist = d
-                best_id = rid
-        if not best_id:
-            return None
-        del self.robots[best_id]
+            return False
+        if robot_id not in self.robots:
+            return False
+        del self.robots[robot_id]
         player = self.players[player_id]
         player.score += 1
         if player.score >= TARGET_SCORE:
             self.winner = player.name
         self.ensure_robots()
-        return best_id
+        return True
+
+    def join(self, name: str) -> tuple[str | None, str | None]:
+        """(player_id, error_message)"""
+        if any(p.name == name for p in self.players.values()):
+            return None, "이미 사용 중인 ID입니다."
+        pid = uuid.uuid4().hex[:10]
+        self.players[pid] = Player(pid=pid, name=name)
+        if not self.robots:
+            self.ensure_robots()
+        return pid, None
 
 
-STATE = GameState()
-CLIENTS: set[web.WebSocketResponse] = set()
-
-
-async def broadcast(payload: dict[str, Any]) -> None:
-    dead: list[web.WebSocketResponse] = []
-    msg = json.dumps(payload, ensure_ascii=False)
-    for ws in CLIENTS:
-        try:
-            await ws.send_str(msg)
-        except Exception:
-            dead.append(ws)
-    for ws in dead:
-        CLIENTS.discard(ws)
-
-
-async def broadcast_state() -> None:
-    async with STATE.lock:
-        snap = STATE.snapshot()
-    await broadcast(snap)
-
-
-async def game_loop() -> None:
-    while True:
-        async with STATE.lock:
-            STATE.tick()
-            if STATE.winner is None:
-                STATE.ensure_robots()
-        await broadcast_state()
-        await asyncio.sleep(TICK_MS / 1000)
+@st.cache_resource
+def get_game() -> GameState:
+    game = GameState()
+    game.ensure_robots()
+    return game
 
 
 def sanitize_name(raw: str) -> str:
@@ -178,410 +143,177 @@ def sanitize_name(raw: str) -> str:
         c for c in name
         if c.isalnum() or c in "_-" or ("\uac00" <= c <= "\ud7a3")
     )
-    return cleaned or f"player_{random.randint(100, 999)}"
+    return cleaned
 
 
-async def ws_handler(request: web.Request) -> web.WebSocketResponse:
-    ws = web.WebSocketResponse(heartbeat=20)
-    await ws.prepare(request)
-    CLIENTS.add(ws)
-    player_id: str | None = None
-
-    try:
-        await ws.send_str(json.dumps({"type": "hello", "target": TARGET_SCORE}, ensure_ascii=False))
-        async for msg in ws:
-            if msg.type != WSMsgType.TEXT:
-                continue
-            try:
-                data = json.loads(msg.data)
-            except json.JSONDecodeError:
-                continue
-            mtype = data.get("type")
-            if mtype == "join":
-                name = sanitize_name(data.get("name", ""))
-                async with STATE.lock:
-                    for p in STATE.players.values():
-                        if p.name == name and p.ws is not ws:
-                            await ws.send_str(
-                                json.dumps(
-                                    {"type": "error", "message": "이미 사용 중인 ID입니다."},
-                                    ensure_ascii=False,
-                                )
-                            )
-                            break
-                    else:
-                        player_id = uuid.uuid4().hex[:10]
-                        STATE.players[player_id] = Player(pid=player_id, name=name, ws=ws)
-                        if not STATE.robots:
-                            STATE.ensure_robots()
-                        await ws.send_str(
-                            json.dumps(
-                                {"type": "joined", "playerId": player_id, "name": name},
-                                ensure_ascii=False,
-                            )
-                        )
-                        await broadcast_state()
-                continue
-            if mtype == "catch" and player_id:
-                x = float(data.get("x", -9999))
-                y = float(data.get("y", -9999))
-                async with STATE.lock:
-                    caught = STATE.try_catch(player_id, x, y)
-                    if caught:
-                        pname = STATE.players[player_id].name
-                        payload = {
-                            "type": "caught",
-                            "player": pname,
-                            "robotId": caught,
-                            "leaderboard": STATE.snapshot()["leaderboard"],
-                            "winner": STATE.winner,
-                        }
-                        if STATE.winner:
-                            payload["type"] = "game_over"
-                        await broadcast(payload)
-                    await broadcast_state()
-    finally:
-        CLIENTS.discard(ws)
-        if player_id:
-            async with STATE.lock:
-                STATE.players.pop(player_id, None)
-            await broadcast_state()
-    return ws
+def extract_selected_robot_ids(selection_event: Any) -> list[str]:
+    if selection_event is None:
+        return []
+    sel = getattr(selection_event, "selection", None)
+    if sel is None and isinstance(selection_event, dict):
+        sel = selection_event.get("selection")
+    if sel is None:
+        return []
+    points = getattr(sel, "points", None) or (
+        sel.get("points", []) if isinstance(sel, dict) else []
+    )
+    ids: list[str] = []
+    for pt in points:
+        if isinstance(pt, dict):
+            cd = pt.get("customdata")
+        else:
+            cd = getattr(pt, "customdata", None)
+        if cd is None:
+            continue
+        rid = cd[0] if isinstance(cd, (list, tuple)) else cd
+        ids.append(str(rid))
+    return ids
 
 
-INDEX_HTML = """<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>kipi-game · 로봇 잡기</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: "Segoe UI", system-ui, sans-serif;
-    background: radial-gradient(ellipse at top, #1a1f3c 0%, #0b0d17 55%, #05060a 100%);
-    color: #e8ecff;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 16px;
-  }
-  h1 {
-    font-size: 1.6rem;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-    text-shadow: 0 0 18px #6cf0ff88;
-  }
-  .sub { color: #9aa8d8; font-size: 0.9rem; margin-bottom: 14px; }
-  #joinPanel {
-    background: #141a33cc;
-    border: 1px solid #3d4f9a;
-    border-radius: 12px;
-    padding: 20px 24px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-  #joinPanel input {
-    padding: 10px 14px;
-    border-radius: 8px;
-    border: 1px solid #4b5fbf;
-    background: #0d1228;
-    color: #fff;
-    width: 200px;
-    font-size: 1rem;
-  }
-  #joinPanel button, #resetBtn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #4f7cff, #35d0ff);
-    color: #041018;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  #joinPanel button:disabled { opacity: 0.5; cursor: not-allowed; }
-  #board {
-    width: min(900px, 96vw);
-    background: #0f1430aa;
-    border: 1px solid #334080;
-    border-radius: 12px;
-    padding: 12px 16px 10px;
-    margin-bottom: 12px;
-  }
-  #board h2 { font-size: 0.95rem; color: #8ea4ff; margin-bottom: 8px; }
-  #leaderboard {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-height: 36px;
-  }
-  .lb-item {
-    background: #1b2550;
-    border: 1px solid #3a4f9a;
-    border-radius: 999px;
-    padding: 6px 14px;
-    font-size: 0.88rem;
-  }
-  .lb-item.me { border-color: #5dffb0; box-shadow: 0 0 10px #5dffb055; }
-  .lb-item.lead { background: #2a1f4a; border-color: #c9a0ff; }
-  #arenaWrap { position: relative; width: min(900px, 96vw); }
-  canvas {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-    border: 2px solid #2f3f8a;
-    cursor: crosshair;
-    background: #060a18;
-    touch-action: none;
-  }
-  #status {
-    margin-top: 10px;
-    text-align: center;
-    font-size: 0.92rem;
-    color: #a8b8ee;
-    min-height: 1.4em;
-  }
-  #winnerBanner {
-    display: none;
-    margin-top: 12px;
-    padding: 14px 20px;
-    border-radius: 10px;
-    background: linear-gradient(90deg, #3d1f6e, #1f4a6e);
-    border: 1px solid #c9a0ff;
-    font-size: 1.1rem;
-    font-weight: 700;
-    text-align: center;
-  }
-  #winnerBanner.show { display: block; animation: pulse 1.2s ease infinite alternate; }
-  @keyframes pulse { from { box-shadow: 0 0 8px #c9a0ff55; } to { box-shadow: 0 0 22px #c9a0ffaa; } }
-  .hidden { display: none !important; }
-</style>
-</head>
-<body>
-  <h1>🤖 KIPI 로봇 잡기</h1>
-  <p class="sub">로봇 10마리를 먼저 잡은 사람이 승리합니다 · 실시간 멀티플레이</p>
-
-  <div id="joinPanel">
-    <label for="playerName">플레이어 ID</label>
-    <input id="playerName" maxlength="16" placeholder="예: kipi01" />
-    <button id="joinBtn">입장</button>
-  </div>
-
-  <div id="board" class="hidden">
-    <h2>🏆 리더보드</h2>
-    <div id="leaderboard"></div>
-  </div>
-
-  <div id="arenaWrap" class="hidden">
-    <canvas id="arena" width="900" height="520"></canvas>
-  </div>
-  <p id="status">ID를 입력하고 입장하세요.</p>
-  <div id="winnerBanner"></div>
-
-<script>
-(() => {
-  const WS_URL = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`;
-  const canvas = document.getElementById("arena");
-  const ctx = canvas.getContext("2d");
-  const joinPanel = document.getElementById("joinPanel");
-  const joinBtn = document.getElementById("joinBtn");
-  const playerInput = document.getElementById("playerName");
-  const board = document.getElementById("board");
-  const lbEl = document.getElementById("leaderboard");
-  const arenaWrap = document.getElementById("arenaWrap");
-  const statusEl = document.getElementById("status");
-  const winnerBanner = document.getElementById("winnerBanner");
-
-  let ws = null;
-  let myId = null;
-  let myName = null;
-  let robots = [];
-  let targetScore = 10;
-  let winner = null;
-  let animId = null;
-
-  function connect() {
-    ws = new WebSocket(WS_URL);
-    ws.onopen = () => { statusEl.textContent = "서버에 연결되었습니다. ID를 입력해 입장하세요."; };
-    ws.onclose = () => {
-      statusEl.textContent = "연결이 끊어졌습니다. 페이지를 새로고침하세요.";
-      joinBtn.disabled = false;
-    };
-    ws.onmessage = (ev) => {
-      const data = JSON.parse(ev.data);
-      if (data.type === "error") {
-        statusEl.textContent = data.message;
-        joinBtn.disabled = false;
-        return;
-      }
-      if (data.type === "joined") {
-        myId = data.playerId;
-        myName = data.name;
-        joinPanel.classList.add("hidden");
-        board.classList.remove("hidden");
-        arenaWrap.classList.remove("hidden");
-        statusEl.textContent = `${myName}님 입장 · 로봇을 클릭해 잡으세요!`;
-        startRender();
-      }
-      if (data.type === "state" || data.type === "caught" || data.type === "game_over") {
-        if (data.robots) robots = data.robots;
-        if (data.leaderboard) renderLeaderboard(data.leaderboard);
-        if (data.target) targetScore = data.target;
-        if (data.winner) showWinner(data.winner);
-        if (data.type === "caught" && data.player) {
-          statusEl.textContent = `${data.player}님이 로봇을 잡았습니다!`;
-        }
-      }
-      if (data.type === "hello" && data.target) targetScore = data.target;
-    };
-  }
-
-  function renderLeaderboard(rows) {
-    lbEl.innerHTML = "";
-    rows.forEach((row, i) => {
-      const el = document.createElement("div");
-      el.className = "lb-item" + (row.name === myName ? " me" : "") + (i === 0 && row.score > 0 ? " lead" : "");
-      el.textContent = `${row.name}: ${row.score} / ${targetScore}`;
-      lbEl.appendChild(el);
-    });
-  }
-
-  function showWinner(name) {
-    winner = name;
-    winnerBanner.classList.add("show");
-    winnerBanner.textContent = `🎉 승자: ${name} (로봇 ${targetScore}마리 달성!)`;
-    statusEl.textContent = "게임 종료";
-  }
-
-  function draw() {
-    const w = canvas.width;
-    const h = canvas.height;
-    ctx.fillStyle = "#060a18";
-    ctx.fillRect(0, 0, w, h);
-    ctx.strokeStyle = "#1a2550";
-    ctx.lineWidth = 1;
-    for (let x = 0; x < w; x += 40) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-    }
-    for (let y = 0; y < h; y += 40) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-    }
-  }
-
-  function drawRobots() {
-    const t = performance.now() / 1000;
-    robots.forEach((r) => {
-      const bob = Math.sin(t * 6 + r.x * 0.02) * 3;
-      const x = r.x;
-      const y = r.y + bob;
-      const grad = ctx.createRadialGradient(x - 8, y - 10, 4, x, y, 30);
-      grad.addColorStop(0, "#9efcff");
-      grad.addColorStop(1, "#2a5cff");
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(x, y, 26, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#0a1030";
-      ctx.font = "22px sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("🤖", x, y - 1);
-      ctx.strokeStyle = "#6cf0ff88";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    });
-  }
-
-  function renderLoop() {
-    draw();
-    drawRobots();
-    animId = requestAnimationFrame(renderLoop);
-  }
-
-  function startRender() {
-    if (!animId) renderLoop();
-  }
-
-  function canvasPos(evt) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const clientX = evt.clientX ?? (evt.touches && evt.touches[0].clientX);
-    const clientY = evt.clientY ?? (evt.touches && evt.touches[0].clientY);
-    return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY,
-    };
-  }
-
-  function tryCatch(evt) {
-    if (!ws || ws.readyState !== WebSocket.OPEN || !myId || winner) return;
-    const { x, y } = canvasPos(evt);
-    ws.send(JSON.stringify({ type: "catch", x, y }));
-  }
-
-  canvas.addEventListener("click", tryCatch);
-  canvas.addEventListener("touchstart", (e) => { e.preventDefault(); tryCatch(e); }, { passive: false });
-
-  joinBtn.addEventListener("click", () => {
-    const name = playerInput.value.trim();
-    if (!name) { statusEl.textContent = "ID를 입력하세요."; return; }
-    if (!ws || ws.readyState !== WebSocket.OPEN) { statusEl.textContent = "서버 연결 대기 중..."; return; }
-    joinBtn.disabled = true;
-    ws.send(JSON.stringify({ type: "join", name }));
-  });
-  playerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") joinBtn.click(); });
-
-  connect();
-})();
-</script>
-</body>
-</html>
-"""
+def build_arena_figure(robots: list[Robot]) -> go.Figure:
+    xs = [r.x for r in robots]
+    ys = [r.y for r in robots]
+    ids = [r.rid for r in robots]
+    fig = go.Figure()
+    if robots:
+        fig.add_trace(
+            go.Scatter(
+                x=xs,
+                y=ys,
+                mode="markers+text",
+                marker=dict(
+                    size=52,
+                    color="#35d0ff",
+                    line=dict(width=2, color="#9efcff"),
+                    symbol="circle",
+                ),
+                text=["🤖"] * len(robots),
+                textfont=dict(size=20),
+                textposition="middle center",
+                customdata=ids,
+                hoverinfo="skip",
+                showlegend=False,
+            )
+        )
+    fig.update_layout(
+        height=520,
+        xaxis=dict(
+            range=[0, ARENA_W],
+            showgrid=True,
+            gridcolor="#1a2550",
+            zeroline=False,
+            visible=False,
+            fixedrange=True,
+        ),
+        yaxis=dict(
+            range=[0, ARENA_H],
+            scaleanchor="x",
+            scaleratio=1,
+            showgrid=True,
+            gridcolor="#1a2550",
+            zeroline=False,
+            visible=False,
+            fixedrange=True,
+        ),
+        plot_bgcolor="#060a18",
+        paper_bgcolor="#0f1430",
+        margin=dict(l=8, r=8, t=8, b=8),
+        dragmode=False,
+    )
+    return fig
 
 
-async def index_handler(_request: web.Request) -> web.Response:
-    return web.Response(text=INDEX_HTML, content_type="text/html")
+def render_leaderboard(rows: list[dict[str, Any]], my_name: str | None) -> None:
+    st.markdown("#### 🏆 리더보드")
+    if not rows:
+        st.caption("입장한 플레이어가 없습니다.")
+        return
+    cols = st.columns(min(len(rows), 6))
+    for i, row in enumerate(rows):
+        with cols[i % len(cols)]:
+            label = row["name"] + (" (나)" if row["name"] == my_name else "")
+            st.metric(label, f"{row['score']} / {TARGET_SCORE}")
 
 
-def create_app() -> web.Application:
-    app = web.Application()
-    app.router.add_get("/", index_handler)
-    app.router.add_get("/ws", ws_handler)
-    return app
+# ── UI ───────────────────────────────────────────────────────────────────────
+st.markdown("# 🤖 KIPI 로봇 잡기")
+st.caption(f"로봇 {TARGET_SCORE}마리를 먼저 잡은 사람이 승리합니다 · 실시간 멀티플레이")
 
+if "player_id" not in st.session_state:
+    st.session_state.player_id = None
+if "player_name" not in st.session_state:
+    st.session_state.player_name = None
+if "last_winner" not in st.session_state:
+    st.session_state.last_winner = None
+if "processed_selection" not in st.session_state:
+    st.session_state.processed_selection = ()
 
-async def on_startup(app: web.Application) -> None:
-    app["game_task"] = asyncio.create_task(game_loop())
+game = get_game()
 
+# 입장 전
+if not st.session_state.player_id:
+    with st.form("join_form", clear_on_submit=False):
+        name_input = st.text_input("플레이어 ID", max_chars=16, placeholder="예: kipi01")
+        submitted = st.form_submit_button("입장", type="primary")
+    if submitted:
+        name = sanitize_name(name_input)
+        if not name:
+            st.error("ID를 입력하세요.")
+        else:
+            with game.lock:
+                pid, err = game.join(name)
+            if err:
+                st.error(err)
+            else:
+                st.session_state.player_id = pid
+                st.session_state.player_name = name
+                st.rerun()
+    st.info("여러 브라우저/탭에서 서로 다른 ID로 접속해 함께 플레이할 수 있습니다.")
+    st.stop()
 
-async def on_cleanup(app: web.Application) -> None:
-    task = app.get("game_task")
-    if task:
-        task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
+# 입장 후 — 자동 갱신으로 로봇 이동
+st_autorefresh(interval=TICK_MS, key="game_tick")
 
+# 클릭(선택) 처리 — 동일 선택이 자동 갱신마다 반복 처리되지 않도록
+caught_msg: str | None = None
+sel_ids = extract_selected_robot_ids(st.session_state.get("arena"))
+sel_sig = tuple(sel_ids)
+with game.lock:
+    if sel_ids and sel_sig != st.session_state.processed_selection:
+        for rid in sel_ids:
+            if game.try_catch_by_id(st.session_state.player_id, rid):
+                st.session_state.processed_selection = sel_sig
+                caught_msg = f"{st.session_state.player_name}님이 로봇을 잡았습니다!"
+                break
+    if not game.winner:
+        game.tick()
+        game.ensure_robots()
+    board = game.leaderboard()
+    robots = list(game.robots.values())
+    winner = game.winner
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="kipi-game 로봇 잡기 멀티플레이어")
-    parser.add_argument("--host", default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=PORT)
-    args = parser.parse_args()
+render_leaderboard(board, st.session_state.player_name)
 
-    app = create_app()
-    app.on_startup.append(on_startup)
-    app.on_cleanup.append(on_cleanup)
-    print(f"kipi-game 실행 중 → http://localhost:{args.port}")
-    print("여러 브라우저/탭에서 서로 다른 ID로 접속해 플레이하세요.")
-    web.run_app(app, host=args.host, port=args.port)
+if caught_msg:
+    st.toast(caught_msg, icon="🤖")
 
+if winner and st.session_state.last_winner != winner:
+    st.session_state.last_winner = winner
+    st.balloons()
+    st.success(f"🎉 승자: **{winner}** — 로봇 {TARGET_SCORE}마리 달성!")
 
-if __name__ == "__main__":
-    main()
+if winner:
+    st.warning(f"게임 종료 · 승자: **{winner}**")
+else:
+    st.caption(
+        f"**{st.session_state.player_name}** 님 플레이 중 · "
+        "아래 필드에서 **🤖 로봇을 클릭**하면 잡힙니다."
+    )
+
+st.plotly_chart(
+    build_arena_figure(robots),
+    use_container_width=True,
+    on_select="rerun",
+    selection_mode="points",
+    key="arena",
+)
