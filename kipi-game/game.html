@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KIPI 로봇 잡기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: radial-gradient(ellipse at top, #1a1f3c 0%, #0b0d17 55%, #05060a 100%);
+    color: #e8ecff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+  }
+  h1 { font-size: 1.45rem; margin-bottom: 4px; text-shadow: 0 0 14px #6cf0ff66; }
+  .sub { color: #9aa8d8; font-size: 0.85rem; margin-bottom: 12px; }
+  #joinPanel {
+    background: #141a33cc;
+    border: 1px solid #3d4f9a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  #joinPanel input {
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid #4b5fbf;
+    background: #0d1228;
+    color: #fff;
+    width: 180px;
+    font-size: 1rem;
+  }
+  button {
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #4f7cff, #35d0ff);
+    color: #041018;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  #board {
+    width: min(900px, 96vw);
+    background: #0f1430aa;
+    border: 1px solid #334080;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+  #board h2 { font-size: 0.9rem; color: #8ea4ff; margin-bottom: 6px; }
+  #leaderboard { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; }
+  .lb-item {
+    background: #1b2550;
+    border: 1px solid #3a4f9a;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 0.84rem;
+  }
+  .lb-item.me { border-color: #5dffb0; box-shadow: 0 0 8px #5dffb044; }
+  .lb-item.lead { border-color: #c9a0ff; }
+  #arenaWrap { width: min(900px, 96vw); }
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 2px solid #2f3f8a;
+    cursor: crosshair;
+    background: #060a18;
+    touch-action: none;
+  }
+  #status { margin-top: 8px; font-size: 0.88rem; color: #a8b8ee; min-height: 1.2em; text-align: center; }
+  #winnerBanner {
+    display: none;
+    margin-top: 10px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #3d1f6e, #1f4a6e);
+    border: 1px solid #c9a0ff;
+    font-weight: 700;
+    text-align: center;
+  }
+  #winnerBanner.show { display: block; }
+  .hidden { display: none !important; }
+  #conn { font-size: 0.75rem; color: #6a7aaa; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+  <h1>🤖 KIPI 로봇 잡기</h1>
+  <p class="sub">로봇 10마리를 먼저 잡은 사람이 승리 · 60fps 아케이드</p>
+  <p id="conn"></p>
+
+  <div id="joinPanel">
+    <label for="playerName">플레이어 ID</label>
+    <input id="playerName" maxlength="16" placeholder="예: kipi01" />
+    <button id="joinBtn">입장</button>
+  </div>
+
+  <div id="board" class="hidden">
+    <h2>🏆 리더보드</h2>
+    <div id="leaderboard"></div>
+  </div>
+
+  <div id="arenaWrap" class="hidden">
+    <canvas id="arena" width="900" height="520"></canvas>
+  </div>
+  <p id="status">ID를 입력하고 입장하세요.</p>
+  <div id="winnerBanner"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const ARENA_W = 900, ARENA_H = 520;
+  const TARGET = 10, MAX_ROBOTS = 10, HIT_R = 42;
+  const STORAGE_KEY = "kipi_game_shared_v1";
+  const HOST_TTL = 2500;
+  const TICK_MS = 50;
+  const WS_URL = "__WS_URL__";
+
+  const canvas = document.getElementById("arena");
+  const ctx = canvas.getContext("2d");
+  const joinBtn = document.getElementById("joinBtn");
+  const playerInput = document.getElementById("playerName");
+  const board = document.getElementById("board");
+  const lbEl = document.getElementById("leaderboard");
+  const arenaWrap = document.getElementById("arenaWrap");
+  const joinPanel = document.getElementById("joinPanel");
+  const statusEl = document.getElementById("status");
+  const winnerBanner = document.getElementById("winnerBanner");
+  const connEl = document.getElementById("conn");
+
+  let myId = null, myName = null;
+  let robots = [];
+  let leaderboard = [];
+  let winner = null;
+  let targetScore = TARGET;
+  let ws = null;
+  let useWs = false;
+  let isHost = false;
+  let animId = null;
+  let hostTimer = null;
+  let renderRobots = [];
+
+  function uid() {
+    return Math.random().toString(36).slice(2, 12);
+  }
+
+  function emptyState() {
+    return {
+      hostId: null,
+      hostBeat: 0,
+      robots: [],
+      players: {},
+      winner: null,
+      seq: 0,
+    };
+  }
+
+  function readState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : emptyState();
+    } catch { return emptyState(); }
+  }
+
+  function writeState(state) {
+    state.seq = (state.seq || 0) + 1;
+    state.hostBeat = Date.now();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function spawnRobot(list) {
+    const margin = 36;
+    const speed = 2.2 + Math.random() * 2.6;
+    const ang = Math.random() * Math.PI * 2;
+    list.push({
+      id: uid(),
+      x: margin + Math.random() * (ARENA_W - margin * 2),
+      y: margin + Math.random() * (ARENA_H - margin * 2),
+      vx: Math.cos(ang) * speed,
+      vy: Math.sin(ang) * speed,
+    });
+  }
+
+  function ensureRobots(list) {
+    while (list.length < MAX_ROBOTS && !winner) spawnRobot(list);
+  }
+
+  function tickRobots(list) {
+    const margin = 28;
+    for (const b of list) {
+      b.x += b.vx;
+      b.y += b.vy;
+      if (b.x < margin) { b.x = margin; b.vx = Math.abs(b.vx); }
+      else if (b.x > ARENA_W - margin) { b.x = ARENA_W - margin; b.vx = -Math.abs(b.vx); }
+      if (b.y < margin) { b.y = margin; b.vy = Math.abs(b.vy); }
+      else if (b.y > ARENA_H - margin) { b.y = ARENA_H - margin; b.vy = -Math.abs(b.vy); }
+      if (Math.random() < 0.03) {
+        b.vx += (Math.random() - 0.5) * 1.2;
+        b.vy += (Math.random() - 0.5) * 1.2;
+      }
+    }
+  }
+
+  function renderLeaderboard(rows) {
+    lbEl.innerHTML = "";
+    rows.forEach((row, i) => {
+      const el = document.createElement("div");
+      el.className = "lb-item"
+        + (row.name === myName ? " me" : "")
+        + (i === 0 && row.score > 0 ? " lead" : "");
+      el.textContent = `${row.name}: ${row.score} / ${targetScore}`;
+      lbEl.appendChild(el);
+    });
+  }
+
+  function showWinner(name) {
+    winner = name;
+    winnerBanner.classList.add("show");
+    winnerBanner.textContent = `🎉 승자: ${name} (로봇 ${targetScore}마리!)`;
+    statusEl.textContent = "게임 종료";
+  }
+
+  function drawGrid() {
+    ctx.fillStyle = "#060a18";
+    ctx.fillRect(0, 0, ARENA_W, ARENA_H);
+    ctx.strokeStyle = "#1a2550";
+    ctx.lineWidth = 1;
+    for (let x = 0; x < ARENA_W; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ARENA_H); ctx.stroke();
+    }
+    for (let y = 0; y < ARENA_H; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(ARENA_W, y); ctx.stroke();
+    }
+  }
+
+  function drawRobotsFrame() {
+    const t = performance.now() / 1000;
+    for (const r of renderRobots) {
+      const bob = Math.sin(t * 7 + r.x * 0.02) * 2.5;
+      const x = r.x, y = r.y + bob;
+      const g = ctx.createRadialGradient(x - 6, y - 8, 3, x, y, 28);
+      g.addColorStop(0, "#9efcff");
+      g.addColorStop(1, "#2a5cff");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, 26, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = "22px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🤖", x, y - 1);
+      ctx.strokeStyle = "#6cf0ff88";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+
+  function loop() {
+    drawGrid();
+    drawRobotsFrame();
+    animId = requestAnimationFrame(loop);
+  }
+
+  function canvasPos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width;
+    const sy = canvas.height / rect.height;
+    const cx = evt.clientX ?? evt.touches?.[0]?.clientX;
+    const cy = evt.clientY ?? evt.touches?.[0]?.clientY;
+    return { x: (cx - rect.left) * sx, y: (cy - rect.top) * sy };
+  }
+
+  function tryCatchLocal(x, y) {
+    if (!myId || winner) return;
+    const st = readState();
+    if (st.winner) return;
+    let best = null, bestD = HIT_R + 1;
+    for (const b of st.robots) {
+      const d = Math.hypot(b.x - x, b.y - y);
+      if (d <= HIT_R && d < bestD) { bestD = d; best = b; }
+    }
+    if (!best) return;
+    st.robots = st.robots.filter((r) => r.id !== best.id);
+    if (!st.players[myId]) st.players[myId] = { name: myName, score: 0 };
+    st.players[myId].score += 1;
+    if (st.players[myId].score >= TARGET) st.winner = myName;
+    ensureRobots(st.robots);
+    writeState(st);
+    applyShared(st);
+    if (st.winner) showWinner(st.winner);
+    else statusEl.textContent = `${myName}님이 로봇을 잡았습니다!`;
+  }
+
+  function tryCatchWs(x, y) {
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "catch", x, y }));
+    }
+  }
+
+  function onCatch(evt) {
+    const { x, y } = canvasPos(evt);
+    if (useWs) tryCatchWs(x, y);
+    else tryCatchLocal(x, y);
+  }
+
+  function applyShared(st) {
+    robots = st.robots || [];
+    renderRobots = robots;
+    winner = st.winner || null;
+    leaderboard = Object.values(st.players || {})
+      .map((p) => ({ name: p.name, score: p.score }))
+      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+    renderLeaderboard(leaderboard);
+    if (winner) showWinner(winner);
+  }
+
+  function claimHost() {
+    const st = readState();
+    const now = Date.now();
+    if (!st.hostId || now - (st.hostBeat || 0) > HOST_TTL) {
+      isHost = true;
+      st.hostId = myId;
+      if (!st.robots.length) ensureRobots(st.robots);
+      writeState(st);
+    } else if (st.hostId === myId) {
+      isHost = true;
+    } else {
+      isHost = false;
+    }
+  }
+
+  function hostTick() {
+    if (!isHost || winner) return;
+    const st = readState();
+    if (st.winner) { applyShared(st); return; }
+    if (st.hostId !== myId) { isHost = false; return; }
+    tickRobots(st.robots);
+    ensureRobots(st.robots);
+    writeState(st);
+    applyShared(st);
+  }
+
+  function startLocalMode() {
+    useWs = false;
+    connEl.textContent = "연결: 브라우저 공유 모드 (같은 앱 탭·창 간 실시간 동기화)";
+    claimHost();
+    const st = readState();
+    if (!st.players[myId]) {
+      st.players[myId] = { name: myName, score: 0 };
+      writeState(st);
+    }
+    applyShared(readState());
+    window.addEventListener("storage", (e) => {
+      if (e.key === STORAGE_KEY) applyShared(readState());
+    });
+    hostTimer = setInterval(() => {
+      claimHost();
+      if (isHost) hostTick();
+      else applyShared(readState());
+    }, TICK_MS);
+    if (!animId) loop();
+  }
+
+  function connectWs() {
+  const url = (WS_URL || "").trim();
+  if (!url || url === "__WS_URL__") {
+    startLocalMode();
+    return;
+  }
+  ws = new WebSocket(url);
+  ws.onopen = () => {
+    useWs = true;
+    connEl.textContent = "연결: WebSocket 서버";
+    ws.send(JSON.stringify({ type: "join", name: myName }));
+  };
+  ws.onclose = () => {
+    connEl.textContent = "WebSocket 끊김 → 공유 모드로 전환";
+    if (myName && !myId) joinLocal(myName);
+    else if (myId) startLocalMode();
+  };
+  ws.onmessage = (ev) => {
+    const data = JSON.parse(ev.data);
+    if (data.type === "error") { statusEl.textContent = data.message; joinBtn.disabled = false; return; }
+    if (data.type === "joined") {
+      myId = data.playerId;
+      joinPanel.classList.add("hidden");
+      board.classList.remove("hidden");
+      arenaWrap.classList.remove("hidden");
+      statusEl.textContent = `${myName}님 입장 · 로봇을 클릭하세요!`;
+      if (!animId) loop();
+    }
+    if (data.robots) { renderRobots = data.robots; robots = data.robots; }
+    if (data.leaderboard) { leaderboard = data.leaderboard; renderLeaderboard(leaderboard); }
+    if (data.target) targetScore = data.target;
+    if (data.winner) showWinner(data.winner);
+    if (data.type === "caught" && data.player) statusEl.textContent = `${data.player}님이 로봇을 잡았습니다!`;
+  };
+  }
+
+  function joinLocal(name) {
+    myName = name;
+    const st = readState();
+    if (Object.values(st.players || {}).some((p) => p.name === name)) {
+      statusEl.textContent = "이미 사용 중인 ID입니다.";
+      joinBtn.disabled = false;
+      return;
+    }
+    myId = uid();
+    st.players[myId] = { name: myName, score: 0 };
+    writeState(st);
+    joinPanel.classList.add("hidden");
+    board.classList.remove("hidden");
+    arenaWrap.classList.remove("hidden");
+    statusEl.textContent = `${myName}님 입장 · 로봇을 클릭하세요!`;
+    startLocalMode();
+  }
+
+  joinBtn.addEventListener("click", () => {
+    const name = playerInput.value.trim();
+    if (!name) { statusEl.textContent = "ID를 입력하세요."; return; }
+    joinBtn.disabled = true;
+    myName = name;
+    const url = (WS_URL || "").trim();
+    if (url && url !== "__WS_URL__") connectWs();
+    else joinLocal(name);
+  });
+
+  playerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") joinBtn.click(); });
+  canvas.addEventListener("click", onCatch);
+  canvas.addEventListener("touchstart", (e) => { e.preventDefault(); onCatch(e); }, { passive: false });
+})();
+</script>
+</body>
+</html>
