@@ -24,9 +24,6 @@ GAME_HTML_PATH = BASE_DIR / "game.html"
 
 st.set_page_config(page_title="kipi-game", page_icon="🤖", layout="wide")
 
-st.markdown("# 🤖 KIPI 로봇 잡기")
-st.caption("로봇 10마리를 먼저 잡은 사람이 승리합니다 · 게임은 아래 프레임에서 60fps로 실행됩니다.")
-
 try:
     ws_url = st.secrets.get("game_ws_url", "")
 except Exception:
@@ -69,7 +66,8 @@ with st.expander("게임 안내", expanded=False):
 - **입장**: 프레임 안에서 플레이어 ID 입력 후 입장
 - **조작**: 움직이는 🤖 로봇을 **마우스 클릭** (터치 지원)
 - **승리**: 로봇 **10마리**를 먼저 잡은 사람
-- **멀티플레이**: 같은 Streamlit 앱을 연 탭·브라우저 간 **실시간 동기화** (공유 모드)
+- **승리 후**: 승자 배너의 **[다시시작]** 버튼으로 점수·로봇을 초기화하고 새 게임 시작
+- **중간 합류**: 게임이 진행 중이어도 멈추지 않으며, 새 ID로 **바로 입장**해 참여 (점수 0부터)
 - 게임 루프는 HTML Canvas **requestAnimationFrame(60fps)** 으로 동작합니다.
         """
     )

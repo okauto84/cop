@@ -87,8 +87,24 @@
     border: 1px solid #c9a0ff;
     font-weight: 700;
     text-align: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
   }
-  #winnerBanner.show { display: block; }
+  #winnerBanner.show { display: flex; }
+  #restartBtn {
+    background: linear-gradient(135deg, #ffb347, #ff6b6b);
+    color: #1a0a00;
+    padding: 10px 22px;
+    font-size: 0.95rem;
+  }
+  #joinPanel.joined-compact {
+    padding: 10px 16px;
+    margin-bottom: 8px;
+  }
+  #joinPanel.joined-compact input,
+  #joinPanel.joined-compact button#joinBtn { display: none; }
+  #myTag { color: #5dffb0; font-size: 0.9rem; margin-left: 8px; }
   .hidden { display: none !important; }
   #conn { font-size: 0.75rem; color: #6a7aaa; margin-bottom: 6px; }
 </style>
@@ -102,6 +118,7 @@
     <label for="playerName">플레이어 ID</label>
     <input id="playerName" maxlength="16" placeholder="예: kipi01" />
     <button id="joinBtn">입장</button>
+    <span id="myTag" class="hidden"></span>
   </div>
 
   <div id="board" class="hidden">
@@ -112,8 +129,11 @@
   <div id="arenaWrap" class="hidden">
     <canvas id="arena" width="900" height="520"></canvas>
   </div>
-  <p id="status">ID를 입력하고 입장하세요.</p>
-  <div id="winnerBanner"></div>
+  <p id="status">ID를 입력하고 입장하세요. 게임이 진행 중이어도 바로 합류할 수 있습니다.</p>
+  <div id="winnerBanner">
+    <span id="winnerText"></span>
+    <button id="restartBtn" type="button">다시시작</button>
+  </div>
 
 <script>
 (() => {
@@ -136,6 +156,9 @@
   const joinPanel = document.getElementById("joinPanel");
   const statusEl = document.getElementById("status");
   const winnerBanner = document.getElementById("winnerBanner");
+  const winnerText = document.getElementById("winnerText");
+  const restartBtn = document.getElementById("restartBtn");
+  const myTag = document.getElementById("myTag");
   const connEl = document.getElementById("conn");
 
   let myId = null, myName = null;
@@ -191,8 +214,9 @@
     });
   }
 
-  function ensureRobots(list) {
-    while (list.length < MAX_ROBOTS && !winner) spawnRobot(list);
+  function ensureRobots(list, gameOver) {
+    if (gameOver) return;
+    while (list.length < MAX_ROBOTS) spawnRobot(list);
   }
 
   function tickRobots(list) {
@@ -225,9 +249,39 @@
 
   function showWinner(name) {
     winner = name;
+    winnerText.textContent = `🎉 승자: ${name} (로봇 ${targetScore}마리!)`;
     winnerBanner.classList.add("show");
-    winnerBanner.textContent = `🎉 승자: ${name} (로봇 ${targetScore}마리!)`;
-    statusEl.textContent = "게임 종료";
+    statusEl.textContent = "게임 종료 · 아래 [다시시작]으로 새 게임을 시작하세요.";
+  }
+
+  function hideWinner() {
+    winner = null;
+    winnerBanner.classList.remove("show");
+    winnerText.textContent = "";
+  }
+
+  function restartGame() {
+    if (!myId) return;
+    const st = readState();
+    if (!st.winner) return;
+    st.winner = null;
+    st.robots = [];
+    Object.keys(st.players).forEach((pid) => {
+      st.players[pid].score = 0;
+    });
+    ensureRobots(st.robots, false);
+    writeState(st);
+    hideWinner();
+    applyShared(readState());
+    statusEl.textContent = "새 게임이 시작되었습니다!";
+  }
+
+  function markJoinedUI() {
+    joinPanel.classList.add("joined-compact");
+    myTag.textContent = `플레이 중: ${myName}`;
+    myTag.classList.remove("hidden");
+    board.classList.remove("hidden");
+    arenaWrap.classList.remove("hidden");
   }
 
   function drawGrid() {
@@ -294,7 +348,7 @@
     if (!st.players[myId]) st.players[myId] = { name: myName, score: 0 };
     st.players[myId].score += 1;
     if (st.players[myId].score >= TARGET) st.winner = myName;
-    ensureRobots(st.robots);
+    ensureRobots(st.robots, !!st.winner);
     writeState(st);
     applyShared(st);
     if (st.winner) showWinner(st.winner);
@@ -314,6 +368,7 @@
   }
 
   function applyShared(st) {
+    const prevWinner = winner;
     robots = st.robots || [];
     renderRobots = robots;
     winner = st.winner || null;
@@ -321,7 +376,11 @@
       .map((p) => ({ name: p.name, score: p.score }))
       .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
     renderLeaderboard(leaderboard);
-    if (winner) showWinner(winner);
+    if (winner) {
+      if (winner !== prevWinner) showWinner(winner);
+    } else {
+      hideWinner();
+    }
   }
 
   function claimHost() {
@@ -330,7 +389,7 @@
     if (!st.hostId || now - (st.hostBeat || 0) > HOST_TTL) {
       isHost = true;
       st.hostId = myId;
-      if (!st.robots.length) ensureRobots(st.robots);
+      if (!st.robots.length && !st.winner) ensureRobots(st.robots, false);
       writeState(st);
     } else if (st.hostId === myId) {
       isHost = true;
@@ -340,34 +399,37 @@
   }
 
   function hostTick() {
-    if (!isHost || winner) return;
+    if (!isHost) return;
     const st = readState();
-    if (st.winner) { applyShared(st); return; }
+    if (st.winner) {
+      applyShared(st);
+      return;
+    }
     if (st.hostId !== myId) { isHost = false; return; }
     tickRobots(st.robots);
-    ensureRobots(st.robots);
+    ensureRobots(st.robots, false);
     writeState(st);
     applyShared(st);
   }
 
   function startLocalMode() {
     useWs = false;
-    connEl.textContent = "연결: 브라우저 공유 모드 (같은 앱 탭·창 간 실시간 동기화)";
+    connEl.textContent = "연결: 브라우저 공유 모드 (같은 앱 탭·창 간 실시간 동기화 · 진행 중 합류 가능)";
     claimHost();
-    const st = readState();
-    if (!st.players[myId]) {
-      st.players[myId] = { name: myName, score: 0 };
-      writeState(st);
-    }
     applyShared(readState());
-    window.addEventListener("storage", (e) => {
-      if (e.key === STORAGE_KEY) applyShared(readState());
-    });
-    hostTimer = setInterval(() => {
-      claimHost();
-      if (isHost) hostTick();
-      else applyShared(readState());
-    }, TICK_MS);
+    if (!window._kipiStorageBound) {
+      window._kipiStorageBound = true;
+      window.addEventListener("storage", (e) => {
+        if (e.key === STORAGE_KEY) applyShared(readState());
+      });
+    }
+    if (!hostTimer) {
+      hostTimer = setInterval(() => {
+        claimHost();
+        if (isHost) hostTick();
+        else applyShared(readState());
+      }, TICK_MS);
+    }
     if (!animId) loop();
   }
 
@@ -393,9 +455,7 @@
     if (data.type === "error") { statusEl.textContent = data.message; joinBtn.disabled = false; return; }
     if (data.type === "joined") {
       myId = data.playerId;
-      joinPanel.classList.add("hidden");
-      board.classList.remove("hidden");
-      arenaWrap.classList.remove("hidden");
+      markJoinedUI();
       statusEl.textContent = `${myName}님 입장 · 로봇을 클릭하세요!`;
       if (!animId) loop();
     }
@@ -418,10 +478,14 @@
     myId = uid();
     st.players[myId] = { name: myName, score: 0 };
     writeState(st);
-    joinPanel.classList.add("hidden");
-    board.classList.remove("hidden");
-    arenaWrap.classList.remove("hidden");
-    statusEl.textContent = `${myName}님 입장 · 로봇을 클릭하세요!`;
+    markJoinedUI();
+    if (st.winner) {
+      statusEl.textContent = `${myName}님 합류 · 승자가 나왔습니다. [다시시작]을 눌러 새 게임을 시작하세요.`;
+    } else if (st.robots && st.robots.length > 0) {
+      statusEl.textContent = `${myName}님 합류 · 진행 중인 게임에 바로 참여합니다!`;
+    } else {
+      statusEl.textContent = `${myName}님 입장 · 로봇을 클릭하세요!`;
+    }
     startLocalMode();
   }
 
@@ -434,6 +498,8 @@
     if (url && url !== "__WS_URL__") connectWs();
     else joinLocal(name);
   });
+
+  restartBtn.addEventListener("click", restartGame);
 
   playerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") joinBtn.click(); });
   canvas.addEventListener("click", onCatch);
