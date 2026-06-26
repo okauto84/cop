@@ -14,7 +14,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from market_breadth import EXCEL_FILE, build_excel, calc_breadth, get_market_data
+from market_breadth import EXCEL_FILE, build_excel, calc_breadth, get_market_data, read_tracker_excel
 
 st.set_page_config(
     page_title="Market Breadth",
@@ -195,10 +195,9 @@ kosdaq_recs = st.session_state.mb_kosdaq_recs
 
 if data is None:
     st.warning(
-        "표시할 데이터가 없습니다. 자동 로드에 실패했거나 캐시가 비어 있을 수 있습니다. "
-        "왼쪽에서 **데이터 다시 로드 및 계산**을 눌러 재시도하세요."
+        "실시간 캐시 데이터가 없습니다. **엑셀 저장본** 탭에서 기존 `market_breadth_tracker.xlsx`를 확인하거나, "
+        "왼쪽 **데이터 다시 로드 및 계산**으로 재시도하세요."
     )
-    st.stop()
 
 if not show_kospi and not show_kosdaq:
     st.warning("KOSPI 또는 KOSDAQ 중 하나 이상을 표시로 선택하세요.")
@@ -210,26 +209,79 @@ if show_kospi:
 if show_kosdaq:
     tab_labels.append("KOSDAQ")
 
-tabs = st.tabs(tab_labels)
-idx_tab = 0
-if show_kospi:
-    with tabs[idx_tab]:
-        render_market("KOSPI", kospi_recs or [], data.get("kospi_index"), chart_tail)
-    idx_tab += 1
-if show_kosdaq:
-    with tabs[idx_tab]:
-        render_market("KOSDAQ", kosdaq_recs or [], data.get("kosdaq_index"), chart_tail)
+view_src1, view_src2 = st.tabs(["실시간 (캐시·FDR)", "엑셀 저장본"])
+
+with view_src1:
+    if data is None:
+        st.info("실시간 탭: 데이터가 로드되면 여기에 동일한 차트가 표시됩니다.")
+    else:
+        tabs = st.tabs(tab_labels)
+        idx_tab = 0
+        if show_kospi:
+            with tabs[idx_tab]:
+                render_market("KOSPI", kospi_recs or [], data.get("kospi_index"), chart_tail)
+            idx_tab += 1
+        if show_kosdaq:
+            with tabs[idx_tab]:
+                render_market("KOSDAQ", kosdaq_recs or [], data.get("kosdaq_index"), chart_tail)
+
+with view_src2:
+    st.caption(f"파일: `{EXCEL_FILE}` (`read_tracker_excel`)")
+    if EXCEL_FILE.is_file():
+        try:
+            mtime = datetime.fromtimestamp(EXCEL_FILE.stat().st_mtime)
+            st.caption(f"수정 시각: {mtime:%Y-%m-%d %H:%M:%S}")
+        except OSError:
+            pass
+    excel_bundle = read_tracker_excel(EXCEL_FILE)
+    ex_k = excel_bundle.get("kospi_records") or []
+    ex_q = excel_bundle.get("kosdaq_records") or []
+    if not ex_k and not ex_q:
+        st.info(
+            "저장된 엑셀이 없거나 시트를 읽지 못했습니다. "
+            "`market_breadth.py` 실행 또는 아래 **엑셀 워크북 생성**으로 파일을 만든 뒤 다시 확인하세요."
+        )
+    else:
+        tabs_x = st.tabs(tab_labels)
+        xi = 0
+        if show_kospi:
+            with tabs_x[xi]:
+                st.subheader("KOSPI_데이터 시트")
+                if ex_k:
+                    st.dataframe(pd.DataFrame(ex_k), use_container_width=True, hide_index=True, height=320)
+                    render_market(
+                        "KOSPI (엑셀)",
+                        ex_k,
+                        excel_bundle.get("kospi_index"),
+                        chart_tail,
+                    )
+                else:
+                    st.warning("KOSPI_데이터 시트가 비어 있거나 없습니다.")
+            xi += 1
+        if show_kosdaq:
+            with tabs_x[xi]:
+                st.subheader("KOSDAQ_데이터 시트")
+                if ex_q:
+                    st.dataframe(pd.DataFrame(ex_q), use_container_width=True, hide_index=True, height=320)
+                    render_market(
+                        "KOSDAQ (엑셀)",
+                        ex_q,
+                        excel_bundle.get("kosdaq_index"),
+                        chart_tail,
+                    )
+                else:
+                    st.warning("KOSDAQ_데이터 시트가 비어 있거나 없습니다.")
 
 st.divider()
 st.subheader("엑셀보내기")
-has_any = bool(kospi_recs) or bool(kosdaq_recs)
+has_any = data is not None and (bool(kospi_recs) or bool(kosdaq_recs))
 gen = st.button(
     "엑셀 워크북 생성",
     disabled=not has_any,
-    help="Premium Edition과 동일한 시트·차트 구성입니다.",
+    help="Premium Edition과 동일한 시트·차트 구성입니다. (실시간 데이터가 있을 때만)",
 )
 
-if gen and has_any:
+if gen and has_any and data is not None:
     try:
         fd, tmp_path = tempfile.mkstemp(suffix=".xlsx")
         os.close(fd)

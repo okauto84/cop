@@ -5,6 +5,7 @@ Market Breadth 트래커 (올인원) — Premium Edition
   ① 엑셀 파일이 없으면 자동 생성 (차트 포함)
   ② 데이터를 가져와 자동 기록
   ③ KOSPI / KOSDAQ 분리 + 월별 시트 + 프리미엄 차트
+  ④ `read_tracker_excel()` 로 저장된 xlsx의 데이터 시트를 읽어 표·차트를 재현 (웹 UI 엑셀 탭)
 
 설치:  pip install openpyxl finance-datareader pandas
 실행:  python market_breadth.py
@@ -13,6 +14,8 @@ Market Breadth 트래커 (올인원) — Premium Edition
 
 © 올투스탁랩 ALLTOO STOCK LAB
 """
+
+from __future__ import annotations
 
 import pandas as pd
 from datetime import datetime, timedelta
@@ -633,6 +636,111 @@ def build_excel(data, kospi_records, kosdaq_records, excel_path=None):
 
     wb.save(out_file)
     print(f"\n✅ 엑셀 저장: {out_file}", flush=True)
+
+
+def read_tracker_excel(excel_path: Path | None = None) -> dict:
+    """
+    `build_excel`로 저장한 tracker xlsx에서 KOSPI_데이터 / KOSDAQ_데이터 시트를 읽어
+    `calc_breadth`와 동일한 형태의 records 및 지수 종가 시계열을 복원한다.
+    (Streamlit 등에서 표·차트 재현용)
+
+    반환 dict 키: kospi_records, kosdaq_records, kospi_index, kosdaq_index
+    (index는 YYYY-MM-%D 문자열 인덱스, Close 컬럼)
+    """
+    path = Path(excel_path) if excel_path is not None else EXCEL_FILE
+    empty = {
+        "kospi_records": [],
+        "kosdaq_records": [],
+        "kospi_index": None,
+        "kosdaq_index": None,
+    }
+    if not path.is_file():
+        return empty
+
+    def _safe_int(val, default=0):
+        if val is None or (isinstance(val, float) and pd.isna(val)):
+            return default
+        try:
+            return int(round(float(val)))
+        except (TypeError, ValueError):
+            return default
+
+    def _safe_pct(val):
+        if val is None or (isinstance(val, float) and pd.isna(val)):
+            return 0.0
+        try:
+            return round(float(val), 1)
+        except (TypeError, ValueError):
+            return 0.0
+
+    def _date_str(val) -> str | None:
+        if val is None or (isinstance(val, float) and pd.isna(val)):
+            return None
+        if isinstance(val, datetime):
+            return val.strftime("%Y-%m-%d")
+        ts = pd.to_datetime(val, errors="coerce")
+        if pd.isna(ts):
+            s = str(val).strip()
+            return s[:10] if len(s) >= 10 else None
+        return ts.strftime("%Y-%m-%d")
+
+    def _sheet_to_records_and_index(df: pd.DataFrame) -> tuple[list, pd.DataFrame | None]:
+        if df is None or df.empty:
+            return [], None
+        records = []
+        idx_dates = []
+        idx_closes = []
+        for _, row in df.iterrows():
+            ds = _date_str(row.get("날짜"))
+            if not ds:
+                continue
+            rec = {
+                "date": ds,
+                "ma200_above": _safe_int(row.get("200일 상회")),
+                "ma200_below": _safe_int(row.get("200일 하회")),
+                "ma200_pct": _safe_pct(row.get("200일 비율(%)")),
+                "ma50_above": _safe_int(row.get("50일 상회")),
+                "ma50_below": _safe_int(row.get("50일 하회")),
+                "ma50_pct": _safe_pct(row.get("50일 비율(%)")),
+                "ma20_above": _safe_int(row.get("20일 상회")),
+                "ma20_below": _safe_int(row.get("20일 하회")),
+                "ma20_pct": _safe_pct(row.get("20일 비율(%)")),
+                "nh": _safe_int(row.get("52주 신고가")),
+                "nl": _safe_int(row.get("52주 신저가")),
+            }
+            records.append(rec)
+            v_close = row.get("지수종가")
+            if v_close is not None and not (isinstance(v_close, float) and pd.isna(v_close)):
+                try:
+                    idx_dates.append(ds)
+                    idx_closes.append(round(float(v_close), 2))
+                except (TypeError, ValueError):
+                    pass
+        idx_df = None
+        if idx_dates:
+            idx_df = pd.DataFrame({"Close": idx_closes}, index=idx_dates)
+        return records, idx_df
+
+    out = dict(empty)
+    try:
+        xl = pd.ExcelFile(path, engine="openpyxl")
+    except Exception:
+        return empty
+
+    for sheet, rkey, ikey in [
+        ("KOSPI_데이터", "kospi_records", "kospi_index"),
+        ("KOSDAQ_데이터", "kosdaq_records", "kosdaq_index"),
+    ]:
+        if sheet not in xl.sheet_names:
+            continue
+        try:
+            sdf = pd.read_excel(path, sheet_name=sheet, engine="openpyxl")
+        except Exception:
+            continue
+        recs, idx_df = _sheet_to_records_and_index(sdf)
+        out[rkey] = recs
+        out[ikey] = idx_df
+    return out
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
