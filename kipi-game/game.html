@@ -142,6 +142,8 @@
   const ARENA_W = 900, ARENA_H = 520;
   const TARGET = 10, MAX_ROBOTS = 10, HIT_R = 42;
   const STORAGE_KEY = "kipi_game_shared_v1";
+  const SESSION_PLAYER_KEY = "kipi_session_player";
+  const SESSION_NAME_KEY = "kipi_session_name";
   const HOST_TTL = 2500;
   const TICK_MS = 50;
   const WS_URL = "__WS_URL__";
@@ -200,6 +202,67 @@
     state.hostBeat = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
+
+  function removePlayerFromState(playerId) {
+    if (!playerId) return;
+    const st = readState();
+    let changed = false;
+    if (st.players[playerId]) {
+      delete st.players[playerId];
+      changed = true;
+    }
+    if (st.hostId === playerId) {
+      st.hostId = null;
+      st.hostBeat = 0;
+      changed = true;
+    }
+    if (changed) writeState(st);
+  }
+
+  function clearSessionStorage() {
+    sessionStorage.removeItem(SESSION_PLAYER_KEY);
+    sessionStorage.removeItem(SESSION_NAME_KEY);
+  }
+
+  function saveSession() {
+    if (myId) sessionStorage.setItem(SESSION_PLAYER_KEY, myId);
+    if (myName) sessionStorage.setItem(SESSION_NAME_KEY, myName);
+  }
+
+  function resetJoinUI() {
+    joinPanel.classList.remove("joined-compact");
+    myTag.classList.add("hidden");
+    myTag.textContent = "";
+    board.classList.add("hidden");
+    arenaWrap.classList.add("hidden");
+    playerInput.value = "";
+    joinBtn.disabled = false;
+    myId = null;
+    myName = null;
+    isHost = false;
+    hideWinner();
+    renderRobots = [];
+    robots = [];
+    leaderboard = [];
+    lbEl.innerHTML = "";
+  }
+
+  /** F5·탭 닫기 시: 공유 리더보드에서 본인 기록 제거 */
+  function leaveGame() {
+    const pid = myId || sessionStorage.getItem(SESSION_PLAYER_KEY);
+    if (pid) removePlayerFromState(pid);
+    clearSessionStorage();
+  }
+
+  /** 새로고침·재접속 시: 이전 세션 플레이어 정리 후 입장 화면으로 */
+  function purgeSessionOnLoad() {
+    const pid = sessionStorage.getItem(SESSION_PLAYER_KEY);
+    if (pid) removePlayerFromState(pid);
+    clearSessionStorage();
+    resetJoinUI();
+  }
+
+  purgeSessionOnLoad();
 
   function spawnRobot(list) {
     const margin = 36;
@@ -455,6 +518,7 @@
     if (data.type === "error") { statusEl.textContent = data.message; joinBtn.disabled = false; return; }
     if (data.type === "joined") {
       myId = data.playerId;
+      saveSession();
       markJoinedUI();
       statusEl.textContent = `${myName}님 입장 · 로봇을 클릭하세요!`;
       if (!animId) loop();
@@ -478,6 +542,7 @@
     myId = uid();
     st.players[myId] = { name: myName, score: 0 };
     writeState(st);
+    saveSession();
     markJoinedUI();
     if (st.winner) {
       statusEl.textContent = `${myName}님 합류 · 승자가 나왔습니다. [다시시작]을 눌러 새 게임을 시작하세요.`;
@@ -500,6 +565,9 @@
   });
 
   restartBtn.addEventListener("click", restartGame);
+
+  window.addEventListener("pagehide", () => leaveGame());
+  window.addEventListener("beforeunload", () => leaveGame());
 
   playerInput.addEventListener("keydown", (e) => { if (e.key === "Enter") joinBtn.click(); });
   canvas.addEventListener("click", onCatch);
