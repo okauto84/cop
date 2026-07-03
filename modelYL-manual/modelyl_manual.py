@@ -1,337 +1,367 @@
 # -*- coding: utf-8 -*-
+"""Tesla Model Y 오너 매뉴얼 RAG 챗봇 (Streamlit)."""
 
-import io
+from __future__ import annotations
+
+import pickle
+import re
+import time
 from pathlib import Path
+from typing import Any, Iterator
 
+import numpy as np
 import streamlit as st
 from openai import OpenAI
-from pypdf import PdfReader
 
-# 최초 로딩 시 사용할 기본 PDF (프로젝트 루트 기준 ./data/)
 BASE_DIR = Path(__file__).resolve().parent
-DEFAULT_PDF_PATH = BASE_DIR / "data" / "1020200026921A.pdf"
+VEC_PATH = BASE_DIR / "data" / "vec" / "vectors_manual.p"
+EMBED_MODEL_NAME = "dragonkue/BGE-m3-ko"
+PAGE_TITLE_PATTERN = re.compile(r"page_(\d+)", re.IGNORECASE)
 
-# 페이지 설정
 st.set_page_config(
-    page_title="SearchMath",
-    page_icon="🔍",
-    layout="wide"
+    page_title="Model Y Manual",
+    page_icon="🚗",
+    layout="wide",
 )
 
-# API 키 설정 (secrets에서 가져오거나 기본값 사용)
-try:
-    API_KEY = st.secrets.get("openai_api_key", "")
-except Exception:
-    API_KEY = ""
 
-# 사이드바: 모델 선택만 유지
+def load_openai_api_key() -> str:
+    try:
+        key = st.secrets.get("openai_api_key", "")
+        if key:
+            return key
+    except Exception:
+        pass
+
+    key_file = BASE_DIR / "key.txt"
+    if key_file.is_file():
+        for line in key_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" in line:
+                name, value = line.split("=", 1)
+                if name.strip() == "openai_api_key":
+                    return value.strip().strip('"').strip("'")
+    return ""
+
+
+API_KEY = load_openai_api_key()
+
+
+@st.cache_resource
+def get_bge_m3_ko_model():
+    try:
+        import torch
+        from sentence_transformers import SentenceTransformer
+    except ImportError as e:
+        raise ImportError(
+            "RAG 임베딩을 위해 패키지가 필요합니다. 다음을 설치하세요:\n"
+            "pip install -U sentence-transformers torch"
+        ) from e
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    return SentenceTransformer(EMBED_MODEL_NAME, trust_remote_code=True, device=device)
+
+
+@st.cache_resource
+def load_manual_vectors() -> list[dict[str, Any]]:
+    if not VEC_PATH.is_file():
+        raise FileNotFoundError(
+            f"벡터 DB 파일을 찾을 수 없습니다: {VEC_PATH}\n"
+            "먼저 `py -3 data_processing.py all` 을 실행하세요."
+        )
+
+    with VEC_PATH.open("rb") as file:
+        data = pickle.load(file)
+
+    if not isinstance(data, list):
+        raise ValueError("vectors_manual.p 형식이 예상(list[dict])과 다릅니다.")
+    return data
+
+
+@st.cache_resource
+def get_manual_embeddings_matrix() -> tuple[list[dict[str, Any]], np.ndarray]:
+    items = load_manual_vectors()
+    valid_items: list[dict[str, Any]] = []
+    embeddings: list[list[float]] = []
+
+    for item in items:
+        vector = item.get("embedd")
+        if vector is not None:
+            valid_items.append(item)
+            embeddings.append(vector)
+
+    if not embeddings:
+        return [], np.array([], dtype="float32")
+
+    matrix = np.asarray(embeddings, dtype="float32")
+    matrix = matrix / (np.linalg.norm(matrix, axis=1, keepdims=True) + 1e-12)
+    return valid_items, matrix
+
+
+def embed_query(query: str) -> np.ndarray:
+    model = get_bge_m3_ko_model()
+    vector = model.encode(
+        [query],
+        normalize_embeddings=True,
+        show_progress_bar=False,
+    )
+    return np.asarray(vector[0], dtype="float32")
+
+
+def format_page_label(title: str | None, filename: str | None = None) -> str:
+    source = title or filename or "알 수 없는 페이지"
+    match = PAGE_TITLE_PATTERN.search(source)
+    if match:
+        return f"매뉴얼 {match.group(1)}페이지 ({source})"
+    return source
+
+
+def search_similar_pages(query: str, top_k: int = 5) -> list[dict[str, Any]]:
+    items, matrix = get_manual_embeddings_matrix()
+    if not items or matrix.size == 0:
+        return []
+
+    query_vector = embed_query(query)
+    query_vector = query_vector / (np.linalg.norm(query_vector) + 1e-12)
+    scores = matrix @ query_vector
+
+    top_k = min(top_k, len(scores))
+    top_indices = np.argsort(-scores)[:top_k]
+
+    results: list[dict[str, Any]] = []
+    for index in top_indices:
+        item = items[int(index)]
+        results.append(
+            {
+                "score": float(scores[index]),
+                "filename": item.get("filename"),
+                "title": item.get("title"),
+                "text": item.get("text"),
+                "item": item,
+            }
+        )
+    return results
+
+
+def build_rag_system_prompt(rag_results: list[dict[str, Any]]) -> str:
+    if not rag_results:
+        return (
+            "당신은 Tesla Model Y 오너 매뉴얼 전문 도우미입니다. "
+            "현재 질문과 관련된 매뉴얼 페이지를 찾지 못했습니다. "
+            "매뉴얼에 없는 내용은 추측하지 말고, 정보가 없음을 안내하세요."
+        )
+
+    context_blocks: list[str] = []
+    for rank, result in enumerate(rag_results, start=1):
+        label = format_page_label(result.get("title"), result.get("filename"))
+        score = float(result.get("score", 0.0))
+        text = (result.get("text") or "").strip() or "(내용 없음)"
+        context_blocks.append(
+            f"### 참고 {rank}: {label}\n"
+            f"유사도: {score:.4f}\n"
+            f"---\n{text}"
+        )
+
+    context = "\n\n".join(context_blocks)
+    return f"""당신은 Tesla Model Y 오너 매뉴얼 전문 도우미입니다.
+아래 [매뉴얼 참고 자료]만을 바탕으로 사용자 질문에 정확하고 친절하게 답변하세요.
+
+[답변 규칙]
+- 참고 자료에 없는 내용은 추측하지 말고, 매뉴얼에 해당 정보가 없다고 안내하세요.
+- 답변에 관련 매뉴얼 페이지 번호를 함께 알려주세요.
+- 안전·경고 관련 내용은 주의사항을 빠짐없이 전달하세요.
+- 한국어로 답변하세요.
+
+[매뉴얼 참고 자료]
+{context}
+"""
+
+
+def format_api_error(error: Exception) -> str:
+    message = str(error)
+    if "authentication" in message.lower() or "api_key" in message.lower():
+        return f"🔑 API 키 오류: API 키를 확인해주세요.\n\n에러: {message}"
+    if "quota" in message.lower() or "limit" in message.lower() or "rate" in message.lower():
+        return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {message}"
+    return f"❌ API 호출 오류: {message}"
+
+
+def stream_rag_answer(
+    api_key: str,
+    model: str,
+    system_prompt: str,
+    history: list[dict[str, str]],
+    temperature: float,
+    collect: list[str],
+) -> Iterator[str]:
+    collect.clear()
+    if not api_key:
+        message = (
+            "⚠️ OpenAI API 키가 설정되지 않았습니다. "
+            "`.streamlit/secrets.toml` 또는 `key.txt`에 `openai_api_key`를 설정해주세요."
+        )
+        collect.append(message)
+        yield message
+        return
+
+    messages: list[dict[str, str]] = [{"role": "system", "content": system_prompt}]
+    for item in history:
+        role = item.get("role")
+        content = item.get("content", "")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+
+    try:
+        client = OpenAI(api_key=api_key)
+        stream = client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            stream=True,
+        )
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                text = chunk.choices[0].delta.content
+                collect.append(text)
+                yield text
+    except Exception as error:
+        message = format_api_error(error)
+        collect.append(message)
+        yield message
+
+
 with st.sidebar:
     st.markdown("### 설정")
     model_name = st.selectbox(
         "모델 선택",
-        # ["gpt-5-mini"],
-        ["gpt-5.4"],
-        index=0
+        ["gpt-4o-mini", "gpt-4o", "gpt-5.4"],
+        index=0,
     )
+    top_k = st.slider("검색 페이지 수 (Top-K)", min_value=1, max_value=8, value=4)
+    temperature = st.slider("Temperature", min_value=0.0, max_value=1.5, value=0.2, step=0.1)
+    show_stats = st.checkbox("통계 표시", value=False)
     st.markdown("---")
-    if st.button("검색식 Q&A 대화 초기화", help="챗봇 대화 기록만 지웁니다. 검색식 목록은 유지됩니다."):
-        st.session_state.chat_messages = []
+    if st.button("대화 초기화"):
+        st.session_state.messages = []
+        st.session_state.rag_results = []
         st.rerun()
 
-st.markdown("# SearchMath")
+    st.caption(f"벡터 DB: `{VEC_PATH.relative_to(BASE_DIR)}`")
 
-# PDF 파싱 함수
-def parse_pdf(file_source) -> str:
-    """PDF 바이트 또는 업로드 파일 객체에서 텍스트 추출"""
+
+try:
+    with st.spinner("임베딩 모델 및 벡터 DB 준비 중..."):
+        _ = get_bge_m3_ko_model()
+        _ = get_manual_embeddings_matrix()
+except Exception as error:
+    st.error(str(error))
+    st.stop()
+
+
+st.markdown("# Model Y Manual")
+st.markdown("*Tesla Model Y 오너 매뉴얼 RAG 챗봇*")
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "rag_results" not in st.session_state:
+    st.session_state.rag_results = []
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+if prompt := st.chat_input("Model Y 매뉴얼에 대해 질문해보세요"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
     try:
-        if isinstance(file_source, bytes):
-            data = file_source
-        else:
-            data = file_source.read()
-        reader = PdfReader(io.BytesIO(data))
-        text_parts = []
-        for page in reader.pages:
-            t = page.extract_text()
-            if t:
-                text_parts.append(t)
-        return "\n\n".join(text_parts) if text_parts else ""
-    except Exception as e:
-        return ""
+        rag_results = search_similar_pages(prompt, top_k=top_k)
+    except Exception as error:
+        rag_results = []
+        st.warning(f"RAG 검색 중 오류가 발생했습니다: {error}")
 
-# OpenAI API 호출 함수
-def call_openai_for_patent(api_key: str, model: str, document_text: str) -> str:
-    """문서 텍스트를 바탕으로 발명의 효과·청구항 중심 핵심 기술 내용 생성"""
-    if not api_key or api_key == "":
-        return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
-    try:
-        client = OpenAI(api_key=api_key)
-        system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 주어진 문서 텍스트에서 아래 두 가지를 명확히 추출·정리하여 답변하세요.
+    st.session_state.rag_results = rag_results
+    system_prompt = build_rag_system_prompt(rag_results)
 
-1. **발명의 효과**: 해당 발명이 달성하는 핵심적인 기술적 효과를 글자 수 400자 수준으로 서술하세요.
-2. **청구항 중심으로 핵심 기술 내용**: 독립 청구항 및 필요 시 종속 청구항을 중심으로, 핵심 기술 구성과 요지를 글자 수 400자 수준으로 정리하세요.
-
-출력은 반드시 다음 형식으로 작성하세요:
----
-## 발명의 효과
-(내용)
-
-## 청구항 중심 핵심 기술 내용
-(내용)
----"""
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"다음 문서 내용을 분석해 주세요.\n\n{document_text}"}
-            ],
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        err = str(e)
-        if "API_KEY" in err or "authentication" in err.lower() or "invalid" in err.lower():
-            return f"🔑 API 키 오류: API 키를 확인해주세요.\n\n에러: {err}"
-        if "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
-            return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
-        return f"❌ API 호출 오류: {err}"
-
-# 특허검색식 생성을 위한 OpenAI API 호출 함수
-def call_openai_for_search_query(api_key: str, model: str, analysis_result: str) -> str:
-    """LLM 분석 결과를 바탕으로 특허검색식 생성"""
-    if not api_key or api_key == "":
-        return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
-    try:
-        client = OpenAI(api_key=api_key)
-        system_prompt = """당신은 특허청에 소속되어 있는 베테랑 특허 심사관입니다. 주어진 LLM 분석 결과(발명의 효과 및 청구항 중심 핵심 기술 내용)를 바탕으로, 서로 다른 검색 방향을 가진 **유사 특허 검색용 검색식**을 작성하세요.
-
-[검색식 작성 시 참고]:
-1. 핵심 기술 키워드의 동의어·유의어를 당신이 알고 있는 지식으로 되도록 많이 반영합니다.
-2. 기술 분야별 용어를 다양하게 조합합니다.
-3. 한글·영문·숫자를 사용할 수 있으며, 구문검색 및 논리연산(AND *, OR +, NOT !, NEAR ^, 절단자 등)으로 구체화할 수 있습니다.
-4. 검색식은 명확하고 실행 가능한 한 줄 문자열로 작성합니다.
-5. 단어 구분을 위해 단어 앞뒤에 싱글/쌍따옴표를 넣지 않습니다.
-
-[특허 검색식 작성 기준 요약]:
-- 단어 검색, 구문 검색(인접 나열), AND(*), OR(+), NOT(!, AND와 함께), NEAR(^, 1~3단어 거리) 등을 활용할 수 있습니다.
-
-[출력 형식 — 반드시 준수]:
-1. **검색식 항목 개수는 반드시 6개 미만**입니다. (1개 이상 6개 미만. 중복·유사한 방향은 하나로 묶지 말고, 서로 다른 검색 관점으로 나눕니다.)
-2. **첫째 줄**: **그 검색식이 다루는 관점에 대한 간략한 설명**을 한 줄로 씁니다. 필요하면 괄호로 보조 설명을 붙입니다.
-3. **둘째 줄**: 위 설명에 대응하는 **특허 검색식**을 한 줄로 씁니다. (줄바꿈 없음)
-3. 항목과 항목 사이에는 **빈 줄 하나**를 넣습니다.
-4. 위 형식 외의 머리말·요약·번호 목록·마크다운 제목 등은 넣지 않습니다.
-5. 가장 중요하다고 판단하는 순위부터 보여줍니다.
-
-[출력 예시]
-1. 층간 도전성 범프 크기 구배(범프 크기 변화로 적층 연결)
-ABF+Ajinomoto*Build-up*Film*인터포저*(TSV+Through-Silicon*Via)*수직*신호라인*연결*스택*패키지*패드*피치
-
-2. 인터포저를 통한 ASIC과 HBM 전기적 결합 (인터포저 내부라인/TSV 활용)
-HBM+High*Bandwidth*Memory*ASIC*(Application*Specific*Integrated*Circuit)*인터포저*내부*연결*전기적*결합*(TSV+Through-Silicon*Via)*(내부라인+routing+interconnect)
-
-3. 상부 패드 피치와 인터포저 피치 일치
-P1=P3*패드*피치*인터포저*상부*하부*스택*패키지
-
-"""
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"다음 LLM 분석 결과를 바탕으로, 지정한 출력 형식(● 설명 한 줄 + 검색식 한 줄, 항목 10개 미만)으로 특허 검색식을 생성해 주세요.\n\n{analysis_result}"}
-            ],
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        err = str(e)
-        if "API_KEY" in err or "authentication" in err.lower() or "invalid" in err.lower():
-            return f"🔑 API 키 오류: API 키를 확인해주세요.\n\n에러: {err}"
-        if "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
-            return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
-        return f"❌ API 호출 오류: {err}"
-
-# 챗봇·컨텍스트용: 특허 검색식 작성 기준 요약 (생성 프롬프트와 일치)
-SEARCH_QUERY_CRITERIA_CONTEXT = """[검색식 작성 참고]
-[검색식 작성 시 참고]:
-1. 핵심 기술 키워드의 동의어·유의어를 당신이 알고 있는 지식으로 되도록 많이 반영합니다.
-2. 기술 분야별 용어를 다양하게 조합합니다.
-3. 한글·영문·숫자를 사용할 수 있으며, 구문검색 및 논리연산(AND *, OR +, NOT !, NEAR ^, 절단자 등)으로 구체화할 수 있습니다.
-4. 검색식은 명확하고 실행 가능한 한 줄 문자열로 작성합니다.
-5. 단어 구분을 위해 단어 앞뒤에 싱글/쌍따옴표를 넣지 않습니다.
-
-[특허 검색식 작성 기준 요약]:
-- 단어 검색, 구문 검색(인접 나열), AND(*), OR(+), NOT(!, AND와 함께), NEAR(^, 1~3단어 거리) 등을 활용할 수 있습니다.
-
-[출력 형식(목록 생성 시)]
-- 항목마다 첫 줄: 간략한 설명, 둘째 줄: 검색식 한 줄. 항목은 여러 개일 수 있으며 우선순위 순으로 나열한다."""
-
-def call_openai_search_query_chat(
-    api_key: str,
-    model: str,
-    llm_analysis_text: str,
-    search_query_text: str,
-    criteria_context: str,
-    history: list[dict],
-) -> str:
-    """LLM 분석 결과·특허검색식·기준을 컨텍스트로 하여 대화 응답"""
-    if not api_key or api_key == "":
-        return "⚠️ API 키가 설정되지 않았습니다. Streamlit secrets의 openai_api_key를 설정해주세요."
-    try:
-        client = OpenAI(api_key=api_key)
-        _analysis = (llm_analysis_text or "").strip() or "(분석 결과 없음)"
-        _queries = (search_query_text or "").strip() or "(특허검색식 없음)"
-        system_prompt = f"""당신은 특허청 소속 특허 심사·검색 경험이 있는 도우미입니다. 사용자의 질문에 답할 때 아래 **[LLM 분석 결과]**, **[특허검색식 결과]**, **[검색식 기준]**을 모두 참고하세요. 세 가지가 서로 보완 관계이므로, 분석에서 드러난 발명의 요지·효과·청구 방향과 실제 검색식 문자열·검색 연산 규칙을 일관되게 연결해 설명하세요.
-
-- [LLM 분석 결과]는 출원 문서를 바탕으로 한 발명의 효과·청구항 중심 요약입니다. [특허검색식 결과]는 그 분석을 토대로 생성·편집된 검색식 목록(내부 저장 형식일 수 있음)입니다. 질문 유형에 따라 둘 중 어느 쪽을 더 강조할지 판단하세요.
-- 검색식 목록에 없는 식을 사실처럼 만들지 마세요. 제안·수정 시 [검색식 기준]에 맞게 이유를 짧게 덧붙이세요.
-- 분석 결과와 검색식이 어긋나 보이면, 그 차이를 짚고 기준에 맞게 조정 방향을 제안할 수 있습니다.
-- 일부가 비어 있으면 그 한계를 밝히고, 주어진 정보만으로 답할 수 있는 범위에서 도우세요.
-
-[LLM 분석 결과 — 발명의 효과·청구항 중심 핵심 기술 등]
-{_analysis}
-
-[특허검색식 결과 — 사용자가 화면에서 편집한 최종 문자열]
-{_queries}
-
-[검색식 기준]
-{criteria_context}
-"""
-        messages: list[dict] = [{"role": "system", "content": system_prompt}]
-        for m in history:
-            role = m.get("role")
-            content = m.get("content", "")
-            if role in ("user", "assistant") and content:
-                messages.append({"role": role, "content": content})
-        response = client.chat.completions.create(model=model, messages=messages)
-        return response.choices[0].message.content or ""
-    except Exception as e:
-        err = str(e)
-        if "API_KEY" in err or "authentication" in err.lower() or "invalid" in err.lower():
-            return f"🔑 API 키 오류: API 키를 확인해주세요.\n\n에러: {err}"
-        if "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
-            return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
-        return f"❌ API 호출 오류: {err}"
-
-# PDF 첨부 버튼 영역 (파일 업로더로 구현; 미선택 시 기본 PDF 자동 로드)
-st.markdown("#### PDF 첨부")
-uploaded_file = st.file_uploader(
-    "특허/출원 문서 PDF를 선택하세요",
-    type=["pdf"],
-    help="PDF를 선택하면 자동으로 파싱 후 발명의 효과와 청구항 중심 핵심 기술 내용을 분석하고, 이를 바탕으로 특허검색식을 생성합니다. "
-         "선택하지 않으면 최초 로딩 시 ./data/1020200026921A.pdf 가 자동으로 사용됩니다."
-)
-
-pdf_source = None
-if uploaded_file is not None:
-    pdf_source = uploaded_file
-elif DEFAULT_PDF_PATH.is_file():
-    pdf_source = DEFAULT_PDF_PATH.read_bytes()
-
-if pdf_source is not None:
-    if uploaded_file is None:
-        st.caption(f"기본 PDF 사용: `data/{DEFAULT_PDF_PATH.name}` (업로드 없음)")
-    # 파일이 변경되었는지 확인하여 세션 상태 초기화
-    if uploaded_file is not None:
-        current_file_id = f"{uploaded_file.name}_{uploaded_file.size}"
-    else:
-        current_file_id = f"default_{DEFAULT_PDF_PATH.name}_{len(pdf_source)}"
-    if "last_file_id" not in st.session_state or st.session_state.last_file_id != current_file_id:
-        st.session_state.last_file_id = current_file_id
-        if "search_query_result" in st.session_state:
-            del st.session_state.search_query_result
-        if "patent_analysis_result" in st.session_state:
-            del st.session_state.patent_analysis_result
-        if "search_query_editor" in st.session_state:
-            del st.session_state["search_query_editor"]
-        if "chat_messages" in st.session_state:
-            del st.session_state["chat_messages"]
-    
-    with st.spinner("PDF를 파싱하고 있습니다..."):
-        extracted_text = parse_pdf(pdf_source)
-
-    if not extracted_text.strip():
-        st.error("PDF에서 텍스트를 추출할 수 없습니다. 스캔 이미지 PDF인 경우 OCR이 필요할 수 있습니다.")
-    else:
-        st.success(f"PDF 파싱 완료 (총 {len(extracted_text)}자 추출)")
-        with st.expander("추출된 원문 미리보기", expanded=False):
-            st.text_area("원문", value=extracted_text[:5000] + ("..." if len(extracted_text) > 5000 else ""), height=200, disabled=True)
-
-        with st.spinner("OpenAI API로 분석 중..."):
-            result = call_openai_for_patent(API_KEY, model_name, extracted_text)
-        
-        with st.expander("LLM 분석 결과", expanded=True):
-            st.text_area("결과", value=result, height=280, disabled=True, label_visibility="collapsed")
-
-        # LLM 분석 결과를 바탕으로 특허검색식 생성
-        if result and not result.startswith("⚠️") and not result.startswith("🔑") and not result.startswith("📊") and not result.startswith("❌"):
-            st.session_state.patent_analysis_result = result
-            # 세션 상태 초기화 또는 새로 생성
-            if "search_query_result" not in st.session_state:
-                with st.spinner("특허검색식 생성 중..."):
-                    st.session_state.search_query_result = call_openai_for_search_query(API_KEY, model_name, result)
-
-            with st.expander("특허검색식", expanded=True):
-                _sq_ed = st.text_area(
-                    "결과",
-                    value=st.session_state.search_query_result,
-                    height=280,
-                    key="search_query_editor",
-                    label_visibility="collapsed",
-                )
-                if _sq_ed != st.session_state.search_query_result:
-                    st.session_state.search_query_result = _sq_ed
-
-            st.divider()
-            st.markdown("##### 검색식 Q&A")
-            st.caption(
-                "현재 문서에 대한 LLM 분석 결과와 특허검색식·검색식 작성 기준을 함께 참고하여 질문할 수 있습니다. "
-                "사이드바에서 대화만 초기화할 수 있습니다."
+    with st.chat_message("assistant"):
+        collected: list[str] = []
+        st.write_stream(
+            stream_rag_answer(
+                API_KEY,
+                model_name,
+                system_prompt,
+                st.session_state.messages,
+                temperature,
+                collected,
             )
-            if "chat_messages" not in st.session_state:
-                st.session_state.chat_messages = []
+        )
+        response_text = "".join(collected)
+        st.session_state.messages.append({"role": "assistant", "content": response_text})
 
-            for _msg in st.session_state.chat_messages:
-                with st.chat_message(_msg["role"]):
-                    st.markdown(_msg["content"])
+if show_stats and st.session_state.messages:
+    st.markdown("---")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("대화 턴", len(st.session_state.messages) // 2)
+    with col2:
+        st.metric("모델", model_name)
+    with col3:
+        st.metric("Top-K", top_k)
 
-            _chat_prompt = st.chat_input("검색식·검색 기준에 대해 질문하세요")
-            if _chat_prompt:
-                st.session_state.chat_messages.append({"role": "user", "content": _chat_prompt})
-                with st.spinner("답변 생성 중..."):
-                    _reply = call_openai_search_query_chat(
-                        API_KEY,
-                        model_name,
-                        st.session_state.get("patent_analysis_result", ""),
-                        st.session_state.search_query_result,
-                        SEARCH_QUERY_CRITERIA_CONTEXT,
-                        st.session_state.chat_messages,
-                    )
-                st.session_state.chat_messages.append({"role": "assistant", "content": _reply})
-                st.rerun()
+st.markdown("---")
+st.markdown("### 참고 매뉴얼 페이지")
+rag_results_display = st.session_state.get("rag_results", [])
+if rag_results_display:
+    for rank, result in enumerate(rag_results_display, start=1):
+        label = format_page_label(result.get("title"), result.get("filename"))
+        score = float(result.get("score", 0.0))
+        text = (result.get("text") or "_텍스트 없음_").strip()
+        with st.expander(f"{rank}. {label} (유사도: {score:.4f})", expanded=(rank == 1)):
+            st.markdown(text.replace("\n", "  \n"))
+else:
+    st.caption("질문을 입력하면 관련 매뉴얼 페이지가 여기에 표시됩니다.")
 
-        # st.markdown("---")
+st.markdown("---")
+col1, col2 = st.columns(2)
+with col1:
+    st.info("구체적인 기능명·상황을 함께 질문하면 더 정확한 답변을 받을 수 있습니다.")
+with col2:
+    if st.button("대화 내용 다운로드", key="download_chat"):
+        if st.session_state.messages:
+            history_text = ""
+            for message in st.session_state.messages:
+                role = "사용자" if message["role"] == "user" else "AI"
+                history_text += f"**{role}**: {message['content']}\n\n"
+            st.download_button(
+                label="TXT 저장",
+                data=history_text,
+                file_name=f"modelyl_chat_{time.strftime('%Y%m%d_%H%M%S')}.txt",
+                mime="text/plain",
+            )
+        else:
+            st.warning("저장할 대화가 없습니다.")
 
-# 분석 결과·원문 미리보기: 글자 작게, 레이아웃 정리
-st.markdown("""
+if not API_KEY:
+    st.warning(
+        "⚠️ OpenAI API 키가 설정되지 않았습니다. "
+        "`.streamlit/secrets.toml` 또는 `key.txt`에 `openai_api_key`를 설정해주세요."
+    )
+
+st.markdown(
+    """
 <style>
-    .stTextArea textarea {
-        font-size: 0.8rem !important;
-        line-height: 1.5 !important;
-        font-family: inherit;
-        background-color: #ffffff !important;
-        color: #262730 !important;
-        border: 1px solid #e0e0e0 !important;
+    .stChatMessage {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
     }
-    .stExpander summary {
-        font-size: 0.9rem !important;
-    }
-    /* 분석 결과 영역 배경 흰색 강제 */
-    .stExpander .stTextArea textarea[disabled] {
-        background-color: #ffffff !important;
-        color: #262730 !important;
-        -webkit-text-fill-color: #262730 !important;
+    .main > div {
+        padding-top: 1.5rem;
     }
 </style>
-""", unsafe_allow_html=True)
-
-# API 키 미설정 안내
-if not API_KEY or API_KEY == "":
-    st.warning("⚠️ OpenAI API 키가 설정되지 않았습니다. Streamlit secrets에 `openai_api_key`를 설정해주세요.")
+""",
+    unsafe_allow_html=True,
+)
