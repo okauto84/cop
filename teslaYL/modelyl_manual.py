@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Tesla Model Y 오너 매뉴얼 RAG 챗봇 (Streamlit)."""
+"""Tesla Model Y 오너 매뉴얼 RAG 챗봇 (Streamlit).
+
+흐름:
+1) 사용자 질문 → vectors_manual.p 유사 지문 검색
+2) 검색된 지문을 컨텍스트로 OpenAI API 답변 생성
+3) 지문과 동일한 파일명의 data/img 이미지를 화면에 출력
+"""
 
 from __future__ import annotations
 
@@ -14,21 +20,27 @@ import streamlit as st
 from openai import OpenAI
 
 BASE_DIR = Path(__file__).resolve().parent
-VEC_PATH = BASE_DIR / "data" / "vec" / "vectors_manual.p"
+DATA_DIR = BASE_DIR / "data"
+VEC_PATH = DATA_DIR / "vec" / "vectors_manual.p"
+IMG_DIR = DATA_DIR / "img"
 EMBED_MODEL_NAME = "dragonkue/BGE-m3-ko"
+MODEL_NAME = "gpt-5.4"
+TOP_K = 3
+TEMPERATURE = 0.2
 PAGE_TITLE_PATTERN = re.compile(r"page_(\d+)", re.IGNORECASE)
+IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".webp")
 
 st.set_page_config(
-    page_title="Model Y Manual",
+    page_title="Model Y L Manual",
     page_icon="🚗",
     layout="wide",
+    initial_sidebar_state="collapsed",
 )
-
 
 # API 키 설정 (secrets에서 가져오거나 기본값 사용)
 try:
     API_KEY = st.secrets.get("openai_api_key", "")
-except:
+except Exception:
     API_KEY = ""
 
 
@@ -93,15 +105,41 @@ def embed_query(query: str) -> np.ndarray:
     return np.asarray(vector[0], dtype="float32")
 
 
+def page_stem_from_item(title: str | None, filename: str | None = None) -> str | None:
+    """page_003.txt / page_003 → page_003"""
+    for source in (title, filename):
+        if not source:
+            continue
+        stem = Path(str(source)).stem
+        if PAGE_TITLE_PATTERN.search(stem):
+            return stem
+    return None
+
+
 def format_page_label(title: str | None, filename: str | None = None) -> str:
-    source = title or filename or "알 수 없는 페이지"
-    match = PAGE_TITLE_PATTERN.search(source)
-    if match:
-        return f"매뉴얼 {match.group(1)}페이지 ({source})"
-    return source
+    stem = page_stem_from_item(title, filename)
+    if stem:
+        match = PAGE_TITLE_PATTERN.search(stem)
+        if match:
+            return f"매뉴얼 {int(match.group(1))}페이지 ({stem})"
+    return title or filename or "알 수 없는 페이지"
 
 
-def search_similar_pages(query: str, top_k: int = 5) -> list[dict[str, Any]]:
+def resolve_page_image(title: str | None, filename: str | None = None) -> Path | None:
+    """지문 파일명과 동일한 stem의 이미지를 data/img에서 찾습니다."""
+    stem = page_stem_from_item(title, filename)
+    if not stem:
+        return None
+
+    for ext in IMAGE_EXTENSIONS:
+        image_path = IMG_DIR / f"{stem}{ext}"
+        if image_path.is_file():
+            return image_path
+    return None
+
+
+def search_similar_passages(query: str, top_k: int = 5) -> list[dict[str, Any]]:
+    """vectors_manual.p에서 질문과 유사한 지문을 검색하고 대응 이미지 경로를 붙입니다."""
     items, matrix = get_manual_embeddings_matrix()
     if not items or matrix.size == 0:
         return []
@@ -116,12 +154,16 @@ def search_similar_pages(query: str, top_k: int = 5) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     for index in top_indices:
         item = items[int(index)]
+        title = item.get("title")
+        filename = item.get("filename")
+        image_path = resolve_page_image(title, filename)
         results.append(
             {
                 "score": float(scores[index]),
-                "filename": item.get("filename"),
-                "title": item.get("title"),
-                "text": item.get("text"),
+                "filename": filename,
+                "title": title,
+                "text": item.get("text") or "",
+                "image_path": str(image_path) if image_path else None,
                 "item": item,
             }
         )
@@ -131,8 +173,8 @@ def search_similar_pages(query: str, top_k: int = 5) -> list[dict[str, Any]]:
 def build_rag_system_prompt(rag_results: list[dict[str, Any]]) -> str:
     if not rag_results:
         return (
-            "당신은 Tesla Model Y 오너 매뉴얼 전문 도우미입니다. "
-            "현재 질문과 관련된 매뉴얼 페이지를 찾지 못했습니다. "
+            "당신은 Tesla Model Y L 오너 매뉴얼 전문 도우미입니다. "
+            "현재 질문과 관련된 매뉴얼 지문을 찾지 못했습니다. "
             "매뉴얼에 없는 내용은 추측하지 말고, 정보가 없음을 안내하세요."
         )
 
@@ -142,22 +184,22 @@ def build_rag_system_prompt(rag_results: list[dict[str, Any]]) -> str:
         score = float(result.get("score", 0.0))
         text = (result.get("text") or "").strip() or "(내용 없음)"
         context_blocks.append(
-            f"### 참고 {rank}: {label}\n"
+            f"### 참고 지문 {rank}: {label}\n"
             f"유사도: {score:.4f}\n"
             f"---\n{text}"
         )
 
     context = "\n\n".join(context_blocks)
     return f"""당신은 Tesla Model Y 오너 매뉴얼 전문 도우미입니다.
-아래 [매뉴얼 참고 자료]만을 바탕으로 사용자 질문에 정확하고 친절하게 답변하세요.
+아래 [매뉴얼 참고 지문]만을 바탕으로 사용자 질문에 정확하고 친절하게 답변하세요.
 
 [답변 규칙]
-- 참고 자료에 없는 내용은 추측하지 말고, 매뉴얼에 해당 정보가 없다고 안내하세요.
+- 참고 지문에 없는 내용은 추측하지 말고, 매뉴얼에 해당 정보가 없다고 안내하세요.
 - 답변에 관련 매뉴얼 페이지 번호를 함께 알려주세요.
 - 안전·경고 관련 내용은 주의사항을 빠짐없이 전달하세요.
 - 한국어로 답변하세요.
 
-[매뉴얼 참고 자료]
+[매뉴얼 참고 지문]
 {context}
 """
 
@@ -176,7 +218,6 @@ def stream_rag_answer(
     model: str,
     system_prompt: str,
     history: list[dict[str, str]],
-    temperature: float,
     collect: list[str],
 ) -> Iterator[str]:
     collect.clear()
@@ -201,7 +242,7 @@ def stream_rag_answer(
         stream = client.chat.completions.create(
             model=model,
             messages=messages,
-            temperature=temperature,
+            temperature=TEMPERATURE,
             stream=True,
         )
         for chunk in stream:
@@ -215,23 +256,25 @@ def stream_rag_answer(
         yield message
 
 
-with st.sidebar:
-    st.markdown("### 설정")
-    model_name = st.selectbox(
-        "모델 선택",
-        ["gpt-4o-mini", "gpt-4o", "gpt-5.4"],
-        index=0,
-    )
-    top_k = st.slider("검색 페이지 수 (Top-K)", min_value=1, max_value=8, value=4)
-    temperature = st.slider("Temperature", min_value=0.0, max_value=1.5, value=0.2, step=0.1)
-    show_stats = st.checkbox("통계 표시", value=False)
-    st.markdown("---")
-    if st.button("대화 초기화"):
-        st.session_state.messages = []
-        st.session_state.rag_results = []
-        st.rerun()
+def render_passage_with_image(result: dict[str, Any], rank: int, *, expanded: bool = False) -> None:
+    """검색된 지문 텍스트와 동일 페이지 이미지를 함께 표시합니다."""
+    label = format_page_label(result.get("title"), result.get("filename"))
+    score = float(result.get("score", 0.0))
+    text = (result.get("text") or "_텍스트 없음_").strip()
+    image_path = result.get("image_path")
 
-    st.caption(f"벡터 DB: `{VEC_PATH.relative_to(BASE_DIR)}`")
+    with st.expander(f"{rank}. {label} (유사도: {score:.4f})", expanded=expanded):
+        col_text, col_img = st.columns([1.2, 1.0], gap="medium")
+        with col_text:
+            st.markdown("**참고 지문**")
+            st.markdown(text.replace("\n", "  \n"))
+        with col_img:
+            st.markdown("**매뉴얼 이미지**")
+            if image_path and Path(image_path).is_file():
+                st.image(image_path, use_container_width=True, caption=Path(image_path).name)
+            else:
+                stem = page_stem_from_item(result.get("title"), result.get("filename")) or "?"
+                st.caption(f"이미지 없음: `data/img/{stem}.png`")
 
 
 try:
@@ -245,6 +288,7 @@ except Exception as error:
 
 st.markdown("# Model Y Manual")
 st.markdown("*Tesla Model Y 오너 매뉴얼 RAG 챗봇*")
+st.caption("질문 → 유사 지문 검색 → API 답변 → 동일 페이지 이미지 표시")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -254,14 +298,29 @@ if "rag_results" not in st.session_state:
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+        # 이전 assistant 답변에 연결된 참고 이미지 다시 표시
+        if message["role"] == "assistant" and message.get("rag_results"):
+            st.markdown("#### 참고 매뉴얼 이미지")
+            image_cols = st.columns(min(3, len(message["rag_results"])))
+            for idx, result in enumerate(message["rag_results"]):
+                image_path = result.get("image_path")
+                with image_cols[idx % len(image_cols)]:
+                    if image_path and Path(image_path).is_file():
+                        st.image(
+                            image_path,
+                            use_container_width=True,
+                            caption=format_page_label(result.get("title"), result.get("filename")),
+                        )
 
 if prompt := st.chat_input("Model Y 매뉴얼에 대해 질문해보세요"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # 1) vectors_manual.p에서 정답 후보 지문 검색
     try:
-        rag_results = search_similar_pages(prompt, top_k=top_k)
+        with st.spinner("관련 매뉴얼 지문 검색 중..."):
+            rag_results = search_similar_passages(prompt, top_k=TOP_K)
     except Exception as error:
         rag_results = []
         st.warning(f"RAG 검색 중 오류가 발생했습니다: {error}")
@@ -269,43 +328,61 @@ if prompt := st.chat_input("Model Y 매뉴얼에 대해 질문해보세요"):
     st.session_state.rag_results = rag_results
     system_prompt = build_rag_system_prompt(rag_results)
 
+    # 2) 검색된 지문으로 API 답변 생성 + 3) 동일 img 출력
     with st.chat_message("assistant"):
         collected: list[str] = []
         st.write_stream(
             stream_rag_answer(
                 API_KEY,
-                model_name,
+                MODEL_NAME,
                 system_prompt,
-                st.session_state.messages,
-                temperature,
+                [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
                 collected,
             )
         )
         response_text = "".join(collected)
-        st.session_state.messages.append({"role": "assistant", "content": response_text})
 
-if show_stats and st.session_state.messages:
-    st.markdown("---")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("대화 턴", len(st.session_state.messages) // 2)
-    with col2:
-        st.metric("모델", model_name)
-    with col3:
-        st.metric("Top-K", top_k)
+        if rag_results:
+            st.markdown("#### 참고 매뉴얼 이미지")
+            image_cols = st.columns(min(3, len(rag_results)))
+            for idx, result in enumerate(rag_results):
+                image_path = result.get("image_path")
+                with image_cols[idx % len(image_cols)]:
+                    if image_path and Path(image_path).is_file():
+                        st.image(
+                            image_path,
+                            use_container_width=True,
+                            caption=format_page_label(result.get("title"), result.get("filename")),
+                        )
+                    else:
+                        stem = page_stem_from_item(result.get("title"), result.get("filename")) or "?"
+                        st.caption(f"이미지 없음: `{stem}`")
+
+        st.session_state.messages.append(
+            {
+                "role": "assistant",
+                "content": response_text,
+                "rag_results": [
+                    {
+                        "title": r.get("title"),
+                        "filename": r.get("filename"),
+                        "score": r.get("score"),
+                        "image_path": r.get("image_path"),
+                        "text": r.get("text"),
+                    }
+                    for r in rag_results
+                ],
+            }
+        )
 
 st.markdown("---")
-st.markdown("### 참고 매뉴얼 페이지")
+st.markdown("### 검색된 참고 지문 · 이미지")
 rag_results_display = st.session_state.get("rag_results", [])
 if rag_results_display:
     for rank, result in enumerate(rag_results_display, start=1):
-        label = format_page_label(result.get("title"), result.get("filename"))
-        score = float(result.get("score", 0.0))
-        text = (result.get("text") or "_텍스트 없음_").strip()
-        with st.expander(f"{rank}. {label} (유사도: {score:.4f})", expanded=(rank == 1)):
-            st.markdown(text.replace("\n", "  \n"))
+        render_passage_with_image(result, rank, expanded=(rank == 1))
 else:
-    st.caption("질문을 입력하면 관련 매뉴얼 페이지가 여기에 표시됩니다.")
+    st.caption("질문을 입력하면 관련 지문과 이미지가 여기에 표시됩니다.")
 
 st.markdown("---")
 col1, col2 = st.columns(2)
@@ -336,6 +413,15 @@ if not API_KEY:
 st.markdown(
     """
 <style>
+    /* 사이드바 및 토글 버튼 완전 숨김 */
+    [data-testid="stSidebar"],
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"],
+    section[data-testid="stSidebar"] {
+        display: none !important;
+        width: 0 !important;
+        min-width: 0 !important;
+    }
     .stChatMessage {
         padding: 1rem;
         border-radius: 0.5rem;
