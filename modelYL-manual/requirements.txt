@@ -1,0 +1,22 @@
+# Model Y Manual - RAG 챗봇 및 데이터 처리
+# streamlit run modelyl_manual.py
+
+# 웹 앱
+streamlit>=1.28.0
+
+# LLM API (OpenAI)
+openai>=1.0.0
+
+# RAG 임베딩 (dragonkue/BGE-m3-ko)
+sentence-transformers>=2.7.0
+torch>=2.1.0
+
+# 수치 연산 (코사인 유사도)
+numpy>=1.26.0
+
+# 데이터 처리 (data_processing.py)
+PyMuPDF>=1.24.0
+Pillow>=10.0.0
+
+# OCR 폴백 (PDF 텍스트가 없는 페이지용, 선택)
+# easyocr>=1.7.0
