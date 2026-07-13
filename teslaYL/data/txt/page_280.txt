@@ -1,0 +1,38 @@
+Tesla가 차량에서 수집한 데이터를 처리하는 방법에 관한 추가 정보
+는 http://www.tesla.com/about/legal 의 Tesla 개인정보 처리방
+침을 참조하세요.
+참고: Model Y은(는) 주행 및 작동과 관련하여 GPS를 사용하지만,
+이 문서에서 설명한 대로 Tesla는 충돌 발생 지점을 제외한 차량별 
+GPS 정보를 기록하거나 저장하지 않습니다. 따라서 Tesla에서는 차
+량의 위치에 대한 기록 정보를 제공해 드릴 수 없습니다(예를 들어,
+Tesla에서는 Model Y이(가) 특정 날짜/시간에 주차/주행한 위치를 
+알려드릴 수 없음).
+품질 관리
+Model Y 차량을 인도받을 때, 주행 거리계에 약간의 km이 표시되는 
+것을 볼 수 있습니다. 이는 Model Y의 품질을 보장하는 종합적 테스
+트 절차의 결과입니다.
+테스트 절차는 제조 중, 그리고 제조 이후에 진행된 폭넓은 검사를 포
+함합니다. 최종 검사는 Tesla에서 이루어지며, 기술자가 수행하는 도
+로 테스트를 포함합니다.
+Unreal Engine
+Model Y 은(는) Unreal® Engine을 사용합니다. Unreal®은 미국 및 
+기타 국가에서 Epic Games, Inc.의 상표 또는 등록 상표입니다.
+Unreal® Engine, Copyright 1998 - 2026, Epic Games, Inc. All
+rights reserved.
+사운드 라이브러리
+"Free Sounds Library"(장착된 경우).
+무료 음향 효과 사이트.
+라이선스: 저작자 표시 4.0 국제(CC BY 4.0) 음향 효과는 상업적이든 
+비상업적이든 목적과 무관하게 무료로 사용하실 수 있으며 멀티미디
+어 프로젝트에서 로열티를 지불하실 필요 없이 자유롭게 활용할 수 
+있습니다.
+http://www.freesoundslibrary.com
+이모티콘
+포토부스 앱에서 제공되는 Twemoji 이모티콘(해당 기능이 포함된 
+차량에 한함).
+본 기능은 X Corp.(구 Twitter, Inc.) 및 기타 기여자에게 ©2026년 
+저작권이 있으며, Creative Commons Attribution 4.0
+International (CC BY 4.0) 라이선스에 따라 사용이 허가됩니다.
+면책 조항
+278
+MODEL Y 사용자 매뉴얼

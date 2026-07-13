@@ -14,6 +14,9 @@ import streamlit.components.v1 as components
 BASE_DIR = Path(__file__).resolve().parent
 PROC_HTML_PATH = BASE_DIR / "proc.html"
 
+# iframe 높이(px). CSS로 100vh에 맞추므로 대략적인 값이면 됩니다.
+IFRAME_HEIGHT = 900
+
 st.set_page_config(
     page_title="차세대 지식재산행정시스템 ISP/BPR — 권리별 행정절차 흐름도",
     page_icon="📋",
@@ -30,38 +33,39 @@ def load_proc_html() -> str:
 
 def prepare_html_for_streamlit(html: str) -> str:
     """
-    iframe 환경에서도 proc.html과 동일하게 보이도록 보정합니다.
-    - 긴 흐름도에서도 팝업이 '현재 보이는 화면' 중앙에 뜨도록 처리
+    Streamlit iframe 안에서 세로 스크롤이 하나만 생기도록 보정합니다.
+    - body는 스크롤하지 않음
+    - .diagram-scroll만 세로/가로 스크롤
+    - 팝업은 iframe 뷰포트(보이는 화면) 중앙
     """
     head_injection = """
 <style>
-  /* Streamlit iframe 안에서 전체 콘텐츠가 잘리지 않도록 보정 */
+  /* 문서 전체 스크롤 제거 → 다이어그램 영역만 스크롤 */
   html, body {
-    height: auto !important;
-    min-height: 100% !important;
-    overflow: auto !important;
-  }
-  .diagram-scroll {
-    max-height: none !important;
-    overflow: visible !important;
+    height: 100% !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    overflow: hidden !important;
   }
   .app-header {
     position: sticky;
     top: 0;
+    z-index: 100;
+  }
+  .diagram-scroll {
+    max-height: calc(100vh - 150px) !important;
+    max-height: calc(100dvh - 150px) !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
   }
 
-  /* 팝업: 현재 보이는 화면(뷰포트) 중앙 고정 */
+  /* 팝업: iframe 보이는 화면 중앙 */
   .popup-overlay {
     position: fixed !important;
     inset: 0 !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    height: 100vh !important;
-    height: 100dvh !important;
     margin: 0 !important;
     z-index: 99999 !important;
     display: none;
@@ -83,62 +87,52 @@ def prepare_html_for_streamlit(html: str) -> str:
 </style>
 """
 
-    # showPopup 직후 오버레이를 보이는 영역 중앙에 맞추고, 스크롤로 밀리지 않게 보정
     body_injection = """
 <script>
 (function () {
-  function viewportHeight() {
-    if (window.visualViewport && window.visualViewport.height) {
-      return window.visualViewport.height;
-    }
-    return window.innerHeight || document.documentElement.clientHeight || 800;
-  }
+  function syncDiagramScrollHeight() {
+    var scroll = document.querySelector(".diagram-panel.active .diagram-scroll")
+      || document.querySelector(".diagram-scroll");
+    if (!scroll) return;
 
-  function viewportOffsetTop() {
-    if (window.visualViewport && typeof window.visualViewport.offsetTop === "number") {
-      return window.visualViewport.offsetTop + (window.scrollY || window.pageYOffset || 0);
-    }
-    return window.scrollY || window.pageYOffset || 0;
+    var reserved = 0;
+    [".app-header", ".main-tabs", ".sub-tabs.visible", ".legend"].forEach(function (sel) {
+      var el = document.querySelector(sel);
+      if (el) reserved += el.getBoundingClientRect().height;
+    });
+    // 여유 픽셀(테두리/스크롤바)
+    reserved += 8;
+    var h = Math.max(240, window.innerHeight - reserved);
+    scroll.style.maxHeight = h + "px";
   }
 
   function centerPopupOverlay() {
     var overlay = document.getElementById("popup-overlay");
     if (!overlay || !overlay.classList.contains("open")) return;
 
-    var top = viewportOffsetTop();
-    var height = viewportHeight();
-
-    // 긴 문서 + iframe 스크롤에서도 보이는 화면 중앙에 오도록 absolute로 보정
-    overlay.style.position = "absolute";
-    overlay.style.top = top + "px";
+    // fixed + flex 중앙 정렬이 보이도록 인라인 보정
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.top = "0";
     overlay.style.left = "0";
     overlay.style.right = "0";
-    overlay.style.bottom = "auto";
+    overlay.style.bottom = "0";
     overlay.style.width = "100%";
-    overlay.style.height = height + "px";
+    overlay.style.height = "100%";
     overlay.style.display = "flex";
     overlay.style.alignItems = "center";
     overlay.style.justifyContent = "center";
     overlay.scrollTop = 0;
 
     var popup = overlay.querySelector(".popup");
-    if (popup) {
-      popup.scrollTop = 0;
-      // 레이아웃 반영 후 팝업 자체가 보이게 보장
-      requestAnimationFrame(function () {
-        try {
-          popup.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" });
-        } catch (e) {
-          popup.scrollIntoView(true);
-        }
-      });
-    }
+    if (popup) popup.scrollTop = 0;
   }
 
   function resetPopupOverlayStyle() {
     var overlay = document.getElementById("popup-overlay");
     if (!overlay) return;
     overlay.style.position = "";
+    overlay.style.inset = "";
     overlay.style.top = "";
     overlay.style.left = "";
     overlay.style.right = "";
@@ -159,7 +153,6 @@ def prepare_html_for_streamlit(html: str) -> str:
       originalShow(id);
       centerPopupOverlay();
       requestAnimationFrame(centerPopupOverlay);
-      setTimeout(centerPopupOverlay, 50);
     };
     window.showPopup.__centerPatched = true;
 
@@ -171,22 +164,21 @@ def prepare_html_for_streamlit(html: str) -> str:
       };
       window.closePopupBtn.__centerPatched = true;
     }
-
-    window.addEventListener("resize", function () {
-      if (document.getElementById("popup-overlay")?.classList.contains("open")) {
-        centerPopupOverlay();
-      }
-    });
-    window.addEventListener("scroll", function () {
-      if (document.getElementById("popup-overlay")?.classList.contains("open")) {
-        centerPopupOverlay();
-      }
-    }, { passive: true });
-
     return true;
   }
 
   function boot() {
+    syncDiagramScrollHeight();
+    window.addEventListener("resize", syncDiagramScrollHeight);
+
+    // 탭 전환 시 활성 패널의 스크롤 높이 재계산
+    document.querySelectorAll(".main-tab, .sub-tab").forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        setTimeout(syncDiagramScrollHeight, 0);
+        setTimeout(syncDiagramScrollHeight, 80);
+      });
+    });
+
     if (patchPopupCentering()) return;
     var tries = 0;
     var timer = setInterval(function () {
@@ -218,21 +210,51 @@ def prepare_html_for_streamlit(html: str) -> str:
     return result
 
 
-# Streamlit 기본 여백/크롬을 줄여 HTML 화면을 최대한 그대로 표시
+# Streamlit 페이지 스크롤을 제거하고, iframe만 화면을 채우도록 설정
 st.markdown(
     """
 <style>
-  [data-testid="stHeader"] { display: none; }
-  [data-testid="stToolbar"] { display: none; }
+  html, body, [data-testid="stAppViewContainer"],
+  [data-testid="stAppViewContainer"] > .main,
+  section.main,
+  .main .block-container {
+    height: 100% !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  [data-testid="stHeader"],
+  [data-testid="stToolbar"],
+  [data-testid="stDecoration"],
+  [data-testid="stStatusWidget"],
+  #MainMenu,
+  footer {
+    display: none !important;
+  }
+
   .block-container {
-    padding-top: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
     max-width: 100% !important;
   }
+
+  /* components.html iframe을 뷰포트에 맞춤 → 바깥 스크롤 제거 */
   iframe {
     border: none !important;
+    width: 100% !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+  }
+
+  /* iframe을 감싸는 요소도 높이 고정 */
+  [data-testid="stIFrame"],
+  div:has(> iframe) {
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
   }
 </style>
 """,
@@ -245,9 +267,9 @@ except FileNotFoundError as error:
     st.error(str(error))
     st.stop()
 
-# proc.html 전체(탭·스윔레인·팝업·연결선 JS)를 그대로 임베드
+# scrolling=False: iframe 자체 스크롤바 제거 → 내부 .diagram-scroll만 스크롤
 components.html(
     html_content,
-    height=1400,
-    scrolling=True,
+    height=IFRAME_HEIGHT,
+    scrolling=False,
 )
