@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tesla Model Y 오너 매뉴얼 RAG 챗봇 (Streamlit).
+"""Tesla Model Y L 오너 매뉴얼 RAG 챗봇 (Streamlit).
 
 흐름:
 1) 사용자 질문 → vectors_manual.p 유사 지문 검색
@@ -286,8 +286,8 @@ except Exception as error:
     st.stop()
 
 
-st.markdown("# Model Y Manual")
-st.markdown("*Tesla Model Y 오너 매뉴얼 RAG 챗봇*")
+st.markdown("# Model Y LManual")
+st.markdown("*Tesla Model Y L 오너 매뉴얼 RAG 챗봇*")
 st.caption("질문 → 유사 지문 검색 → API 답변 → 동일 페이지 이미지 표시")
 
 if "messages" not in st.session_state:
