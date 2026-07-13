@@ -376,11 +376,11 @@ if prompt := st.chat_input("Model Y 매뉴얼에 대해 질문해보세요"):
         )
 
 st.markdown("---")
-st.markdown("### 검색된 참고 지문 · 이미지")
+st.markdown("### 참고 후보 문서")
 rag_results_display = st.session_state.get("rag_results", [])
 if rag_results_display:
     for rank, result in enumerate(rag_results_display, start=1):
-        render_passage_with_image(result, rank, expanded=(rank == 1))
+        render_passage_with_image(result, rank, expanded=False)
 else:
     st.caption("질문을 입력하면 관련 지문과 이미지가 여기에 표시됩니다.")
 
