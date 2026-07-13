@@ -286,8 +286,8 @@ except Exception as error:
     st.stop()
 
 
-st.markdown("# Model Y LManual")
-st.markdown("*Tesla Model Y L 오너 매뉴얼 RAG 챗봇*")
+st.markdown("# Model YL Manual")
+st.markdown("*Tesla Model YL 오너 매뉴얼 RAG 챗봇*")
 st.caption("질문 → 유사 지문 검색 → API 답변 → 동일 페이지 이미지 표시")
 
 if "messages" not in st.session_state:
