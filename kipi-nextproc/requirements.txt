@@ -1,0 +1,4 @@
+# kipi-nextproc — proc.html 기반 Streamlit 앱
+# streamlit run nextproc.py
+
+streamlit>=1.28.0
