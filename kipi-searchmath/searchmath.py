@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import io
+import re
 from pathlib import Path
 
 import streamlit as st
@@ -115,11 +116,11 @@ def call_openai_for_search_query(api_key: str, model: str, analysis_result: str)
 
 [출력 형식 — 반드시 준수]:
 1. **검색식 항목 개수는 반드시 6개 미만**입니다. (1개 이상 6개 미만. 중복·유사한 방향은 하나로 묶지 말고, 서로 다른 검색 관점으로 나눕니다.)
-2. **첫째 줄**: **그 검색식이 다루는 관점에 대한 간략한 설명**을 한 줄로 씁니다. 필요하면 괄호로 보조 설명을 붙입니다.
+2. **첫째 줄**: 순서 번호(`1.`, `2.`, …)를 붙인 뒤, **그 검색식이 다루는 관점에 대한 간략한 설명**을 한 줄로 씁니다. 필요하면 괄호로 보조 설명을 붙입니다.
 3. **둘째 줄**: 위 설명에 대응하는 **특허 검색식**을 한 줄로 씁니다. (줄바꿈 없음)
-3. 항목과 항목 사이에는 **빈 줄 하나**를 넣습니다.
-4. 위 형식 외의 머리말·요약·번호 목록·마크다운 제목 등은 넣지 않습니다.
-5. 가장 중요하다고 판단하는 순위부터 보여줍니다.
+4. 항목과 항목 사이에는 **빈 줄 하나**를 넣습니다.
+5. 위 형식 외의 머리말·요약·마크다운 제목·불릿(●) 등은 넣지 않습니다.
+6. 가장 중요하다고 판단하는 순위부터 순서 번호를 1부터 연속으로 부여합니다.
 
 [출력 예시]
 1. 층간 도전성 범프 크기 구배(범프 크기 변화로 적층 연결)
@@ -136,10 +137,10 @@ P1=P3*패드*피치*인터포저*상부*하부*스택*패키지
             model=model,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"다음 LLM 분석 결과를 바탕으로, 지정한 출력 형식(● 설명 한 줄 + 검색식 한 줄, 항목 10개 미만)으로 특허 검색식을 생성해 주세요.\n\n{analysis_result}"}
+                {"role": "user", "content": f"다음 LLM 분석 결과를 바탕으로, 지정한 출력 형식(순서 번호 + 설명 한 줄 + 검색식 한 줄, 항목 6개 미만)으로 특허 검색식을 생성해 주세요.\n\n{analysis_result}"}
             ],
         )
-        return response.choices[0].message.content
+        return number_search_queries(response.choices[0].message.content or "")
     except Exception as e:
         err = str(e)
         if "API_KEY" in err or "authentication" in err.lower() or "invalid" in err.lower():
@@ -147,6 +148,28 @@ P1=P3*패드*피치*인터포저*상부*하부*스택*패키지
         if "quota" in err.lower() or "limit" in err.lower() or "rate" in err.lower():
             return f"📊 사용량 한도 초과: API 사용량을 확인해주세요.\n\n에러: {err}"
         return f"❌ API 호출 오류: {err}"
+
+def number_search_queries(text: str) -> str:
+    """검색식 항목(설명+검색식 블록)에 1부터 순서 번호를 부여한다."""
+    if not text:
+        return text
+    stripped = text.strip()
+    if stripped.startswith(("⚠️", "🔑", "📊", "❌")):
+        return text
+
+    blocks = re.split(r"\n\s*\n", stripped)
+    numbered: list[str] = []
+    idx = 1
+    for block in blocks:
+        lines = [ln.rstrip() for ln in block.strip().split("\n") if ln.strip()]
+        if not lines:
+            continue
+        first = re.sub(r"^(\d+[\.\)]\s*|●\s*|[-*•]\s*)", "", lines[0].strip())
+        body = "\n".join([first, *lines[1:]]) if len(lines) > 1 else first
+        numbered.append(f"{idx}. {body}")
+        idx += 1
+    return "\n\n".join(numbered) if numbered else text
+
 
 # 챗봇·컨텍스트용: 특허 검색식 작성 기준 요약 (생성 프롬프트와 일치)
 SEARCH_QUERY_CRITERIA_CONTEXT = """[검색식 작성 참고]
@@ -161,7 +184,7 @@ SEARCH_QUERY_CRITERIA_CONTEXT = """[검색식 작성 참고]
 - 단어 검색, 구문 검색(인접 나열), AND(*), OR(+), NOT(!, AND와 함께), NEAR(^, 1~3단어 거리) 등을 활용할 수 있습니다.
 
 [출력 형식(목록 생성 시)]
-- 항목마다 첫 줄: 간략한 설명, 둘째 줄: 검색식 한 줄. 항목은 여러 개일 수 있으며 우선순위 순으로 나열한다."""
+- 항목마다 첫 줄: 순서 번호(`1.`, `2.`, …) + 간략한 설명, 둘째 줄: 검색식 한 줄. 항목은 여러 개일 수 있으며 우선순위 순으로 나열한다."""
 
 def call_openai_search_query_chat(
     api_key: str,
