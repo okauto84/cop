@@ -190,7 +190,7 @@ def build_rag_system_prompt(rag_results: list[dict[str, Any]]) -> str:
         )
 
     context = "\n\n".join(context_blocks)
-    return f"""당신은 Tesla Model Y 오너 매뉴얼 전문 도우미입니다.
+    return f"""당신은 Tesla Model Y L 오너 매뉴얼 전문 도우미입니다.
 아래 [매뉴얼 참고 지문]만을 바탕으로 사용자 질문에 정확하고 친절하게 답변하세요.
 
 [답변 규칙]
@@ -286,8 +286,8 @@ except Exception as error:
     st.stop()
 
 
-st.markdown("# Model YL Manual")
-st.markdown("*Tesla Model YL 오너 매뉴얼 RAG 챗봇*")
+st.markdown("# Model Y L Manual")
+st.markdown("*Tesla Model Y L 오너 매뉴얼 RAG 챗봇*")
 st.caption("질문 → 유사 지문 검색 → API 답변 → 동일 페이지 이미지 표시")
 
 if "messages" not in st.session_state:
@@ -312,7 +312,7 @@ for message in st.session_state.messages:
                             caption=format_page_label(result.get("title"), result.get("filename")),
                         )
 
-if prompt := st.chat_input("Model Y 매뉴얼에 대해 질문해보세요"):
+if prompt := st.chat_input("Model Y L 매뉴얼에 대해 질문해보세요"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
