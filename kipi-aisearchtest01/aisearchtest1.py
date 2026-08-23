@@ -8,32 +8,24 @@ from pathlib import Path
 # 화면 넓게 쓰기
 st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 
-# 스펙 팝업 가로 크기 (vw). 기본 96vw의 2배, 뷰포트 상한 100vw
-_SPEC_DIALOG_BASE_WIDTH_VW = 96
-_SPEC_DIALOG_WIDTH_VW = min(_SPEC_DIALOG_BASE_WIDTH_VW * 2, 100)
-
 
 @st.dialog("aisearchtest1-spec.py", width="stretch")
 def show_spec_popup():
     """테이블 행 클릭 시 스펙 파일을 실행해 팝업(모달)에 결과 화면 표시"""
     st.markdown(
-        f"""
+        """
         <style>
-        div[data-testid="stDialog"]:has(.spec-dialog-wide) {{
-            width: {_SPEC_DIALOG_WIDTH_VW}vw !important;
+        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) {
+            width: 96vw !important;
             max-width: none !important;
-        }}
-        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) {{
-            width: {_SPEC_DIALOG_WIDTH_VW}vw !important;
-            max-width: none !important;
-            min-width: {_SPEC_DIALOG_WIDTH_VW}vw !important;
-        }}
+            min-width: 96vw !important;
+        }
         div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) .block-container,
         div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) [data-testid="stVerticalBlock"],
-        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) [data-testid="stHorizontalBlock"] {{
+        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) [data-testid="stHorizontalBlock"] {
             max-width: 100% !important;
             width: 100% !important;
-        }}
+        }
         </style>
         <span class="spec-dialog-wide" style="display:none"></span>
         """,
@@ -42,32 +34,24 @@ def show_spec_popup():
     # 팝업이 열릴 때 스크롤바를 맨 위로 위치시킴 + 가로 폭 강제 확장
     try:
         st.components.v1.html(
-            f"""
+            """
             <script>
-            (function(){{
+            (function(){
                 var doc = window.parent.document;
-                var targetVw = {_SPEC_DIALOG_WIDTH_VW};
-                function applySpecDialogLayout() {{
-                    var winW = window.innerWidth;
-                    var targetPx = Math.min(winW, Math.round(winW * targetVw / 100));
-                    var shells = doc.querySelectorAll('div[data-testid="stDialog"]:has(.spec-dialog-wide)');
-                    shells.forEach(function (shell) {{
-                        shell.style.setProperty('width', targetPx + 'px', 'important');
-                        shell.style.setProperty('max-width', 'none', 'important');
-                    }});
+                function applySpecDialogLayout() {
                     var dialogs = doc.querySelectorAll('div[data-testid="stDialog"] div[role="dialog"]');
-                    dialogs.forEach(function (d) {{
+                    dialogs.forEach(function (d) {
                         if (!d.querySelector('.spec-dialog-wide')) return;
-                        d.style.setProperty('width', targetPx + 'px', 'important');
+                        d.style.setProperty('width', '96vw', 'important');
                         d.style.setProperty('max-width', 'none', 'important');
-                        d.style.setProperty('min-width', targetPx + 'px', 'important');
+                        d.style.setProperty('min-width', '96vw', 'important');
                         d.scrollTop = 0;
-                    }});
-                }}
+                    });
+                }
                 applySpecDialogLayout();
                 setTimeout(applySpecDialogLayout, 100);
                 setTimeout(applySpecDialogLayout, 300);
-            }})();
+            })();
             </script>
             """,
             height=0,
@@ -220,15 +204,11 @@ st.markdown("""
         to { opacity: 1; transform: translateX(0); }
     }
 
-    /* 스펙 팝업(다이얼로그): 세로는 뷰포트에 맞춤, 가로 96vw의 2배(최대 100vw) */
-    div[data-testid="stDialog"]:has(.spec-dialog-wide) {
-        width: 100vw !important;
-        max-width: none !important;
-    }
+    /* 스펙 팝업(다이얼로그): 세로는 뷰포트에 맞춤, 가로 최대 확장 */
     div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) {
-        width: 100vw !important;
+        width: 96vw !important;
         max-width: none !important;
-        min-width: 100vw !important;
+        min-width: 96vw !important;
         min-height: 400px !important;
         max-height: 90vh !important;
         height: auto !important;
