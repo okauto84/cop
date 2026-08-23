@@ -12,20 +12,45 @@ st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 @st.dialog("aisearchtest1-spec.py", width="stretch")
 def show_spec_popup():
     """테이블 행 클릭 시 스펙 파일을 실행해 팝업(모달)에 결과 화면 표시"""
-    # 팝업이 열릴 때 스크롤바를 맨 위로 위치시킴
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) {
+            width: 96vw !important;
+            max-width: none !important;
+            min-width: 96vw !important;
+        }
+        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) .block-container,
+        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) [data-testid="stVerticalBlock"],
+        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) [data-testid="stHorizontalBlock"] {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        </style>
+        <span class="spec-dialog-wide" style="display:none"></span>
+        """,
+        unsafe_allow_html=True,
+    )
+    # 팝업이 열릴 때 스크롤바를 맨 위로 위치시킴 + 가로 폭 강제 확장
     try:
         st.components.v1.html(
             """
             <script>
             (function(){
                 var doc = window.parent.document;
-                function scrollTop() {
-                    var d = doc.querySelector('div[data-testid="stDialog"] div[role="dialog"]');
-                    if (d) d.scrollTop = 0;
+                function applySpecDialogLayout() {
+                    var dialogs = doc.querySelectorAll('div[data-testid="stDialog"] div[role="dialog"]');
+                    dialogs.forEach(function (d) {
+                        if (!d.querySelector('.spec-dialog-wide')) return;
+                        d.style.setProperty('width', '96vw', 'important');
+                        d.style.setProperty('max-width', 'none', 'important');
+                        d.style.setProperty('min-width', '96vw', 'important');
+                        d.scrollTop = 0;
+                    });
                 }
-                scrollTop();
-                setTimeout(scrollTop, 100);
-                setTimeout(scrollTop, 300);
+                applySpecDialogLayout();
+                setTimeout(applySpecDialogLayout, 100);
+                setTimeout(applySpecDialogLayout, 300);
             })();
             </script>
             """,
@@ -179,14 +204,19 @@ st.markdown("""
         to { opacity: 1; transform: translateX(0); }
     }
 
-    /* 스펙 팝업(다이얼로그): 세로는 뷰포트에 맞춤, 가로 넓게, 전체 스크롤 최소화 */
-    div[data-testid="stDialog"] div[role="dialog"] {
-        width: 98vw !important;
-        max-width: 1800px !important;
+    /* 스펙 팝업(다이얼로그): 세로는 뷰포트에 맞춤, 가로 최대 확장 */
+    div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) {
+        width: 96vw !important;
+        max-width: none !important;
+        min-width: 96vw !important;
         min-height: 400px !important;
         max-height: 90vh !important;
         height: auto !important;
         overflow-y: auto !important;
+    }
+    div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) .block-container {
+        max-width: 100% !important;
+        width: 100% !important;
     }
     div[data-testid="stDialog"] div[role="dialog"] [data-testid="stCode"] {
         max-height: none !important;

@@ -101,11 +101,6 @@ const b64 = "{b64}";
 # AI분석 탭 - 발명 3요소 블록 스타일
 st.markdown("""
 <style>
-/* 팝업(다이얼로그) 가로 확장 */
-div[data-testid="stDialog"] div[role="dialog"] {
-    width: 98vw !important;
-    max-width: 1800px !important;
-}
 /* 발명의 3요소 블록: 스크롤바 없음(내용 높이만 사용), 옆 간격 축소 */
 section[data-testid="stHorizontalBlock"]:has(.ai-summary-block),
 div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
