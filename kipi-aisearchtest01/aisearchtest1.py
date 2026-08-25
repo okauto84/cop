@@ -80,8 +80,8 @@ def show_sentence_search_popup():
     st.markdown("""
         <style>
         div[data-testid="stDialog"] > div[role="dialog"] {
-            max-width: 50vw !important;
-            width: 50vw !important;
+            max-width: 100vw !important;
+            width: 100vw !important;
         }
         </style>
     """, unsafe_allow_html=True)
