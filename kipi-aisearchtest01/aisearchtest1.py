@@ -15,14 +15,14 @@ def show_spec_popup():
     st.markdown(
         """
         <style>
-        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) {
-            width: 800px !important;
-            max-width: 800px !important;
-            min-width: 800px !important;
+        div[data-testid="stDialog"] div[role="dialog"] {
+            width: 96vw !important;
+            max-width: 96vw !important;
+            min-width: 96vw !important;
         }
-        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) .block-container,
-        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) [data-testid="stVerticalBlock"],
-        div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) [data-testid="stHorizontalBlock"] {
+        div[data-testid="stDialog"] div[role="dialog"] .block-container,
+        div[data-testid="stDialog"] div[role="dialog"] [data-testid="stVerticalBlock"],
+        div[data-testid="stDialog"] div[role="dialog"] [data-testid="stHorizontalBlock"] {
             max-width: 100% !important;
             width: 100% !important;
         }
@@ -41,16 +41,17 @@ def show_spec_popup():
                 function applySpecDialogLayout() {
                     var dialogs = doc.querySelectorAll('div[data-testid="stDialog"] div[role="dialog"]');
                     dialogs.forEach(function (d) {
-                        if (!d.querySelector('.spec-dialog-wide')) return;
-                        d.style.setProperty('width', '800px', 'important');
-                        d.style.setProperty('max-width', '800px', 'important');
-                        d.style.setProperty('min-width', '800px', 'important');
+                        d.style.setProperty('width', '96vw', 'important');
+                        d.style.setProperty('max-width', '96vw', 'important');
+                        d.style.setProperty('min-width', '96vw', 'important');
                         d.scrollTop = 0;
                     });
                 }
                 applySpecDialogLayout();
-                setTimeout(applySpecDialogLayout, 100);
-                setTimeout(applySpecDialogLayout, 300);
+                setTimeout(applySpecDialogLayout, 50);
+                setTimeout(applySpecDialogLayout, 150);
+                setTimeout(applySpecDialogLayout, 400);
+                setTimeout(applySpecDialogLayout, 800);
             })();
             </script>
             """,
@@ -80,8 +81,9 @@ def show_sentence_search_popup():
     st.markdown("""
         <style>
         div[data-testid="stDialog"] > div[role="dialog"] {
-            max-width: 100vw !important;
-            width: 100vw !important;
+            max-width: 50vw !important;
+            width: 50vw !important;
+            min-width: 50vw !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -204,17 +206,17 @@ st.markdown("""
         to { opacity: 1; transform: translateX(0); }
     }
 
-    /* 스펙 팝업(다이얼로그): 세로는 뷰포트에 맞춤, 가로는 800px */
-    div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) {
-        width: 800px !important;
-        max-width: 800px !important;
-        min-width: 800px !important;
+    /* 스펙 팝업(다이얼로그): 거의 전체 화면 가로 */
+    div[data-testid="stDialog"] div[role="dialog"] {
+        width: 96vw !important;
+        max-width: 96vw !important;
+        min-width: 96vw !important;
         min-height: 400px !important;
         max-height: 90vh !important;
         height: auto !important;
         overflow-y: auto !important;
     }
-    div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) .block-container {
+    div[data-testid="stDialog"] div[role="dialog"] .block-container {
         max-width: 100% !important;
         width: 100% !important;
     }
