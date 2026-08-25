@@ -98,9 +98,35 @@ const b64 = "{b64}";
     components.html(html, height=height, scrolling=True)
 
 
-# AI분석 탭 - 발명 3요소 블록 스타일
+# 팝업(다이얼로그) / 단독 실행 시 가로를 넓게
+try:
+    st.set_page_config(layout="wide", page_title="특허 상세(스펙)")
+except Exception:
+    pass
+
 st.markdown("""
 <style>
+/* 부모 st.dialog 가로 확장 (팝업으로 실행될 때) */
+div[data-testid="stDialog"] div[role="dialog"],
+section[data-testid="stDialog"] div[role="dialog"],
+div[data-testid="stModal"] div[role="dialog"],
+[data-testid="stDialog"] [role="dialog"] {
+    width: 96vw !important;
+    max-width: 96vw !important;
+    min-width: min(96vw, 1400px) !important;
+}
+div[data-testid="stDialog"] div[role="dialog"] > div,
+[data-testid="stDialog"] [role="dialog"] > div {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+div[data-testid="stDialog"] .block-container,
+[data-testid="stDialog"] .block-container,
+div[data-testid="stDialog"] [data-testid="stVerticalBlock"],
+div[data-testid="stDialog"] [data-testid="stHorizontalBlock"] {
+    width: 100% !important;
+    max-width: 100% !important;
+}
 /* 발명의 3요소 블록: 스크롤바 없음(내용 높이만 사용), 옆 간격 축소 */
 section[data-testid="stHorizontalBlock"]:has(.ai-summary-block),
 div[data-testid="stHorizontalBlock"]:has(.ai-summary-block) {
@@ -289,6 +315,42 @@ div[data-testid="stHorizontalBlock"]:first-of-type [data-testid="column"]:last-o
 .gazette-tree-node.muted { color: #78909c; font-style: italic; font-size: 0.92em; }
 </style>
 """, unsafe_allow_html=True)
+
+# 다이얼로그 가로 강제 적용 (Emotion 스타일 덮어쓰기)
+try:
+    import streamlit.components.v1 as components
+
+    components.html(
+        """
+        <script>
+        (function () {
+          var doc = window.parent.document;
+          function widen() {
+            var nodes = doc.querySelectorAll(
+              '[data-testid="stDialog"] [role="dialog"], [data-testid="stModal"] [role="dialog"]'
+            );
+            nodes.forEach(function (d) {
+              d.style.setProperty('width', '96vw', 'important');
+              d.style.setProperty('max-width', '96vw', 'important');
+              d.style.setProperty('min-width', '96vw', 'important');
+              var kids = d.querySelectorAll(':scope > div');
+              kids.forEach(function (k) {
+                k.style.setProperty('width', '100%', 'important');
+                k.style.setProperty('max-width', '100%', 'important');
+              });
+            });
+          }
+          widen();
+          [50, 150, 300, 600, 1000].forEach(function (ms) {
+            setTimeout(widen, ms);
+          });
+        })();
+        </script>
+        """,
+        height=0,
+    )
+except Exception:
+    pass
 
 try:
     _script_dir = Path(__file__).resolve().parent

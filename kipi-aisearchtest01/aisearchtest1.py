@@ -9,16 +9,24 @@ from pathlib import Path
 st.set_page_config(layout="wide", page_title="AI 특허 검색 시스템")
 
 
-@st.dialog("aisearchtest1-spec.py", width="stretch")
+@st.dialog("aisearchtest1-spec.py", width="large")
 def show_spec_popup():
     """테이블 행 클릭 시 스펙 파일을 실행해 팝업(모달)에 결과 화면 표시"""
     st.markdown(
         """
         <style>
-        div[data-testid="stDialog"] div[role="dialog"] {
+        div[data-testid="stDialog"] div[role="dialog"],
+        section[data-testid="stDialog"] div[role="dialog"],
+        [data-testid="stDialog"] [role="dialog"],
+        [data-testid="stModal"] [role="dialog"] {
             width: 96vw !important;
             max-width: 96vw !important;
             min-width: 96vw !important;
+        }
+        div[data-testid="stDialog"] div[role="dialog"] > div,
+        [data-testid="stDialog"] [role="dialog"] > div {
+            width: 100% !important;
+            max-width: 100% !important;
         }
         div[data-testid="stDialog"] div[role="dialog"] .block-container,
         div[data-testid="stDialog"] div[role="dialog"] [data-testid="stVerticalBlock"],
@@ -27,7 +35,6 @@ def show_spec_popup():
             width: 100% !important;
         }
         </style>
-        <span class="spec-dialog-wide" style="display:none"></span>
         """,
         unsafe_allow_html=True,
     )
@@ -39,19 +46,24 @@ def show_spec_popup():
             (function(){
                 var doc = window.parent.document;
                 function applySpecDialogLayout() {
-                    var dialogs = doc.querySelectorAll('div[data-testid="stDialog"] div[role="dialog"]');
+                    var dialogs = doc.querySelectorAll(
+                      '[data-testid="stDialog"] [role="dialog"], [data-testid="stModal"] [role="dialog"]'
+                    );
                     dialogs.forEach(function (d) {
                         d.style.setProperty('width', '96vw', 'important');
                         d.style.setProperty('max-width', '96vw', 'important');
                         d.style.setProperty('min-width', '96vw', 'important');
+                        d.querySelectorAll(':scope > div').forEach(function (k) {
+                          k.style.setProperty('width', '100%', 'important');
+                          k.style.setProperty('max-width', '100%', 'important');
+                        });
                         d.scrollTop = 0;
                     });
                 }
                 applySpecDialogLayout();
-                setTimeout(applySpecDialogLayout, 50);
-                setTimeout(applySpecDialogLayout, 150);
-                setTimeout(applySpecDialogLayout, 400);
-                setTimeout(applySpecDialogLayout, 800);
+                [50, 150, 400, 800, 1200].forEach(function (ms) {
+                  setTimeout(applySpecDialogLayout, ms);
+                });
             })();
             </script>
             """,
@@ -207,7 +219,9 @@ st.markdown("""
     }
 
     /* 스펙 팝업(다이얼로그): 거의 전체 화면 가로 */
-    div[data-testid="stDialog"] div[role="dialog"] {
+    div[data-testid="stDialog"] div[role="dialog"],
+    [data-testid="stDialog"] [role="dialog"],
+    [data-testid="stModal"] [role="dialog"] {
         width: 96vw !important;
         max-width: 96vw !important;
         min-width: 96vw !important;
@@ -215,6 +229,11 @@ st.markdown("""
         max-height: 90vh !important;
         height: auto !important;
         overflow-y: auto !important;
+    }
+    div[data-testid="stDialog"] div[role="dialog"] > div,
+    [data-testid="stDialog"] [role="dialog"] > div {
+        width: 100% !important;
+        max-width: 100% !important;
     }
     div[data-testid="stDialog"] div[role="dialog"] .block-container {
         max-width: 100% !important;
