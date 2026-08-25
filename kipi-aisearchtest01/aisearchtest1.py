@@ -16,9 +16,9 @@ def show_spec_popup():
         """
         <style>
         div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) {
-            width: 96vw !important;
-            max-width: none !important;
-            min-width: 96vw !important;
+            width: 800px !important;
+            max-width: 800px !important;
+            min-width: 800px !important;
         }
         div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) .block-container,
         div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) [data-testid="stVerticalBlock"],
@@ -42,9 +42,9 @@ def show_spec_popup():
                     var dialogs = doc.querySelectorAll('div[data-testid="stDialog"] div[role="dialog"]');
                     dialogs.forEach(function (d) {
                         if (!d.querySelector('.spec-dialog-wide')) return;
-                        d.style.setProperty('width', '96vw', 'important');
-                        d.style.setProperty('max-width', 'none', 'important');
-                        d.style.setProperty('min-width', '96vw', 'important');
+                        d.style.setProperty('width', '800px', 'important');
+                        d.style.setProperty('max-width', '800px', 'important');
+                        d.style.setProperty('min-width', '800px', 'important');
                         d.scrollTop = 0;
                     });
                 }
@@ -204,11 +204,11 @@ st.markdown("""
         to { opacity: 1; transform: translateX(0); }
     }
 
-    /* 스펙 팝업(다이얼로그): 세로는 뷰포트에 맞춤, 가로 최대 확장 */
+    /* 스펙 팝업(다이얼로그): 세로는 뷰포트에 맞춤, 가로는 800px */
     div[data-testid="stDialog"] div[role="dialog"]:has(.spec-dialog-wide) {
-        width: 96vw !important;
-        max-width: none !important;
-        min-width: 96vw !important;
+        width: 800px !important;
+        max-width: 800px !important;
+        min-width: 800px !important;
         min-height: 400px !important;
         max-height: 90vh !important;
         height: auto !important;
