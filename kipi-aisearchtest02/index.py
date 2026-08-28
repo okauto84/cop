@@ -46,7 +46,7 @@ html, body, .stApp {
   position: fixed;
   inset: 12px 18px;
   display: grid;
-  grid-template-columns: 164px 0 minmax(0, 1fr);
+  grid-template-columns: 180px 0 minmax(0, 1fr);
   grid-template-rows: 34px minmax(0, 1fr);
   background: #f8fafc;
   font-size: 11px;
@@ -58,7 +58,7 @@ html, body, .stApp {
   transition: grid-template-columns .38s ease;
 }
 .patent-app:has(#ai-panel-toggle:checked) {
-  grid-template-columns: 164px 201px minmax(0, 1fr);
+  grid-template-columns: 180px 201px minmax(0, 1fr);
 }
 #ai-panel-toggle {
   position: absolute;
@@ -70,7 +70,7 @@ html, body, .stApp {
 .topbar {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 164px 201px 1fr;
+  grid-template-columns: 180px 201px 1fr;
   height: 34px;
   background: #fff;
   border-bottom: 1px solid var(--line);
@@ -80,6 +80,7 @@ html, body, .stApp {
   color: #0e65cf;
   font-weight: 700;
   border-right: 1px solid var(--line);
+  white-space: nowrap;
 }
 .top-left button {
   float: right;
@@ -91,6 +92,7 @@ html, body, .stApp {
   background: #fff;
   border: 1px solid #d6dde6;
   border-radius: 3px;
+  white-space: nowrap;
 }
 .tabs { display: flex; align-items: end; padding-left: 15px; }
 .tab {
@@ -422,9 +424,9 @@ input[type="checkbox"] {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (min-width: 1300px) {
-  .patent-app { grid-template-columns: 210px 0 minmax(0, 1fr); font-size: 13px; }
-  .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 210px 255px minmax(0, 1fr); }
-  .topbar { grid-template-columns: 210px 255px 1fr; }
+  .patent-app { grid-template-columns: 224px 0 minmax(0, 1fr); font-size: 13px; }
+  .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 224px 255px minmax(0, 1fr); }
+  .topbar { grid-template-columns: 224px 255px 1fr; }
   .loading-card { max-width: 635px; }
 }
 </style>
