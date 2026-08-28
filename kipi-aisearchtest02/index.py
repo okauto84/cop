@@ -46,7 +46,7 @@ html, body, .stApp {
   position: fixed;
   inset: 12px 18px;
   display: grid;
-  grid-template-columns: 180px 0 minmax(0, 1fr);
+  grid-template-columns: 200px 0 minmax(0, 1fr);
   grid-template-rows: 34px minmax(0, 1fr);
   background: #f8fafc;
   font-size: 11px;
@@ -423,6 +423,188 @@ input[type="checkbox"] {
 .loading-item:nth-child(5) .spinner { animation-delay: -.8s; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+.search-trigger { cursor: pointer; user-select: none; }
+#search-result-toggle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.result-view { display: none; width: 100%; height: 100%; min-width: 0; }
+#search-result-toggle:checked ~ .filter-panel .search-trigger { background: #3478e9; }
+#search-result-toggle:checked ~ .filter-panel .search-trigger .searching-label { display: none; }
+#search-result-toggle:checked ~ .filter-panel .search-trigger::after { content: "⌕ 검색"; }
+#search-result-toggle:checked ~ .workspace .loading-view { display: none; }
+#search-result-toggle:checked ~ .workspace .result-view { display: grid; grid-template-columns: minmax(0, 1fr) 182px; }
+
+.result-center {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-right: 1px solid var(--line);
+}
+.result-toolbar {
+  height: 34px;
+  flex: 0 0 34px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-bottom: 1px solid #e5eaf0;
+}
+.result-tool {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  color: #4d5966;
+  white-space: nowrap;
+  background: #fff;
+  border: 1px solid #d9e1e9;
+  border-radius: 3px;
+  font-size: 8px;
+  font-weight: 600;
+}
+.result-tool.active { color: #2673df; background: #eef5ff; border-color: #bcd5fa; }
+.result-search {
+  height: 22px;
+  min-width: 100px;
+  flex: 1;
+  margin-left: auto;
+  padding: 5px 8px;
+  color: #a0a9b3;
+  white-space: nowrap;
+  overflow: hidden;
+  border: 1px solid #dce3ea;
+  border-radius: 3px;
+  font-size: 8px;
+}
+.result-search-btn {
+  height: 22px;
+  padding: 4px 7px;
+  color: #2d73dc;
+  border: 1px solid #bed4f5;
+  border-radius: 3px;
+  font-size: 8px;
+}
+.patent-table-wrap { min-height: 0; flex: 1; overflow: hidden; }
+.patent-table {
+  width: 100%;
+  height: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  color: #4e5b68;
+  font-size: 8px;
+}
+.patent-table col:nth-child(1) { width: 4%; }
+.patent-table col:nth-child(2) { width: 6%; }
+.patent-table col:nth-child(3) { width: 18%; }
+.patent-table col:nth-child(4) { width: 39%; }
+.patent-table col:nth-child(5) { width: 12%; }
+.patent-table col:nth-child(6) { width: 10%; }
+.patent-table col:nth-child(7) { width: 11%; }
+.patent-table th {
+  height: 24px;
+  padding: 4px;
+  color: #4b5865;
+  background: #f8fafc;
+  border-bottom: 1px solid #dfe5eb;
+  text-align: center;
+  font-weight: 600;
+}
+.patent-table td {
+  height: 34px;
+  padding: 3px 4px;
+  border-bottom: 1px solid #e7ebf0;
+  text-align: center;
+  vertical-align: middle;
+  overflow: hidden;
+}
+.patent-table tr:first-child td { background: #f1f6fd; }
+.patent-table tr:first-child td:first-child { border-left: 2px solid #4e94ee; }
+.patent-table td.cpc { line-height: 1.25; }
+.patent-table td.title {
+  color: #1d6ed7;
+  text-align: left;
+  font-weight: 600;
+  white-space: normal;
+  line-height: 1.3;
+}
+.state-chip {
+  display: inline-block;
+  padding: 2px 5px;
+  color: #5c6671;
+  background: #f1f3f5;
+  border-radius: 3px;
+}
+.result-pager {
+  height: 29px;
+  flex: 0 0 29px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  color: #697582;
+  border-top: 1px solid #e4e9ee;
+  font-size: 8px;
+}
+.page-size { padding: 3px 18px 3px 7px; border: 1px solid #dce2e8; border-radius: 3px; }
+.pager-spacer { flex: 1; }
+.page {
+  min-width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dce2e8;
+  border-radius: 3px;
+  background: #fff;
+}
+.page.active { color: #2674df; background: #edf5ff; border-color: #93bbf1; }
+
+.result-side { min-width: 0; padding: 0 7px 7px; background: #f8fafc; overflow: hidden; }
+.side-card {
+  margin-top: 0;
+  background: #fff;
+  border: 1px solid #dfe5eb;
+  border-radius: 7px;
+  overflow: hidden;
+}
+.side-heading {
+  height: 29px;
+  padding: 8px 9px 0;
+  color: #3f4b57;
+  font-weight: 700;
+  border-bottom: 1px solid #edf0f4;
+}
+.drawing-box {
+  height: 118px;
+  margin: 31px 7px 32px;
+  display: grid;
+  place-items: center;
+  color: #9ba5af;
+  background: #fbfcfd;
+  border: 1px solid #eef1f4;
+  border-radius: 4px;
+  font-size: 8px;
+}
+.ai-card { margin-top: 7px; height: calc(100% - 225px); border-color: #eadcff; }
+.ai-card .side-heading { color: #7845df; background: #fbf7ff; border-color: #f0e7fb; }
+.summary-box {
+  margin: 8px 7px 0;
+  padding: 8px;
+  border: 1px solid;
+  border-radius: 5px;
+  line-height: 1.45;
+  font-size: 8px;
+}
+.summary-box strong { display: block; margin-bottom: 4px; }
+.summary-box.red { color: #c6463d; background: #fff9f8; border-color: #f2d8d5; }
+.summary-box.red span { color: #3f4954; }
+.summary-box.green { color: #20a57c; background: #f7fffc; border-color: #caeee1; }
+.summary-box.blue { color: #3978c8; background: #f7faff; border-color: #d6e2f4; }
+
 @media (min-width: 1300px) {
   .patent-app { grid-template-columns: 224px 0 minmax(0, 1fr); font-size: 13px; }
   .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 224px 255px minmax(0, 1fr); }
@@ -433,6 +615,7 @@ input[type="checkbox"] {
 
 <div class="patent-app">
   <input type="checkbox" id="ai-panel-toggle">
+  <input type="checkbox" id="search-result-toggle">
   <header class="topbar">
     <div class="top-left">▏특허 검색 <button>직접 입력</button></div>
     <div class="tabs"><div class="tab">⌂&nbsp; INFO</div><div class="tab active">1020220167018</div></div>
@@ -471,7 +654,7 @@ input[type="checkbox"] {
       <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 5</span><span>☆ 핵심</span></div><div class="component-text">상기 메인 프로세서가 상기 프로그램 관련 전압을 제어하는 구성</div></div></div>
     </div>
     <div class="filter-footer">
-      <div class="footer-buttons"><div class="footer-button">↻ 초기화</div><div class="footer-button primary">⌕ 검색 중...</div></div>
+      <div class="footer-buttons"><div class="footer-button">↻ 초기화</div><label for="search-result-toggle" class="footer-button primary search-trigger"><span class="searching-label">⌕ 검색 중...</span></label></div>
       <div class="copyright">Copyright © 2026 KIPI. All rights reserved. Version 2.0</div>
     </div>
   </aside>
@@ -489,25 +672,76 @@ input[type="checkbox"] {
   </aside>
 
   <main class="workspace">
-    <div class="progress-wrap">
-      <div class="progress">
-        <div class="step done"><div class="step-dot">✓</div><div class="step-name">기준문헌 분석</div><div class="step-status">완료</div></div>
-        <div class="step active"><div class="step-dot">○</div><div class="step-name">유사성검색</div><div class="step-status">진행 중</div></div>
-        <div class="step"><div class="step-dot">3</div><div class="step-name">리랭킹</div><div class="step-status">Top 100</div></div>
-        <div class="step"><div class="step-dot">4</div><div class="step-name">구성요소</div><div class="step-status">RRF Top 100</div></div>
+    <div class="loading-view">
+      <div class="progress-wrap">
+        <div class="progress">
+          <div class="step done"><div class="step-dot">✓</div><div class="step-name">기준문헌 분석</div><div class="step-status">완료</div></div>
+          <div class="step active"><div class="step-dot">○</div><div class="step-name">유사성검색</div><div class="step-status">진행 중</div></div>
+          <div class="step"><div class="step-dot">3</div><div class="step-name">리랭킹</div><div class="step-status">Top 100</div></div>
+          <div class="step"><div class="step-dot">4</div><div class="step-name">구성요소</div><div class="step-status">RRF Top 100</div></div>
+        </div>
       </div>
+      <section class="loading-area">
+        <div class="loading-title">검색을 진행하고 있습니다</div>
+        <div class="loading-subtitle">실제 검색과 AI 처리 상태를 확인하고 있습니다.</div>
+        <div class="loading-card">
+          <div class="loading-item"><span class="spinner"></span>문헌검색 진행상황</div>
+          <div class="loading-item"><span class="spinner"></span>Vector 검색 중...</div>
+          <div class="loading-item"><span class="spinner"></span>BM25 검색 중...</div>
+          <div class="loading-item"><span class="spinner"></span>Hybrid 결과 병합 중...</div>
+          <div class="loading-item"><span class="spinner"></span>Top 200 선정 중...</div>
+        </div>
+      </section>
     </div>
-    <section class="loading-area">
-      <div class="loading-title">검색을 진행하고 있습니다</div>
-      <div class="loading-subtitle">실제 검색과 AI 처리 상태를 확인하고 있습니다.</div>
-      <div class="loading-card">
-        <div class="loading-item"><span class="spinner"></span>문헌검색 진행상황</div>
-        <div class="loading-item"><span class="spinner"></span>Vector 검색 중...</div>
-        <div class="loading-item"><span class="spinner"></span>BM25 검색 중...</div>
-        <div class="loading-item"><span class="spinner"></span>Hybrid 결과 병합 중...</div>
-        <div class="loading-item"><span class="spinner"></span>Top 200 선정 중...</div>
-      </div>
-    </section>
+
+    <div class="result-view">
+      <section class="result-center">
+        <div class="result-toolbar">
+          <div class="result-tool active">▣ 문헌</div>
+          <div class="result-tool">▦ 구성요소</div>
+          <div class="result-tool">▣ 대표 도면 일괄조회</div>
+          <div class="result-tool">♙ 화학식 일괄조회</div>
+          <div class="result-tool">▧ 청구항 일괄조회</div>
+          <div class="result-search">⌕ &nbsp; 결과 내 키워드검색...</div>
+          <div class="result-search-btn">검색</div>
+        </div>
+        <div class="patent-table-wrap">
+          <table class="patent-table">
+            <colgroup><col><col><col><col><col><col><col></colgroup>
+            <thead><tr><th>순번</th><th>구분</th><th>CPC</th><th>발명의 명칭</th><th>출원번호</th><th>출원일자</th><th>공개번호</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)</td><td class="title">메모리 장치 및 이를 포함하는 메모리 시스템</td><td>1020180133661</td><td>20181102</td><td>1020200050705</td></tr>
+              <tr><td>2</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 29/38<br>G11C 16/34<br>G11C 16/12(i)</td><td class="title">반도체 메모리 장치 및 그의 동작 방법</td><td>1020140178426</td><td>20141211</td><td>1020160071120</td></tr>
+              <tr><td>3</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/10<br>G11C 16/3403<br>G11C 16/3459(i)</td><td class="title">메모리 장치 및 이의 동작 방법</td><td>1020200126702</td><td>20200929</td><td>1020220043365</td></tr>
+              <tr><td>4</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/3459<br>G11C 16/08<br>G11C 16/10(i)</td><td class="title">메모리 장치</td><td>1020200098794</td><td>20200806</td><td>1020220018354</td></tr>
+              <tr><td>5</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/30<br>G11C 16/08<br>G11C 16/24(i)</td><td class="title">메모리 장치 및 이의 동작 방법</td><td>1020200098765</td><td>20200806</td><td>1020220018341</td></tr>
+              <tr><td>6</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10(i)<br>G11C 16/24</td><td class="title">페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템</td><td>1020220164302</td><td>20221130</td><td>1020240080715</td></tr>
+              <tr><td>7</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3445<br>G11C 16/3459<br>G11C 29/26(i)</td><td class="title">메모리 장치 및 그의 동작방법</td><td>1020150172401</td><td>20151204</td><td>1020170065969</td></tr>
+              <tr><td>8</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020190160174</td><td>20191204</td><td>1020210070107</td></tr>
+              <tr><td>9</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/24<br>G11C 16/08(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020200104937</td><td>20200820</td><td>1020220023263</td></tr>
+              <tr><td>10</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/24<br>G11C 16/10(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020210025654</td><td>20210223</td><td>1020230120033</td></tr>
+              <tr><td>11</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/06<br>G11C 16/125(i)</td><td class="title">불휘발성 메모리 장치 및 그것의 동작 방법</td><td>1020140093320</td><td>20140723</td><td>1020160012300</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="result-pager">
+          <span>보기:</span><span class="page-size">50⌄</span><span>총 200건 중 1 - 50</span>
+          <span class="pager-spacer"></span><span class="page">이전</span><span class="page active">1</span><span class="page">2</span><span class="page">3</span><span class="page">4</span><span class="page">다음</span>
+        </div>
+      </section>
+      <aside class="result-side">
+        <div class="side-card">
+          <div class="side-heading">대표도면</div>
+          <div class="drawing-box">도면 이미지 없음</div>
+        </div>
+        <div class="side-card ai-card">
+          <div class="side-heading">AI 요약</div>
+          <div class="summary-box red"><strong>해결과제 및 목적</strong><span>메모리 장치 및 이를 포함하는 메모리 시스템</span></div>
+          <div class="summary-box green"><strong>발명의 효과</strong><span>(향후 LLM 연동)</span></div>
+          <div class="summary-box blue"><strong>청구범위 요약</strong><span>(향후 LLM 연동)</span></div>
+        </div>
+      </aside>
+    </div>
   </main>
 </div>
 """,
