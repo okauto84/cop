@@ -46,7 +46,7 @@ html, body, .stApp {
   position: fixed;
   inset: 12px 18px;
   display: grid;
-  grid-template-columns: 200px 0 minmax(0, 1fr);
+  grid-template-columns: 300px 0 minmax(0, 1fr);
   grid-template-rows: 34px minmax(0, 1fr);
   background: #f8fafc;
   font-size: 11px;
@@ -58,7 +58,7 @@ html, body, .stApp {
   transition: grid-template-columns .38s ease;
 }
 .patent-app:has(#ai-panel-toggle:checked) {
-  grid-template-columns: 180px 201px minmax(0, 1fr);
+  grid-template-columns: 270px 201px minmax(0, 1fr);
 }
 #ai-panel-toggle {
   position: absolute;
@@ -70,7 +70,7 @@ html, body, .stApp {
 .topbar {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 180px 201px 1fr;
+  grid-template-columns: 270px 201px 1fr;
   height: 34px;
   background: #fff;
   border-bottom: 1px solid var(--line);
@@ -456,7 +456,7 @@ input[type="checkbox"] {
 }
 #search-result-toggle:checked ~ .workspace .result-view {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 182px;
+  grid-template-columns: minmax(0, 1fr) 273px;
   visibility: hidden;
   opacity: 0;
   animation: show-result-view .01s linear 3s forwards;
@@ -526,7 +526,7 @@ input[type="checkbox"] {
   table-layout: fixed;
   border-collapse: collapse;
   color: #4e5b68;
-  font-size: 15px;
+  font-size: 12px;
 }
 .patent-table col:nth-child(1) { width: 4%; }
 .patent-table col:nth-child(2) { width: 6%; }
@@ -636,9 +636,9 @@ input[type="checkbox"] {
 .summary-box.blue { color: #3978c8; background: #f7faff; border-color: #d6e2f4; }
 
 @media (min-width: 1300px) {
-  .patent-app { grid-template-columns: 224px 0 minmax(0, 1fr); font-size: 13px; }
-  .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 224px 255px minmax(0, 1fr); }
-  .topbar { grid-template-columns: 224px 255px 1fr; }
+  .patent-app { grid-template-columns: 336px 0 minmax(0, 1fr); font-size: 13px; }
+  .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 336px 255px minmax(0, 1fr); }
+  .topbar { grid-template-columns: 336px 255px 1fr; }
   .loading-card { max-width: 635px; }
 }
 </style>
