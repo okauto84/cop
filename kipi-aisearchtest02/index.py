@@ -44,13 +44,28 @@ html, body, .stApp {
 
 .patent-app {
   position: fixed;
-  inset: 0;
+  inset: 12px 18px;
   display: grid;
-  grid-template-columns: 164px 201px minmax(0, 1fr);
+  grid-template-columns: 164px 0 minmax(0, 1fr);
   grid-template-rows: 34px minmax(0, 1fr);
   background: #f8fafc;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: -.15px;
+  border: 1px solid #e0e6ed;
+  border-radius: 8px;
+  box-shadow: 0 3px 14px rgba(35, 48, 64, .08);
+  overflow: hidden;
+  transition: grid-template-columns .38s ease;
+}
+.patent-app:has(#ai-panel-toggle:checked) {
+  grid-template-columns: 164px 201px minmax(0, 1fr);
+}
+#ai-panel-toggle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 .topbar {
   grid-column: 1 / -1;
@@ -72,7 +87,7 @@ html, body, .stApp {
   margin-top: -1px;
   padding: 0 8px;
   color: #4d5966;
-  font-size: 9px;
+  font-size: 10px;
   background: #fff;
   border: 1px solid #d6dde6;
   border-radius: 3px;
@@ -117,7 +132,7 @@ html, body, .stApp {
   background: #fff;
   border: 1px solid #dfe5ec;
   border-radius: 5px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .filter-panel {
@@ -140,7 +155,7 @@ html, body, .stApp {
   margin: 0 -4px 5px;
   padding: 4px 4px 5px;
   color: #1269cc;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   border-bottom: 1px solid #edf0f4;
 }
@@ -167,7 +182,7 @@ html, body, .stApp {
   white-space: nowrap;
   border: 1px solid #dfe5ec;
   border-radius: 3px;
-  font-size: 8px;
+  font-size: 9px;
 }
 .date-sep { color: #8993a0; }
 .class-grid {
@@ -194,10 +209,15 @@ input[type="checkbox"] {
   padding: 3px 4px;
   color: white;
   text-align: center;
-  font-size: 8px;
+  font-size: 9px;
   background: #7a48eb;
   border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  transition: filter .15s ease, transform .15s ease;
 }
+.mini-button:hover { filter: brightness(1.08); }
+.mini-button:active { transform: translateY(1px); }
 .mini-button.blue { background: #2878ef; }
 .component {
   display: grid;
@@ -213,7 +233,7 @@ input[type="checkbox"] {
   color: #2775da;
   font-weight: 600;
 }
-.component-title span:last-child { color: #7a8490; font-size: 8px; font-weight: 400; }
+.component-title span:last-child { color: #7a8490; font-size: 9px; font-weight: 400; }
 .component-text { color: #44505d; line-height: 1.5; }
 .filter-footer { padding: 5px 4px 4px; border-top: 1px solid var(--line); }
 .footer-buttons { display: grid; grid-template-columns: 1fr 1.55fr; gap: 4px; }
@@ -227,7 +247,7 @@ input[type="checkbox"] {
   border-radius: 5px;
 }
 .footer-button.primary { color: #fff; background: #3478e9; border-color: #3478e9; font-weight: 600; }
-.copyright { padding-top: 5px; color: #9aa4af; font-size: 7px; text-align: center; }
+.copyright { padding-top: 5px; color: #9aa4af; font-size: 8px; text-align: center; }
 
 .claims-panel {
   grid-column: 2;
@@ -241,6 +261,16 @@ input[type="checkbox"] {
   border-radius: 7px;
   box-shadow: 0 2px 7px rgba(42, 55, 70, .08);
   overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-105%);
+  transform-origin: left center;
+  transition: transform .38s ease, opacity .25s ease;
+}
+#ai-panel-toggle:checked ~ .claims-panel {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
 }
 .claims-title {
   height: 31px;
@@ -251,12 +281,12 @@ input[type="checkbox"] {
   font-weight: 700;
   border-bottom: 1px solid #edf0f4;
 }
-.doc-icon { color: #3479ee; font-size: 12px; }
+.doc-icon { color: #3479ee; font-size: 13px; }
 .title-spacer { flex: 1; }
-.view-chip { padding: 2px 5px; border-radius: 3px; font-size: 8px; font-weight: 500; }
+.view-chip { padding: 2px 5px; border-radius: 3px; font-size: 9px; font-weight: 500; }
 .view-chip.on { color: #7442df; background: #f2eefe; }
 .view-chip.off { color: #738091; background: #f4f6f8; }
-.close { color: #8c96a2; font-size: 12px; }
+.close { color: #8c96a2; font-size: 13px; }
 .claims-tabs {
   height: 31px;
   display: flex;
@@ -278,7 +308,7 @@ input[type="checkbox"] {
   background: #f7f8fa;
   border: 1px solid #e1e6eb;
   border-radius: 3px;
-  font-size: 8px;
+  font-size: 9px;
 }
 .claim-list { min-height: 0; flex: 1; overflow: hidden; padding: 4px 5px; }
 .claim-card {
@@ -291,7 +321,7 @@ input[type="checkbox"] {
   border-radius: 5px;
 }
 .claim-card-head { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; color: #2472d4; font-weight: 700; }
-.claim-card-head .independent { margin-left: auto; color: #7d8792; font-size: 8px; font-weight: 400; }
+.claim-card-head .independent { margin-left: auto; color: #7d8792; font-size: 9px; font-weight: 400; }
 .extract-button {
   height: 27px;
   margin: 0 5px 6px;
@@ -330,7 +360,7 @@ input[type="checkbox"] {
   height: 1px;
   background: #dae2eb;
 }
-.step { position: relative; text-align: center; color: #7e8995; font-size: 8px; }
+.step { position: relative; text-align: center; color: #7e8995; font-size: 9px; }
 .step-dot {
   position: relative;
   z-index: 1;
@@ -343,7 +373,7 @@ input[type="checkbox"] {
   background: #f8fafc;
   border: 1px solid #dce4ec;
   border-radius: 50%;
-  font-size: 8px;
+  font-size: 9px;
 }
 .step.done .step-dot { color: #14ae82; background: #d7faee; border-color: #a9ecd8; }
 .step.active .step-dot {
@@ -354,10 +384,10 @@ input[type="checkbox"] {
 }
 .step-name { color: #52606d; font-weight: 600; }
 .step.active .step-name { color: #7443df; }
-.step-status { margin-top: 1px; color: #9aa3ad; font-size: 7px; }
+.step-status { margin-top: 1px; color: #9aa3ad; font-size: 8px; }
 .loading-area { padding: 18px 11% 0; }
-.loading-title { margin-bottom: 2px; font-size: 14px; font-weight: 700; letter-spacing: -.45px; }
-.loading-subtitle { margin-bottom: 12px; color: #929ca7; font-size: 8px; }
+.loading-title { margin-bottom: 2px; font-size: 15px; font-weight: 700; letter-spacing: -.45px; }
+.loading-subtitle { margin-bottom: 12px; color: #929ca7; font-size: 9px; }
 .loading-card {
   width: 100%;
   max-width: 500px;
@@ -374,7 +404,7 @@ input[type="checkbox"] {
   align-items: center;
   gap: 7px;
   color: #55616e;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
 }
 .spinner {
@@ -392,13 +422,15 @@ input[type="checkbox"] {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (min-width: 1300px) {
-  .patent-app { grid-template-columns: 210px 255px minmax(0, 1fr); font-size: 12px; }
+  .patent-app { grid-template-columns: 210px 0 minmax(0, 1fr); font-size: 13px; }
+  .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 210px 255px minmax(0, 1fr); }
   .topbar { grid-template-columns: 210px 255px 1fr; }
   .loading-card { max-width: 635px; }
 }
 </style>
 
 <div class="patent-app">
+  <input type="checkbox" id="ai-panel-toggle">
   <header class="topbar">
     <div class="top-left">▏특허 검색 <button>직접 입력</button></div>
     <div class="tabs"><div class="tab">⌂&nbsp; INFO</div><div class="tab active">1020220167018</div></div>
@@ -428,7 +460,7 @@ input[type="checkbox"] {
       </div>
       <div class="section-title">⌕ 구성요소</div>
       <div class="components-head">
-        <input type="checkbox"><span>구성요소 내용</span><span class="mini-button">AI 선택</span><span class="mini-button blue">+ 추가</span>
+        <input type="checkbox"><span>구성요소 내용</span><label for="ai-panel-toggle" class="mini-button">AI 선택</label><span class="mini-button blue">+ 추가</span>
       </div>
       <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 1</span><span>☆ 핵심</span></div><div class="component-text">워드라인 및 비트라인들에 연결된 메모리 셀들</div></div></div>
       <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 2</span><span>☆ 핵심</span></div><div class="component-text">상기 워드라인 및 상기 비트라인들에 인가되는 프로그램 관련 전압들을 제어하는 메인 프로세서</div></div></div>
