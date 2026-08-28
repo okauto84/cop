@@ -625,7 +625,6 @@ input[type="checkbox"] {
       <div class="icon-box">▥</div><div class="icon-box">⚙</div>
     </div>
   </header>
-
   <aside class="filter-panel">
     <div class="filter-scroll">
       <div class="field">1020220167018</div>
@@ -658,7 +657,6 @@ input[type="checkbox"] {
       <div class="copyright">Copyright © 2026 KIPI. All rights reserved. Version 2.0</div>
     </div>
   </aside>
-
   <aside class="claims-panel">
     <div class="claims-title"><span class="doc-icon">▧</span> AI 더보기(요약 및 청구항)<span class="title-spacer"></span><span class="view-chip on">보기</span><span class="view-chip off">내려 보기</span><span class="close">×</span></div>
     <div class="claims-tabs"><div class="claims-tab">요약</div><div class="claims-tab active">청구항</div><div class="select-all">전체 선택</div></div>
@@ -670,7 +668,6 @@ input[type="checkbox"] {
     </div>
     <div class="extract-button">▱&nbsp; 선택한 청구항을 LLM으로 구성요소 추출 및 추가</div>
   </aside>
-
   <main class="workspace">
     <div class="loading-view">
       <div class="progress-wrap">
@@ -693,7 +690,6 @@ input[type="checkbox"] {
         </div>
       </section>
     </div>
-
     <div class="result-view">
       <section class="result-center">
         <div class="result-toolbar">
