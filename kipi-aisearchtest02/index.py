@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """AI 특허 검색 로딩 화면 목업."""
 
+import base64
+from pathlib import Path
+
 import streamlit as st
 
 
@@ -9,6 +12,12 @@ st.set_page_config(
     page_icon="⌕",
     layout="wide",
     initial_sidebar_state="collapsed",
+)
+
+drawing_path = Path(__file__).parent / "data" / "drawing.JPG"
+drawing_data_uri = (
+    "data:image/jpeg;base64,"
+    + base64.b64encode(drawing_path.read_bytes()).decode("ascii")
 )
 
 st.markdown(
@@ -621,6 +630,11 @@ input[type="checkbox"] {
   border-radius: 4px;
   font-size: 10px;
 }
+.drawing-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 .ai-card { margin-top: 7px; height: calc(100% - 225px); border-color: #eadcff; }
 .ai-card .side-heading { color: #7845df; background: #fbf7ff; border-color: #f0e7fb; }
 .summary-box {
@@ -761,7 +775,7 @@ input[type="checkbox"] {
       <aside class="result-side">
         <div class="side-card">
           <div class="side-heading">대표도면</div>
-          <div class="drawing-box">도면 이미지 없음</div>
+          <div class="drawing-box"><img src="__DRAWING_DATA_URI__" alt="대표도면"></div>
         </div>
         <div class="side-card ai-card">
           <div class="side-heading">AI 요약</div>
@@ -773,6 +787,6 @@ input[type="checkbox"] {
     </div>
   </main>
 </div>
-""",
+""".replace("__DRAWING_DATA_URI__", drawing_data_uri),
     unsafe_allow_html=True,
 )
