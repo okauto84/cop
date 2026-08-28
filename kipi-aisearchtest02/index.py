@@ -653,7 +653,7 @@ input[type="checkbox"] {
       <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 5</span><span>☆ 핵심</span></div><div class="component-text">상기 메인 프로세서가 상기 프로그램 관련 전압을 제어하는 구성</div></div></div>
     </div>
     <div class="filter-footer">
-      <div class="footer-buttons"><div class="footer-button">↻ 초기화</div><label for="search-result-toggle" class="footer-button primary search-trigger"><span class="searching-label">⌕ 검색 중...</span></label></div>
+      <div class="footer-buttons"><div class="footer-button">↻ 초기화</div><label for="search-result-toggle" class="footer-button primary search-trigger"><span class="searching-label">⌕ 검색 </span></label></div>
       <div class="copyright">Copyright © 2026 KIPI. All rights reserved. Version 2.0</div>
     </div>
   </aside>
