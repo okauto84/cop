@@ -251,7 +251,7 @@ input[type="checkbox"] {
   border-radius: 5px;
 }
 .footer-button.primary { color: #fff; background: #3478e9; border-color: #3478e9; font-weight: 600; }
-.copyright { padding-top: 5px; color: #9aa4af; font-size: 8px; text-align: center; }
+.copyright { padding-top: 5px; color: #9aa4af; font-size: 10px; text-align: center; }
 
 .claims-panel {
   grid-column: 2;
@@ -396,7 +396,7 @@ input[type="checkbox"] {
 }
 .step-name { color: #52606d; font-weight: 600; }
 .step.active .step-name { color: #7443df; }
-.step-status { margin-top: 1px; color: #9aa3ad; font-size: 8px; }
+.step-status { margin-top: 1px; color: #9aa3ad; font-size: 10px; }
 .loading-area { padding: 18px 11% 0; }
 .loading-title { margin-bottom: 2px; font-size: 15px; font-weight: 700; letter-spacing: -.45px; }
 .loading-subtitle { margin-bottom: 12px; color: #929ca7; font-size: 9px; }
@@ -496,7 +496,7 @@ input[type="checkbox"] {
   background: #fff;
   border: 1px solid #d9e1e9;
   border-radius: 3px;
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 600;
 }
 .result-tool.active { color: #2673df; background: #eef5ff; border-color: #bcd5fa; }
@@ -511,7 +511,7 @@ input[type="checkbox"] {
   overflow: hidden;
   border: 1px solid #dce3ea;
   border-radius: 3px;
-  font-size: 8px;
+  font-size: 10px;
 }
 .result-search-btn {
   height: 22px;
@@ -519,7 +519,7 @@ input[type="checkbox"] {
   color: #2d73dc;
   border: 1px solid #bed4f5;
   border-radius: 3px;
-  font-size: 8px;
+  font-size: 10px;
 }
 .patent-table-wrap { min-height: 0; flex: 1; overflow: hidden; }
 .patent-table {
@@ -580,7 +580,7 @@ input[type="checkbox"] {
   padding: 3px 8px;
   color: #697582;
   border-top: 1px solid #e4e9ee;
-  font-size: 8px;
+  font-size: 10px;
 }
 .page-size { padding: 3px 18px 3px 7px; border: 1px solid #dce2e8; border-radius: 3px; }
 .pager-spacer { flex: 1; }
@@ -619,7 +619,7 @@ input[type="checkbox"] {
   background: #fbfcfd;
   border: 1px solid #eef1f4;
   border-radius: 4px;
-  font-size: 8px;
+  font-size: 10px;
 }
 .ai-card { margin-top: 7px; height: calc(100% - 225px); border-color: #eadcff; }
 .ai-card .side-heading { color: #7845df; background: #fbf7ff; border-color: #f0e7fb; }
@@ -629,7 +629,7 @@ input[type="checkbox"] {
   border: 1px solid;
   border-radius: 5px;
   line-height: 1.45;
-  font-size: 8px;
+  font-size: 10px;
 }
 .summary-box strong { display: block; margin-bottom: 4px; }
 .summary-box.red { color: #c6463d; background: #fff9f8; border-color: #f2d8d5; }
@@ -715,11 +715,11 @@ input[type="checkbox"] {
         <div class="loading-title">검색을 진행하고 있습니다</div>
         <div class="loading-subtitle">실제 검색과 AI 처리 상태를 확인하고 있습니다.</div>
         <div class="loading-card">
-          <div class="loading-item"><span class="spinner"></span>문헌검색 진행상황</div>
-          <div class="loading-item"><span class="spinner"></span>Vector 검색 중...</div>
-          <div class="loading-item"><span class="spinner"></span>BM25 검색 중...</div>
-          <div class="loading-item"><span class="spinner"></span>Hybrid 결과 병합 중...</div>
-          <div class="loading-item"><span class="spinner"></span>Top 200 선정 중...</div>
+          <div class="loading-item"><span class="spinner"></span>임베딩 벡터 추출 중</div>
+          <div class="loading-item"><span class="spinner"></span>키워드 유사도 검색 중...</div>
+          <div class="loading-item"><span class="spinner"></span>임베딩 벡터 유사도 검색 중...</div>
+          <div class="loading-item"><span class="spinner"></span>하이브리드 결과 병합 중...</div>
+          <div class="loading-item"><span class="spinner"></span>Top 100 선정 중...</div>
         </div>
       </section>
     </div>
