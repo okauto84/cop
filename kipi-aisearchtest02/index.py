@@ -58,7 +58,7 @@ html, body, .stApp {
   transition: grid-template-columns .38s ease;
 }
 .patent-app:has(#ai-panel-toggle:checked) {
-  grid-template-columns: 270px 201px minmax(0, 1fr);
+  grid-template-columns: 270px 261.3px minmax(0, 1fr);
 }
 #ai-panel-toggle {
   position: absolute;
@@ -70,7 +70,7 @@ html, body, .stApp {
 .topbar {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: 270px 201px 1fr;
+  grid-template-columns: 270px 261.3px 1fr;
   height: 34px;
   background: #fff;
   border-bottom: 1px solid var(--line);
@@ -143,9 +143,11 @@ html, body, .stApp {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  font-size: 12px;
   background: #fff;
   border-right: 1px solid var(--line);
 }
+.filter-panel * { font-size: 12px; }
 .filter-scroll {
   min-height: 0;
   flex: 1;
@@ -637,8 +639,8 @@ input[type="checkbox"] {
 
 @media (min-width: 1300px) {
   .patent-app { grid-template-columns: 336px 0 minmax(0, 1fr); font-size: 13px; }
-  .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 336px 255px minmax(0, 1fr); }
-  .topbar { grid-template-columns: 336px 255px 1fr; }
+  .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 336px 331.5px minmax(0, 1fr); }
+  .topbar { grid-template-columns: 336px 331.5px 1fr; }
   .loading-card { max-width: 635px; }
 }
 </style>
@@ -688,7 +690,7 @@ input[type="checkbox"] {
     </div>
   </aside>
   <aside class="claims-panel">
-    <div class="claims-title"><span class="doc-icon">▧</span> AI 더보기(요약 및 청구항)<span class="title-spacer"></span><span class="view-chip on">보기</span><span class="view-chip off">내려 보기</span><span class="close">×</span></div>
+    <div class="claims-title"><span class="doc-icon">▧</span> AI 더보기<span class="title-spacer"></span><span class="close">×</span></div>
     <div class="claims-tabs"><div class="claims-tab">요약</div><div class="claims-tab active">청구항</div><div class="select-all">전체 선택</div></div>
     <div class="claim-list">
       <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 1</div>워드라인 및 비트라인들에 연결된 메모리 셀들; 상기 워드라인 및 상기 비트라인들에 인가되는 프로그램 관련 전압들을 제어하는 메인 프로세서; 상기 메모리 셀들의 물리 전압을 기초로 센싱된 데이터를 저장하는 페이지 버퍼; 상기 센싱된 데이터에 대응하는 센싱 전류와 비교되는 기준 전류를 생성하는 센싱 회로; 및 상기 센싱 전류와 상기 기준 전류를 비교한 결과에 따라 상기 센싱 회로를 제어하는 메모리 장치.</div>
