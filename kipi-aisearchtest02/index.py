@@ -456,7 +456,7 @@ input[type="checkbox"] {
 }
 #search-result-toggle:checked ~ .workspace .result-view {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 273px;
+  grid-template-columns: minmax(0, 1fr) 409.5px;
   visibility: hidden;
   opacity: 0;
   animation: show-result-view .01s linear 3s forwards;
