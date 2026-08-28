@@ -200,7 +200,7 @@ input[type="checkbox"] {
 }
 .components-head {
   display: grid;
-  grid-template-columns: 19px 1fr 30px 30px;
+  grid-template-columns: 19px 1fr 45px 45px;
   align-items: center;
   height: 25px;
   color: #5f6b78;
