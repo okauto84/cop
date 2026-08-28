@@ -641,6 +641,7 @@ input[type="checkbox"] {
   .patent-app { grid-template-columns: 336px 0 minmax(0, 1fr); font-size: 13px; }
   .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 336px 331.5px minmax(0, 1fr); }
   .topbar { grid-template-columns: 336px 331.5px 1fr; }
+  .section-title { font-size: 13px; }
   .loading-card { max-width: 635px; }
 }
 </style>
@@ -661,12 +662,12 @@ input[type="checkbox"] {
     <div class="filter-scroll">
       <div class="field">1020220167018</div>
       <div class="section">
-        <div class="section-title">⌕ 검색 일자</div>
+        <div class="section-title">▏검색 일자</div>
         <div class="field select-field">출원일자</div>
         <div class="date-row"><div class="date">연도-월-일 <span>□</span></div><span class="date-sep">-</span><div class="date">2022-12-02 <span>□</span></div></div>
       </div>
       <div class="section">
-        <div class="section-title">⌕ CPC 기술분류</div>
+        <div class="section-title">▏CPC 분류</div>
         <div class="class-grid">
           <label class="check"><input type="checkbox">A</label><label class="check"><input type="checkbox">B</label>
           <label class="check"><input type="checkbox">C</label><label class="check"><input type="checkbox">D</label>
@@ -674,7 +675,7 @@ input[type="checkbox"] {
           <label class="check"><input type="checkbox" checked>G</label><label class="check"><input type="checkbox">H</label>
         </div>
       </div>
-      <div class="section-title">⌕ 구성요소</div>
+      <div class="section-title">▏구성요소</div>
       <div class="components-head">
         <input type="checkbox"><span>구성요소 내용</span><label for="ai-panel-toggle" class="mini-button">AI 선택</label><span class="mini-button blue">+ 추가</span>
       </div>
