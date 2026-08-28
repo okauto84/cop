@@ -336,11 +336,19 @@ input[type="checkbox"] {
 }
 
 .workspace {
+  position: relative;
   grid-column: 3;
   grid-row: 2;
   min-width: 0;
   overflow: hidden;
   background: #f8fafc;
+}
+.loading-view {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
 }
 .progress-wrap {
   height: 62px;
@@ -431,12 +439,34 @@ input[type="checkbox"] {
   opacity: 0;
   pointer-events: none;
 }
-.result-view { display: none; width: 100%; height: 100%; min-width: 0; }
+.result-view {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+}
 #search-result-toggle:checked ~ .filter-panel .search-trigger { background: #3478e9; }
 #search-result-toggle:checked ~ .filter-panel .search-trigger .searching-label { display: none; }
 #search-result-toggle:checked ~ .filter-panel .search-trigger::after { content: "⌕ 검색"; }
-#search-result-toggle:checked ~ .workspace .loading-view { display: none; }
-#search-result-toggle:checked ~ .workspace .result-view { display: grid; grid-template-columns: minmax(0, 1fr) 182px; }
+#search-result-toggle:checked ~ .workspace .loading-view {
+  display: block;
+  animation: hide-loading-view .01s linear 3s forwards;
+}
+#search-result-toggle:checked ~ .workspace .result-view {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 182px;
+  visibility: hidden;
+  opacity: 0;
+  animation: show-result-view .01s linear 3s forwards;
+}
+@keyframes hide-loading-view {
+  to { visibility: hidden; opacity: 0; pointer-events: none; }
+}
+@keyframes show-result-view {
+  to { visibility: visible; opacity: 1; }
+}
 
 .result-center {
   min-width: 0;
@@ -496,7 +526,7 @@ input[type="checkbox"] {
   table-layout: fixed;
   border-collapse: collapse;
   color: #4e5b68;
-  font-size: 8px;
+  font-size: 15px;
 }
 .patent-table col:nth-child(1) { width: 4%; }
 .patent-table col:nth-child(2) { width: 6%; }
