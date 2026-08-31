@@ -16,10 +16,68 @@ st.set_page_config(
 )
 
 drawing_path = Path(__file__).parent / "data" / "drawing.JPG"
+DATA_DIR = Path(__file__).parent / "data"
 drawing_data_uri = (
     "data:image/jpeg;base64,"
     + base64.b64encode(drawing_path.read_bytes()).decode("ascii")
 )
+
+DRAWING_BATCH_ITEMS = [
+    {"no": 1, "state": "공개", "app_no": "1020180133661", "date": "20181102", "title": "메모리 장치 및 이를 포함하는 메모리 시스템"},
+    {"no": 2, "state": "공개", "app_no": "1020140178426", "date": "20141211", "title": "반도체 메모리 장치 및 그의 동작 방법"},
+    {"no": 3, "state": "공개", "app_no": "1020200126702", "date": "20200929", "title": "메모리 장치 및 이의 동작 방법"},
+    {"no": 4, "state": "등록", "app_no": "1020200098794", "date": "20200806", "title": "메모리 장치"},
+    {"no": 5, "state": "공개", "app_no": "1020200098765", "date": "20200806", "title": "메모리 장치 및 이의 동작 방법"},
+    {"no": 6, "state": "공개", "app_no": "1020220164302", "date": "20221130", "title": "페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템"},
+    {"no": 7, "state": "공개", "app_no": "1020150172401", "date": "20151204", "title": "메모리 장치 및 그의 동작방법"},
+    {"no": 8, "state": "공개", "app_no": "1020190160174", "date": "20191204", "title": "메모리 장치 및 그 동작 방법"},
+]
+
+
+def _image_data_uri(path: Path) -> str:
+    suffix = path.suffix.lower()
+    mime = "image/png" if suffix == ".png" else "image/jpeg"
+    return f"data:{mime};base64," + base64.b64encode(path.read_bytes()).decode("ascii")
+
+
+def _load_drawing_batch_uris() -> list[str]:
+    return [_image_data_uri(path) for path in sorted(DATA_DIR.glob("d_*.png"))]
+
+
+def build_bulk_drawings_modal_html() -> str:
+    image_uris = _load_drawing_batch_uris()
+    cards: list[str] = []
+    for index, item in enumerate(DRAWING_BATCH_ITEMS):
+        if index < len(image_uris):
+            drawing_html = f'<img src="{image_uris[index]}" alt="대표도면 {item["no"]}">'
+        else:
+            drawing_html = '<span class="bulk-drawing-empty">이미지 없음</span>'
+        cards.append(
+            f'<article class="bulk-drawing-card">'
+            f'<div class="bulk-meta"><span class="bulk-number">{item["no"]}</span>'
+            f'<span class="bulk-state">{item["state"]}</span>'
+            f'<span>출원번호 : {item["app_no"]} ({item["date"]})</span></div>'
+            f'<div class="bulk-invention-title">{item["title"]}</div>'
+            f'<div class="bulk-drawing-frame">{drawing_html}</div>'
+            f"</article>"
+        )
+    return (
+        '<section class="bulk-drawings-modal">'
+        '<header class="bulk-modal-header">'
+        '<div class="bulk-title-icon bulk-title-icon-drawing">▣</div>'
+        "<div><div class=\"bulk-title\">대표 도면 일괄조회</div>"
+        '<div class="bulk-subtitle">필터링된 데이터 200건 중 8개씩 보기</div></div>'
+        '<div class="bulk-header-spacer"></div>'
+        '<div class="bulk-sort">배열: <strong>4열⌄</strong><span>|</span><strong>2행⌄</strong></div>'
+        '<div class="bulk-nav"><span class="disabled">이전</span><strong>1 / 25</strong><span>다음</span></div>'
+        '<label for="bulk-drawings-toggle" class="bulk-close">×</label>'
+        "</header>"
+        f'<div class="bulk-card-grid">{"".join(cards)}</div>'
+        "</section>"
+    )
+
+
+drawing_batch_modal_html = build_bulk_drawings_modal_html()
 
 st.markdown(
     """
@@ -668,15 +726,15 @@ input[type="checkbox"] {
 .summary-box.green { color: #20a57c; background: #f7fffc; border-color: #caeee1; }
 .summary-box.blue { color: #3978c8; background: #f7faff; border-color: #d6e2f4; }
 
-.bulk-claims-trigger { cursor: pointer; user-select: none; }
-#bulk-claims-toggle {
+.bulk-claims-trigger, .bulk-drawings-trigger { cursor: pointer; user-select: none; }
+#bulk-claims-toggle, #bulk-drawings-toggle {
   position: absolute;
   width: 1px;
   height: 1px;
   opacity: 0;
   pointer-events: none;
 }
-.bulk-claims-modal {
+.bulk-claims-modal, .bulk-drawings-modal {
   position: absolute;
   inset: 0;
   z-index: 100;
@@ -684,7 +742,8 @@ input[type="checkbox"] {
   flex-direction: column;
   background: #f7f8fa;
 }
-#bulk-claims-toggle:checked ~ .bulk-claims-modal {
+#bulk-claims-toggle:checked ~ .bulk-claims-modal,
+#bulk-drawings-toggle:checked ~ .bulk-drawings-modal {
   display: flex;
   animation: modal-fade-in .18s ease-out;
 }
@@ -813,6 +872,49 @@ input[type="checkbox"] {
   font-weight: 700;
 }
 
+.bulk-title-icon-drawing { color: #3279df; background: #eaf3ff; }
+.bulk-drawing-card {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #edf0f3;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(35, 47, 60, .07);
+  overflow: hidden;
+}
+.bulk-drawing-card .bulk-invention-title {
+  margin-bottom: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bulk-drawing-frame {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  margin-top: 8px;
+  padding: 6px;
+  background: #f8f9fb;
+  border: 1px solid #eef1f4;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.bulk-drawing-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.bulk-drawing-empty {
+  color: #9aa3ad;
+  font-size: var(--fs-label);
+}
+
 @media (min-width: 1300px) {
   .patent-app { grid-template-columns: 336px 0 minmax(0, 1fr); font-size: var(--fs-body); }
   .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 336px 331.5px minmax(0, 1fr); }
@@ -828,6 +930,7 @@ __SPEC_MODAL_CSS__
   <input type="checkbox" id="search-start-toggle">
   <input type="checkbox" id="search-result-toggle">
   <input type="checkbox" id="bulk-claims-toggle">
+  <input type="checkbox" id="bulk-drawings-toggle">
   <input type="checkbox" id="spec-modal-toggle">
   <header class="topbar">
     <div class="top-left">▏특허 검색 <button>직접 입력</button></div>
@@ -908,7 +1011,7 @@ __SPEC_MODAL_CSS__
         <div class="result-toolbar">
           <div class="result-tool active">▣ 문헌</div>
           <div class="result-tool">▦ 구성요소</div>
-          <div class="result-tool">▣ 대표 도면 일괄조회</div>
+          <label for="bulk-drawings-toggle" class="result-tool bulk-drawings-trigger">▣ 대표 도면 일괄조회</label>
           <div class="result-tool">♙ 화학식 일괄조회</div>
           <label for="bulk-claims-toggle" class="result-tool bulk-claims-trigger">▧ 청구항 일괄조회</label>
           <div class="result-search">⌕ &nbsp; 결과 내 키워드검색...</div>
@@ -1004,9 +1107,11 @@ __SPEC_MODAL_CSS__
       </article>
     </div>
   </section>
+  __BULK_DRAWINGS_MODAL_HTML__
   __SPEC_MODAL_HTML__
 </div>
 """.replace("__DRAWING_DATA_URI__", drawing_data_uri)
+    .replace("__BULK_DRAWINGS_MODAL_HTML__", drawing_batch_modal_html)
     .replace("__SPEC_MODAL_CSS__", SPEC_MODAL_CSS.strip())
     .replace("__SPEC_MODAL_HTML__", get_spec_modal_html().strip()),
     unsafe_allow_html=True,
