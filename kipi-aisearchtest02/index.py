@@ -279,7 +279,7 @@ input[type="checkbox"] {
 }
 .components-head {
   display: grid;
-  grid-template-columns: 19px 1fr 45px 45px;
+  grid-template-columns: 19px 1fr 90px 90px;
   align-items: center;
   height: 25px;
   color: #5f6b78;
@@ -287,7 +287,8 @@ input[type="checkbox"] {
 }
 .mini-button {
   margin-left: 2px;
-  padding: 3px 4px;
+  padding: 3px 8px;
+  min-width: 84px;
   color: white;
   text-align: center;
   font-size: var(--fs-label);
