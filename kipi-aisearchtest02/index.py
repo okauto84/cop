@@ -835,10 +835,10 @@ button.result-tool {
   border-radius: 3px;
   font-size: var(--fs-body);
 }
-.patent-table-wrap { min-height: 0; flex: 1; overflow: hidden; }
+.patent-table-wrap { min-height: 0; flex: 1; overflow-x: hidden; overflow-y: auto; }
 .patent-table {
   width: 100%;
-  height: 100%;
+  height: auto;
   table-layout: fixed;
   border-collapse: collapse;
   color: #4e5b68;
@@ -869,26 +869,34 @@ button.result-tool {
   font-weight: 600;
 }
 .patent-table td {
-  height: 34px;
+  min-height: 34px;
+  height: auto;
   padding: 3px 4px;
   border-bottom: 1px solid #e7ebf0;
   text-align: center;
   vertical-align: middle;
-  overflow: hidden;
+  overflow: visible;
+}
+.patent-table.has-component-col td {
+  height: auto;
 }
 .patent-table tr:first-child td { background: #f1f6fd; }
 .patent-table tr:first-child td:first-child { border-left: 2px solid #4e94ee; }
-.patent-table td.cpc { line-height: 1.25; }
+.patent-table td.cpc { line-height: 1.25; vertical-align: top; }
 .patent-table td.component-chips {
-  padding-top: 4px;
-  padding-bottom: 4px;
-  vertical-align: middle;
+  padding: 5px 4px;
+  vertical-align: top;
+  overflow: visible;
+  white-space: normal;
 }
 .component-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  overflow: visible;
 }
 .comp-chip {
   min-width: 18px;
@@ -913,6 +921,7 @@ button.result-tool {
   font-weight: 600;
   white-space: normal;
   line-height: 1.3;
+  vertical-align: top;
 }
 .state-chip {
   display: inline-block;
