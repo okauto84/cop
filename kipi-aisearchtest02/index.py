@@ -93,7 +93,9 @@ DEFAULT_COMPONENT_ITEMS = [
 def build_component_row(index: int, text: str) -> str:
     return (
         f'<div class="component">'
-        f'<input type="checkbox" checked>'
+        f'<label class="component-check-label">'
+        f'<input type="checkbox" class="component-check" checked="checked" aria-label="구성요소 {index} 선택">'
+        f"</label>"
         f"<div>"
         f'<div class="component-title"><span>구성요소 {index}</span><span>☆ 핵심</span></div>'
         f'<textarea class="component-text" rows="2">{html.escape(text)}</textarea>'
@@ -125,12 +127,27 @@ COMPONENT_INTERACTION_HTML = """
   function createComponentHtml(index) {
     return (
       '<div class="component">' +
-      '<input type="checkbox" checked>' +
+      '<label class="component-check-label">' +
+      '<input type="checkbox" class="component-check" checked="checked" aria-label="구성요소 ' + index + ' 선택">' +
+      "</label>" +
       "<div>" +
       '<div class="component-title"><span>구성요소 ' + index + '</span><span>☆ 핵심</span></div>' +
       '<textarea class="component-text" rows="2" placeholder="구성요소 내용을 입력하세요"></textarea>' +
       "</div></div>"
     );
+  }
+
+  function bindComponentCheckboxes() {
+    const doc = getAppDocument();
+    if (!doc) return;
+    doc.querySelectorAll(".component-check").forEach(function (checkbox) {
+      if (checkbox.dataset.bound === "true") return;
+      checkbox.dataset.bound = "true";
+      checkbox.checked = true;
+      checkbox.addEventListener("click", function (event) {
+        event.stopPropagation();
+      });
+    });
   }
 
   function bindAddButton() {
@@ -143,6 +160,7 @@ COMPONENT_INTERACTION_HTML = """
     button.addEventListener("click", function () {
       const index = list.querySelectorAll(".component").length + 1;
       list.insertAdjacentHTML("beforeend", createComponentHtml(index));
+      bindComponentCheckboxes();
       const textareas = list.querySelectorAll(".component-text");
       const lastTextarea = textareas[textareas.length - 1];
       if (lastTextarea) lastTextarea.focus();
@@ -150,9 +168,14 @@ COMPONENT_INTERACTION_HTML = """
     return true;
   }
 
-  if (!bindAddButton()) {
+  function initComponentPanel() {
+  bindComponentCheckboxes();
+  return bindAddButton();
+  }
+
+  if (!initComponentPanel()) {
     const timer = window.setInterval(function () {
-      if (bindAddButton()) window.clearInterval(timer);
+      if (initComponentPanel()) window.clearInterval(timer);
     }, 200);
     window.setTimeout(function () { window.clearInterval(timer); }, 8000);
   }
@@ -358,6 +381,30 @@ html, body, .stApp {
 input[type="checkbox"] {
   width: 9px; height: 9px; margin: 0;
   accent-color: #2778ed;
+}
+.component {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 4px;
+  padding: 6px 2px 7px;
+  border-bottom: 1px solid #edf0f4;
+}
+.component-check-label {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 3px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.component-check {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  accent-color: #2778ed;
+  flex-shrink: 0;
 }
 .components-head {
   display: grid;
@@ -1088,7 +1135,7 @@ __SPEC_MODAL_CSS__
       </div>
       <div class="section-title">▏구성요소</div>
       <div class="components-head">
-        <input type="checkbox"><span>구성요소 내용</span><label for="ai-panel-toggle" class="mini-button">AI 선택</label><button type="button" class="mini-button blue" id="component-add-btn">+ 추가</button>
+        <input type="checkbox" checked="checked" aria-label="구성요소 전체 선택"><span>구성요소 내용</span><label for="ai-panel-toggle" class="mini-button">AI 선택</label><button type="button" class="mini-button blue" id="component-add-btn">+ 추가</button>
       </div>
       __COMPONENTS_LIST_HTML__
     </div>

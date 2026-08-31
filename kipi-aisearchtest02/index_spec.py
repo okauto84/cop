@@ -23,15 +23,34 @@ SPEC_MODAL_CSS = """
   cursor: pointer;
 }
 .clickable-row:hover td { background: #eaf3ff !important; }
-.spec-modal {
+.spec-modal-backdrop {
   position: absolute;
   inset: 0;
+  z-index: 199;
+  display: none;
+  background: rgba(33, 43, 54, .48);
+  pointer-events: none;
+}
+#spec-modal-toggle:checked ~ .spec-modal-backdrop {
+  display: block;
+  animation: backdrop-fade-in .18s ease-out;
+}
+.spec-modal {
+  position: absolute;
+  top: 36px;
+  right: 48px;
+  bottom: 36px;
+  left: 48px;
   z-index: 200;
   display: none;
   grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr);
   grid-template-rows: 47px minmax(0, 1fr);
   color: #34404c;
   background: #f7f8fa;
+  border: 1px solid #dfe5ec;
+  border-radius: 10px;
+  box-shadow: 0 10px 36px rgba(23, 36, 50, .14);
+  overflow: hidden;
   --fs-body: 12px;
   --fs-caption: 12px;
   --fs-label: 13px;
@@ -40,7 +59,10 @@ SPEC_MODAL_CSS = """
   --fs-display: 18px;
   font-size: var(--fs-body);
 }
-#spec-modal-toggle:checked ~ .spec-modal { display: grid; }
+#spec-modal-toggle:checked ~ .spec-modal {
+  display: grid;
+  animation: modal-fade-in .18s ease-out;
+}
 .spec-top {
   grid-column: 1 / -1;
   display: flex;
@@ -426,6 +448,7 @@ SPEC_MODAL_CSS = """
 """
 
 SPEC_MODAL_HTML_TEMPLATE = """
+<div class="spec-modal-backdrop" aria-hidden="true"></div>
 <section class="spec-modal">
   <header class="spec-top">
     <div class="spec-number">1020180133661</div>
