@@ -455,6 +455,7 @@ input[type="checkbox"] {
 .search-second-trigger { display: none; }
 #search-start-toggle:checked ~ .filter-panel .search-first-trigger { display: none; }
 #search-start-toggle:checked ~ .filter-panel .search-second-trigger { display: grid; }
+#search-start-toggle:checked ~ .workspace .loading-view { display: block; }
 .result-view {
   position: absolute;
   inset: 0;
@@ -854,7 +855,7 @@ __SPEC_MODAL_CSS__
       <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 5</span><span>☆ 핵심</span></div><div class="component-text">상기 메인 프로세서가 상기 프로그램 관련 전압을 제어하는 구성</div></div></div>
     </div>
     <div class="filter-footer">
-      <div class="footer-buttons"><div class="footer-button">↻ 초기화</div><label for="search-start-toggle" class="footer-button primary search-trigger search-first-trigger">⌕ 검색</label><label for="search-result-toggle" class="footer-button primary search-trigger search-second-trigger">⌕ 검색 중...</label></div>
+      <div class="footer-buttons"><div class="footer-button">↻ 초기화</div><label for="search-start-toggle" class="footer-button primary search-trigger search-first-trigger">⌕ 검색</label><label for="search-result-toggle" class="footer-button primary search-trigger search-second-trigger">⌕ 검색</label></div>
       <div class="copyright">Copyright © 2026 KIPI. All rights reserved. Version 2.0</div>
     </div>
   </aside>
@@ -883,11 +884,11 @@ __SPEC_MODAL_CSS__
         <div class="loading-title">검색을 진행하고 있습니다</div>
         <div class="loading-subtitle">실제 검색과 AI 처리 상태를 확인하고 있습니다.</div>
         <div class="loading-card">
-          <div class="loading-item"><span class="spinner"></span>임베딩 벡터 추출 중</div>
+          <div class="loading-item"><span class="spinner"></span>출원 발명의 임베딩 벡터 추출 중</div>
           <div class="loading-item"><span class="spinner"></span>키워드 유사도 검색 중...</div>
           <div class="loading-item"><span class="spinner"></span>임베딩 벡터 유사도 검색 중...</div>
           <div class="loading-item"><span class="spinner"></span>하이브리드 결과 병합 중...</div>
-          <div class="loading-item"><span class="spinner"></span>Top 100 선정 중...</div>
+          <div class="loading-item"><span class="spinner"></span>검색 결과 Top100 선정 중...</div>
         </div>
       </section>
     </div>

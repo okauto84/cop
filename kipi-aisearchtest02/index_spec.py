@@ -120,8 +120,60 @@ SPEC_MODAL_CSS = """
 .spec-page.spec-pdf-view {
   padding: 10px 12px;
   overflow-y: auto;
+  scroll-behavior: smooth;
   font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
   background: #e8eaed;
+}
+.spec-pdf-page-wrap {
+  position: relative;
+  width: 100%;
+  margin: 0 auto 10px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(34, 46, 58, .14);
+  overflow: hidden;
+}
+.spec-pdf-page-wrap img.spec-pdf-bg {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+.spec-pdf-text-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+.spec-pdf-text {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  color: rgba(0, 0, 0, .01);
+  background: transparent;
+  white-space: pre;
+  line-height: 1;
+  user-select: text;
+  cursor: text;
+}
+.spec-pdf-text::selection {
+  color: #1d2733;
+  background: rgba(66, 133, 244, .35);
+}
+.spec-pdf-highlight {
+  position: absolute;
+  z-index: 3;
+  margin: 0;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  scroll-margin-top: 72px;
+  pointer-events: none;
+}
+.spec-pdf-highlight:target {
+  background: rgba(255, 230, 0, .48);
+  border-color: #ffc400;
+  box-shadow: 0 0 0 4px rgba(255, 196, 0, .22);
 }
 .spec-pdf-page {
   display: block;
@@ -354,7 +406,10 @@ SPEC_MODAL_CSS = """
   border: 1px solid #d9e1e9;
   border-radius: 4px;
   font-size: 9px;
+  text-decoration: none;
+  cursor: pointer;
 }
+.spec-source-btn:hover { color: #2874dc; border-color: #93bbf1; background: #f3f8ff; }
 """
 
 SPEC_MODAL_HTML_TEMPLATE = """
@@ -405,7 +460,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
           <div class="spec-compare-card same">
             <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>동일</span></div><div class="result-label">대비결과</div></div>
             <div class="spec-compare-card-body"><div>인용문헌은 워드라인 및 비트라인에 연결된 다수의 메모리 셀을 포함하는 비휘발성 메모리 장치를 개시하고 있으며, 셀 어레이의 배열 방식과 선택 구조가 출원발명과 동일하게 기재되어 있습니다.</div><div>메모리 셀의 배치 구조와 워드라인·비트라인 연결 관계가 문언상 동일하여, 구성요소 1은 인용발명과 실질적으로 같은 기술적 의미를 갖는 것으로 판단됩니다.</div></div>
-            <div class="spec-compare-card-foot"><span class="spec-source-btn">⌕ 원문 위치 확인</span></div>
+            <div class="spec-compare-card-foot"><a href="#spec-highlight-1" class="spec-source-btn">⌕ 원문 위치 확인</a></div>
           </div>
         </div>
         <div class="spec-compare-row">
@@ -413,7 +468,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
           <div class="spec-compare-card partial">
             <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>일부 차이</span><span class="spec-status-tag doc">문헌</span><span class="spec-status-tag sentence">문장</span></div><div class="result-label">대비결과</div></div>
             <div class="spec-compare-card-body"><div>인용문헌은 컨트롤러가 프로그램 전압을 제어한다고 기재하고 있으나, 패스 페일 체크 타이밍을 별도 서브 프로세서가 병렬 처리한다는 점에서 출원발명과 차이가 있습니다.</div><div>전압 제어 기능 자체는 대응되나, 제어 주체와 타이밍 제어 방식에서 일부 차이가 확인됩니다. 따라서 전체 구성은 유사하나 세부 실시 형태는 부분적으로 상이합니다.</div></div>
-            <div class="spec-compare-card-foot"><span class="spec-source-btn">⌕ 원문 위치 확인</span></div>
+            <div class="spec-compare-card-foot"><a href="#spec-highlight-2" class="spec-source-btn">⌕ 원문 위치 확인</a></div>
           </div>
         </div>
         <div class="spec-compare-row">
@@ -428,7 +483,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
           <div class="spec-compare-card substantial">
             <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>실질적 동일</span></div><div class="result-label">대비결과</div></div>
             <div class="spec-compare-card-body"><div>인용문헌은 센싱 회로가 비트라인 전류와 기준 전류를 비교하여 셀 상태를 판별한다고 기재하고 있으며, 검증 실패 시 프로그램 전압을 재조정하는 흐름이 출원발명과 유사합니다.</div><div>회로 구성의 명칭과 세부 파라미터 조절 방식은 다소 다르지만, 센싱·비교·후속 전압 조정이라는 기술적 효과와 수단이 실질적으로 동일한 것으로 분석됩니다.</div></div>
-            <div class="spec-compare-card-foot"><span class="spec-source-btn">⌕ 원문 위치 확인</span></div>
+            <div class="spec-compare-card-foot"><a href="#spec-highlight-3" class="spec-source-btn">⌕ 원문 위치 확인</a></div>
           </div>
         </div>
       </div>
@@ -438,8 +493,34 @@ SPEC_MODAL_HTML_TEMPLATE = """
 """
 
 
+PDF_HIGHLIGHT_TARGETS = {
+    "spec-highlight-1": "반도체 기판에 복수의 트렌치를 형성하는 단계",
+    "spec-highlight-2": "상기 트렌치 내에 게이트 절연막 및 게이트 전극을 형성하는 단계",
+    "spec-highlight-3": "상기 노출된 트렌치의 측면과 접촉하도록 소스 메탈을 형성하는 단계",
+}
+
+
+def _html_escape(text: str) -> str:
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
+
+
+def _bbox_to_style(x0: float, y0: float, x1: float, y1: float, pw: float, ph: float, pad: float = 1.0) -> str:
+    left = max(0.0, x0 - pad) / pw * 100
+    top = max(0.0, y0 - pad) / ph * 100
+    width = min(pw, (x1 - x0) + pad * 2) / pw * 100
+    height = min(ph, (y1 - y0) + pad * 2) / ph * 100
+    return (
+        f"left:{left:.4f}%;top:{top:.4f}%;width:{width:.4f}%;height:{height:.4f}%"
+    )
+
+
 def build_registration_pdf_view(pdf_path: Path = REGISTRATION_PDF_PATH, zoom: float = 1.1) -> str:
-    """등록공보 PDF를 페이지 이미지로 렌더링해 HTML 조각으로 반환."""
+    """등록공보 PDF를 이미지+텍스트 레이어로 렌더링해 선택·하이라이트가 가능한 HTML을 반환."""
     if not pdf_path.is_file():
         return (
             f'<div class="spec-pdf-fallback">PDF 파일을 찾을 수 없습니다.<br>{pdf_path.name}</div>'
@@ -457,14 +538,69 @@ def build_registration_pdf_view(pdf_path: Path = REGISTRATION_PDF_PATH, zoom: fl
 
     pages: list[str] = []
     matrix = fitz.Matrix(zoom, zoom)
+    assigned_highlights: set[str] = set()
     doc = fitz.open(str(pdf_path))
     try:
         for page_index in range(len(doc)):
-            pixmap = doc.load_page(page_index).get_pixmap(matrix=matrix, alpha=False)
+            page = doc.load_page(page_index)
+            pixmap = page.get_pixmap(matrix=matrix, alpha=False)
+            pw, ph = float(pixmap.width), float(pixmap.height)
+            page_rect = page.rect
+            scale_x = pw / page_rect.width
+            scale_y = ph / page_rect.height
+
             image_b64 = base64.standard_b64encode(pixmap.tobytes("png")).decode("ascii")
+            text_spans: list[str] = []
+            for block in page.get_text("dict")["blocks"]:
+                if block.get("type") != 0:
+                    continue
+                for line in block.get("lines", []):
+                    for span in line.get("spans", []):
+                        text = span.get("text", "")
+                        if not text.strip():
+                            continue
+                        x0, y0, x1, y1 = span["bbox"]
+                        sx0, sy0, sx1, sy1 = (
+                            x0 * scale_x,
+                            y0 * scale_y,
+                            x1 * scale_x,
+                            y1 * scale_y,
+                        )
+                        font_pct = max((sy1 - sy0) / ph * 100 * 0.92, 0.35)
+                        pos = _bbox_to_style(sx0, sy0, sx1, sy1, pw, ph, pad=0.2)
+                        text_spans.append(
+                            f'<span class="spec-pdf-text" style="{pos};font-size:{font_pct:.4f}%">{_html_escape(text)}</span>'
+                        )
+
+            highlight_spans: list[str] = []
+            for highlight_id, phrase in PDF_HIGHLIGHT_TARGETS.items():
+                if highlight_id in assigned_highlights:
+                    continue
+                rects = page.search_for(phrase)
+                if not rects:
+                    continue
+                assigned_highlights.add(highlight_id)
+                rect = rects[0]
+                sx0, sy0, sx1, sy1 = (
+                    rect.x0 * scale_x,
+                    rect.y0 * scale_y,
+                    rect.x1 * scale_x,
+                    rect.y1 * scale_y,
+                )
+                pos = _bbox_to_style(sx0, sy0, sx1, sy1, pw, ph, pad=2.0)
+                highlight_spans.append(
+                    f'<span class="spec-pdf-highlight" id="{highlight_id}" style="{pos}"></span>'
+                )
+
             page_no = page_index + 1
             pages.append(
-                f'<img class="spec-pdf-page" src="data:image/png;base64,{image_b64}" alt="등록공보 {page_no}페이지">'
+                '<div class="spec-pdf-page-wrap" id="spec-pdf-page-'
+                f'{page_no}">'
+                f'<img class="spec-pdf-bg" src="data:image/png;base64,{image_b64}" alt="등록공보 {page_no}페이지">'
+                '<div class="spec-pdf-text-layer">'
+                + "".join(text_spans)
+                + "".join(highlight_spans)
+                + "</div></div>"
             )
     finally:
         doc.close()
