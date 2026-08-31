@@ -734,6 +734,23 @@ input[type="checkbox"] {
   opacity: 0;
   pointer-events: none;
 }
+.bulk-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 99;
+  display: none;
+  background: rgba(33, 43, 54, .48);
+  pointer-events: none;
+}
+#bulk-claims-toggle:checked ~ .bulk-modal-backdrop,
+#bulk-drawings-toggle:checked ~ .bulk-modal-backdrop {
+  display: block;
+  animation: backdrop-fade-in .18s ease-out;
+}
+@keyframes backdrop-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 .bulk-claims-modal, .bulk-drawings-modal {
   position: absolute;
   top: 36px;
@@ -1062,6 +1079,7 @@ __SPEC_MODAL_CSS__
       </aside>
     </div>
   </main>
+  <div class="bulk-modal-backdrop" aria-hidden="true"></div>
   <section class="bulk-claims-modal">
     <header class="bulk-modal-header">
       <div class="bulk-title-icon">▧</div>
