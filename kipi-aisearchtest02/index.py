@@ -1000,7 +1000,6 @@ button.result-tool {
   align-content: flex-start;
   width: 100%;
   min-height: 20px;
-  margin: 0;
 }
 .comp-chip {
   width: 20px;
