@@ -5,6 +5,7 @@ import base64
 from pathlib import Path
 
 import streamlit as st
+from index_spec import SPEC_MODAL_CSS, SPEC_MODAL_HTML
 
 
 st.set_page_config(
@@ -807,6 +808,7 @@ input[type="checkbox"] {
   .section-title { font-size: 13px; }
   .loading-card { max-width: 635px; }
 }
+__SPEC_MODAL_CSS__
 </style>
 
 <div class="patent-app">
@@ -814,6 +816,7 @@ input[type="checkbox"] {
   <input type="checkbox" id="search-start-toggle">
   <input type="checkbox" id="search-result-toggle">
   <input type="checkbox" id="bulk-claims-toggle">
+  <input type="checkbox" id="spec-modal-toggle">
   <header class="topbar">
     <div class="top-left">▏특허 검색 <button>직접 입력</button></div>
     <div class="tabs"><div class="tab">⌂&nbsp; INFO</div><div class="tab active">1020220167018</div></div>
@@ -904,17 +907,17 @@ input[type="checkbox"] {
             <colgroup><col><col><col><col><col><col><col></colgroup>
             <thead><tr><th>순번</th><th>구분</th><th>CPC</th><th>발명의 명칭</th><th>출원번호</th><th>출원일자</th><th>공개번호</th></tr></thead>
             <tbody>
-              <tr><td>1</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)</td><td class="title">메모리 장치 및 이를 포함하는 메모리 시스템</td><td>1020180133661</td><td>20181102</td><td>1020200050705</td></tr>
-              <tr><td>2</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 29/38<br>G11C 16/34<br>G11C 16/12(i)</td><td class="title">반도체 메모리 장치 및 그의 동작 방법</td><td>1020140178426</td><td>20141211</td><td>1020160071120</td></tr>
-              <tr><td>3</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/10<br>G11C 16/3403<br>G11C 16/3459(i)</td><td class="title">메모리 장치 및 이의 동작 방법</td><td>1020200126702</td><td>20200929</td><td>1020220043365</td></tr>
-              <tr><td>4</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/3459<br>G11C 16/08<br>G11C 16/10(i)</td><td class="title">메모리 장치</td><td>1020200098794</td><td>20200806</td><td>1020220018354</td></tr>
-              <tr><td>5</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/30<br>G11C 16/08<br>G11C 16/24(i)</td><td class="title">메모리 장치 및 이의 동작 방법</td><td>1020200098765</td><td>20200806</td><td>1020220018341</td></tr>
-              <tr><td>6</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10(i)<br>G11C 16/24</td><td class="title">페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템</td><td>1020220164302</td><td>20221130</td><td>1020240080715</td></tr>
-              <tr><td>7</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3445<br>G11C 16/3459<br>G11C 29/26(i)</td><td class="title">메모리 장치 및 그의 동작방법</td><td>1020150172401</td><td>20151204</td><td>1020170065969</td></tr>
-              <tr><td>8</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020190160174</td><td>20191204</td><td>1020210070107</td></tr>
-              <tr><td>9</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/24<br>G11C 16/08(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020200104937</td><td>20200820</td><td>1020220023263</td></tr>
-              <tr><td>10</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/24<br>G11C 16/10(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020210025654</td><td>20210223</td><td>1020230120033</td></tr>
-              <tr><td>11</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/06<br>G11C 16/125(i)</td><td class="title">불휘발성 메모리 장치 및 그것의 동작 방법</td><td>1020140093320</td><td>20140723</td><td>1020160012300</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>1</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)</td><td class="title">메모리 장치 및 이를 포함하는 메모리 시스템</td><td>1020180133661</td><td>20181102</td><td>1020200050705</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>2</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 29/38<br>G11C 16/34<br>G11C 16/12(i)</td><td class="title">반도체 메모리 장치 및 그의 동작 방법</td><td>1020140178426</td><td>20141211</td><td>1020160071120</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>3</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/10<br>G11C 16/3403<br>G11C 16/3459(i)</td><td class="title">메모리 장치 및 이의 동작 방법</td><td>1020200126702</td><td>20200929</td><td>1020220043365</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>4</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/3459<br>G11C 16/08<br>G11C 16/10(i)</td><td class="title">메모리 장치</td><td>1020200098794</td><td>20200806</td><td>1020220018354</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>5</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/30<br>G11C 16/08<br>G11C 16/24(i)</td><td class="title">메모리 장치 및 이의 동작 방법</td><td>1020200098765</td><td>20200806</td><td>1020220018341</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>6</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10(i)<br>G11C 16/24</td><td class="title">페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템</td><td>1020220164302</td><td>20221130</td><td>1020240080715</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>7</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3445<br>G11C 16/3459<br>G11C 29/26(i)</td><td class="title">메모리 장치 및 그의 동작방법</td><td>1020150172401</td><td>20151204</td><td>1020170065969</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>8</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020190160174</td><td>20191204</td><td>1020210070107</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>9</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/24<br>G11C 16/08(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020200104937</td><td>20200820</td><td>1020220023263</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>10</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/24<br>G11C 16/10(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020210025654</td><td>20210223</td><td>1020230120033</td></tr>
+              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>11</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/06<br>G11C 16/125(i)</td><td class="title">불휘발성 메모리 장치 및 그것의 동작 방법</td><td>1020140093320</td><td>20140723</td><td>1020160012300</td></tr>
             </tbody>
           </table>
         </div>
@@ -989,7 +992,10 @@ input[type="checkbox"] {
       </article>
     </div>
   </section>
+  __SPEC_MODAL_HTML__
 </div>
-""".replace("__DRAWING_DATA_URI__", drawing_data_uri),
+""".replace("__DRAWING_DATA_URI__", drawing_data_uri)
+    .replace("__SPEC_MODAL_CSS__", SPEC_MODAL_CSS.strip())
+    .replace("__SPEC_MODAL_HTML__", SPEC_MODAL_HTML.strip()),
     unsafe_allow_html=True,
 )
