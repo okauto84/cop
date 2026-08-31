@@ -740,7 +740,12 @@ button.mini-button { width: 100%; }
 .view-chip { padding: 2px 5px; border-radius: 3px; font-size: var(--fs-caption); font-weight: 500; }
 .view-chip.on { color: #7442df; background: #f2eefe; }
 .view-chip.off { color: #738091; background: #f4f6f8; }
-.close { color: #8c96a2; font-size: var(--fs-label); }
+.close {
+  color: #8c96a2;
+  font-size: var(--fs-label);
+  cursor: pointer;
+  user-select: none;
+}
 .claims-tabs {
   height: 31px;
   display: flex;
@@ -1461,7 +1466,7 @@ __SPEC_MODAL_CSS__
     </div>
   </aside>
   <aside class="claims-panel">
-    <div class="claims-title"><span class="doc-icon">▧</span> AI 더보기<span class="title-spacer"></span><span class="close">×</span></div>
+    <div class="claims-title"><span class="doc-icon">▧</span> AI 더보기<span class="title-spacer"></span><label for="ai-panel-toggle" class="close">×</label></div>
     <div class="claims-tabs"><div class="claims-tab">요약</div><div class="claims-tab active">청구항</div><div class="select-all">전체 선택</div></div>
     <div class="claim-list">
       <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 1</div>워드라인 및 비트라인들에 연결된 메모리 셀들; 상기 워드라인 및 상기 비트라인들에 인가되는 프로그램 관련 전압들을 제어하는 메인 프로세서; 상기 메모리 셀들의 물리 전압을 기초로 센싱된 데이터를 저장하는 페이지 버퍼; 상기 센싱된 데이터에 대응하는 센싱 전류와 비교되는 기준 전류를 생성하는 센싱 회로; 및 상기 센싱 전류와 상기 기준 전류를 비교한 결과에 따라 상기 센싱 회로를 제어하는 메모리 장치.</div>
@@ -1528,7 +1533,7 @@ __SPEC_MODAL_CSS__
           <div class="side-heading">AI 요약</div>
           <div class="summary-box red"><strong>해결과제 및 목적</strong><span>인터포저 기반 패키지 구조에서 수동소자와 전력 관리 회로를 효율적으로 통합하여 패키지 실장 면적을 줄이면서도 전력 공급 안정성과 시스템 성능을 향상시킬 수 있는 전자 소자 패키지를 제공</span></div>
           <div class="summary-box green"><strong>발명의 효과</strong><span>패키지 기판 상부에 인터포저를 배치하고, 인터포저 상부에 프로세싱 소자와 고대역폭 메모리 소자 및 전력 관리 집적 회로 소자를 탑재하며, 인터포저 내부 또는 상부에 인덕터 및 커패시터와 같은 수동소자를 형성한다. 특히 인덕터는 인터포저 상하부에 형성된 자석층과 이를 연결하는 관통 실리콘 비아 및 재배선층을 이용하여 형성되며, 전력 관리 집적 회로와 전기적으로 연결되어 안정적인 전력 공급을 구현한다.</span></div>
-          <div class="summary-box blue"><strong>청구범위 요약</strong><span>인터포저 내부에 수동소자와 전력 관리 회로를 통합함으로써 패키지 기판 상의 실장 면적을 줄일 수 있고, 프로세싱 소자와 고대역폭 메모리에 안정적인 전력 공급을 제공하여 전체 전자 시스템의 성능 및 전력 효율을 향상</span></div>
+          <div class="summary-box blue"><strong>해결수단</strong><span>인터포저 내부에 수동소자와 전력 관리 회로를 통합함으로써 패키지 기판 상의 실장 면적을 줄일 수 있고, 프로세싱 소자와 고대역폭 메모리에 안정적인 전력 공급을 제공하여 전체 전자 시스템의 성능 및 전력 효율을 향상</span></div>
         </div>
       </aside>
     </div>
