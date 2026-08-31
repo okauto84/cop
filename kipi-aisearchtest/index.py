@@ -635,6 +635,9 @@ input[type="checkbox"] {
   color: #5f6b78;
   border-bottom: 1px solid #e8edf2;
 }
+.components-head input[type="checkbox"] { grid-column: 1; }
+.components-head > :nth-child(2) { grid-column: 3; }
+.components-head > :nth-child(3) { grid-column: 4; }
 .mini-button {
   margin-left: 2px;
   padding: 3px 8px;
@@ -1456,7 +1459,7 @@ __SPEC_MODAL_CSS__
       </div>
       <div class="section-title">▏구성요소</div>
       <div class="components-head">
-        <input type="checkbox" checked="checked" aria-label="구성요소 전체 선택"><span>구성요소 내용</span><label for="ai-panel-toggle" class="mini-button">AI 선택</label><button type="button" class="mini-button blue" id="component-add-btn">+ 추가</button>
+        <input type="checkbox" checked="checked" aria-label="구성요소 전체 선택"><label for="ai-panel-toggle" class="mini-button">AI 선택</label><button type="button" class="mini-button blue" id="component-add-btn">+ 추가</button>
       </div>
       __COMPONENTS_LIST_HTML__
     </div>
