@@ -262,8 +262,9 @@ SPEC_MODAL_CSS = """
 .spec-ai-box { margin-bottom: 6px; padding: 7px; border: 1px solid; border-radius: 4px; line-height: 1.45; }
 .spec-ai-box strong { display: block; margin-bottom: 3px; }
 .spec-ai-box.red { color: #c3453e; background: #fffafa; border-color: #efd5d2; }
-.spec-ai-box.red span, .spec-ai-box.green span { color: #4e5964; }
+.spec-ai-box.red span, .spec-ai-box.green span, .spec-ai-box.blue span { color: #4e5964; }
 .spec-ai-box.green { color: #149b72; background: #f5fffb; border-color: #c8ebdf; }
+.spec-ai-box.blue { color: #3978c8; background: #f7faff; border-color: #d6e2f4; }
 .spec-components {
   min-height: 0;
   flex: 1;
@@ -444,8 +445,9 @@ SPEC_MODAL_HTML_TEMPLATE = """
     <div class="spec-summary-row">
       <div class="spec-panel"><div class="spec-panel-title">▧ 도면</div><div class="spec-drawing">__SPEC_DRAWING_VIEW__</div></div>
       <div class="spec-panel"><div class="spec-panel-title">⚡ AI 요약</div><div class="spec-ai-summary">
-        <div class="spec-ai-box red"><strong>해결과제 및 목적</strong><span>기존 방식의 처리장치에서 발생하는 웨이퍼 파손과 공정 불안정 문제를 해결합니다.</span></div>
-        <div class="spec-ai-box green"><strong>발명의 효과</strong><span>처리 안정성을 높이고 기판의 오염과 손상을 감소시킵니다.</span></div>
+        <div class="spec-ai-box red"><strong>해결과제 및 목적</strong><span>인터포저 기반 패키지 구조에서 수동소자와 전력 관리 회로를 효율적으로 통합하여 패키지 실장 면적을 줄이면서도 전력 공급 안정성과 시스템 성능을 향상시킬 수 있는 전자 소자 패키지를 제공</span></div>
+        <div class="spec-ai-box green"><strong>발명의 효과</strong><span>패키지 기판 상부에 인터포저를 배치하고, 인터포저 상부에 프로세싱 소자와 고대역폭 메모리 소자 및 전력 관리 집적 회로 소자를 탑재하며, 인터포저 내부 또는 상부에 인덕터 및 커패시터와 같은 수동소자를 형성한다. 특히 인덕터는 인터포저 상하부에 형성된 자석층과 이를 연결하는 관통 실리콘 비아 및 재배선층을 이용하여 형성되며, 전력 관리 집적 회로와 전기적으로 연결되어 안정적인 전력 공급을 구현한다.</span></div>
+        <div class="spec-ai-box blue"><strong>청구범위 요약</strong><span>인터포저 내부에 수동소자와 전력 관리 회로를 통합함으로써 패키지 기판 상의 실장 면적을 줄일 수 있고, 프로세싱 소자와 고대역폭 메모리에 안정적인 전력 공급을 제공하여 전체 전자 시스템의 성능 및 전력 효율을 향상</span></div>
       </div></div>
     </div>
     <div class="spec-components">
@@ -460,7 +462,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
           <div class="spec-compare-card same">
             <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>동일</span></div><div class="result-label">대비결과</div></div>
             <div class="spec-compare-card-body"><div>인용문헌은 워드라인 및 비트라인에 연결된 다수의 메모리 셀을 포함하는 비휘발성 메모리 장치를 개시하고 있으며, 셀 어레이의 배열 방식과 선택 구조가 출원발명과 동일하게 기재되어 있습니다.</div><div>메모리 셀의 배치 구조와 워드라인·비트라인 연결 관계가 문언상 동일하여, 구성요소 1은 인용발명과 실질적으로 같은 기술적 의미를 갖는 것으로 판단됩니다.</div></div>
-            <div class="spec-compare-card-foot"><a href="#spec-highlight-1" class="spec-source-btn">⌕ 원문 위치 확인</a></div>
+            <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ 원문 위치 확인</a></div>
           </div>
         </div>
         <div class="spec-compare-row">
@@ -468,7 +470,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
           <div class="spec-compare-card partial">
             <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>일부 차이</span><span class="spec-status-tag doc">문헌</span><span class="spec-status-tag sentence">문장</span></div><div class="result-label">대비결과</div></div>
             <div class="spec-compare-card-body"><div>인용문헌은 컨트롤러가 프로그램 전압을 제어한다고 기재하고 있으나, 패스 페일 체크 타이밍을 별도 서브 프로세서가 병렬 처리한다는 점에서 출원발명과 차이가 있습니다.</div><div>전압 제어 기능 자체는 대응되나, 제어 주체와 타이밍 제어 방식에서 일부 차이가 확인됩니다. 따라서 전체 구성은 유사하나 세부 실시 형태는 부분적으로 상이합니다.</div></div>
-            <div class="spec-compare-card-foot"><a href="#spec-highlight-2" class="spec-source-btn">⌕ 원문 위치 확인</a></div>
+            <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ 원문 위치 확인</a></div>
           </div>
         </div>
         <div class="spec-compare-row">
@@ -483,7 +485,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
           <div class="spec-compare-card substantial">
             <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>실질적 동일</span></div><div class="result-label">대비결과</div></div>
             <div class="spec-compare-card-body"><div>인용문헌은 센싱 회로가 비트라인 전류와 기준 전류를 비교하여 셀 상태를 판별한다고 기재하고 있으며, 검증 실패 시 프로그램 전압을 재조정하는 흐름이 출원발명과 유사합니다.</div><div>회로 구성의 명칭과 세부 파라미터 조절 방식은 다소 다르지만, 센싱·비교·후속 전압 조정이라는 기술적 효과와 수단이 실질적으로 동일한 것으로 분석됩니다.</div></div>
-            <div class="spec-compare-card-foot"><a href="#spec-highlight-3" class="spec-source-btn">⌕ 원문 위치 확인</a></div>
+            <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ 원문 위치 확인</a></div>
           </div>
         </div>
       </div>
@@ -493,11 +495,13 @@ SPEC_MODAL_HTML_TEMPLATE = """
 """
 
 
-PDF_HIGHLIGHT_TARGETS = {
-    "spec-highlight-1": "반도체 기판에 복수의 트렌치를 형성하는 단계",
-    "spec-highlight-2": "상기 트렌치 내에 게이트 절연막 및 게이트 전극을 형성하는 단계",
-    "spec-highlight-3": "상기 노출된 트렌치의 측면과 접촉하도록 소스 메탈을 형성하는 단계",
-}
+SOURCE_HIGHLIGHT_ID = "spec-highlight-source"
+SOURCE_HIGHLIGHT_PHRASES = (
+    "상기 트렌치들 사이에 정의되는 메사 영역의 상면으로 상기 제1 도전형의 고농도 바디 컨택 영역",
+    "상기 트렌치들 사이에 정의되는메사 영역의 상면으로 상기 제1 도전형의 고농도 바디 컨택 영역",
+    "상기 트렌치들 사이에 정의되는 메사 영역의 상면으로 상기 제1 도전형의 고농도 바디 컨택 영",
+    "상기 트렌치들 사이에 정의되는 메사(mesa) 영역의 상면으로 상기 제1 도전형의 고농도 바디",
+)
 
 
 def _html_escape(text: str) -> str:
@@ -519,6 +523,27 @@ def _bbox_to_style(x0: float, y0: float, x1: float, y1: float, pw: float, ph: fl
     )
 
 
+def _find_source_highlight_rect(page):
+    """원문 위치 확인 대상 문장의 PDF 내 좌표를 탐색."""
+    import fitz
+
+    for phrase in SOURCE_HIGHLIGHT_PHRASES:
+        rects = page.search_for(phrase)
+        if rects:
+            return rects[0]
+
+    prefix = "상기 트렌치들 사이에 정의되는 메사 영역의 상면으로 상기 제1 도전형의 고농도 바디 컨택 영"
+    suffix = "역 및"
+    prefix_rects = page.search_for(prefix)
+    suffix_rects = page.search_for(suffix)
+    if prefix_rects and suffix_rects:
+        for pre in prefix_rects:
+            for suf in suffix_rects:
+                if abs(pre.y1 - suf.y0) < 8 and suf.x0 >= pre.x0 - 2:
+                    return fitz.Rect(pre.x0, pre.y0, suf.x1, suf.y1)
+    return None
+
+
 def build_registration_pdf_view(pdf_path: Path = REGISTRATION_PDF_PATH, zoom: float = 1.1) -> str:
     """등록공보 PDF를 이미지+텍스트 레이어로 렌더링해 선택·하이라이트가 가능한 HTML을 반환."""
     if not pdf_path.is_file():
@@ -538,7 +563,7 @@ def build_registration_pdf_view(pdf_path: Path = REGISTRATION_PDF_PATH, zoom: fl
 
     pages: list[str] = []
     matrix = fitz.Matrix(zoom, zoom)
-    assigned_highlights: set[str] = set()
+    source_highlight_placed = False
     doc = fitz.open(str(pdf_path))
     try:
         for page_index in range(len(doc)):
@@ -573,24 +598,20 @@ def build_registration_pdf_view(pdf_path: Path = REGISTRATION_PDF_PATH, zoom: fl
                         )
 
             highlight_spans: list[str] = []
-            for highlight_id, phrase in PDF_HIGHLIGHT_TARGETS.items():
-                if highlight_id in assigned_highlights:
-                    continue
-                rects = page.search_for(phrase)
-                if not rects:
-                    continue
-                assigned_highlights.add(highlight_id)
-                rect = rects[0]
-                sx0, sy0, sx1, sy1 = (
-                    rect.x0 * scale_x,
-                    rect.y0 * scale_y,
-                    rect.x1 * scale_x,
-                    rect.y1 * scale_y,
-                )
-                pos = _bbox_to_style(sx0, sy0, sx1, sy1, pw, ph, pad=2.0)
-                highlight_spans.append(
-                    f'<span class="spec-pdf-highlight" id="{highlight_id}" style="{pos}"></span>'
-                )
+            if not source_highlight_placed:
+                rect = _find_source_highlight_rect(page)
+                if rect is not None:
+                    source_highlight_placed = True
+                    sx0, sy0, sx1, sy1 = (
+                        rect.x0 * scale_x,
+                        rect.y0 * scale_y,
+                        rect.x1 * scale_x,
+                        rect.y1 * scale_y,
+                    )
+                    pos = _bbox_to_style(sx0, sy0, sx1, sy1, pw, ph, pad=2.0)
+                    highlight_spans.append(
+                        f'<span class="spec-pdf-highlight" id="{SOURCE_HIGHLIGHT_ID}" tabindex="-1" style="{pos}"></span>'
+                    )
 
             page_no = page_index + 1
             pages.append(
