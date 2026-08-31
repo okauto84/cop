@@ -5,7 +5,7 @@ import base64
 from pathlib import Path
 
 import streamlit as st
-from index_spec import SPEC_MODAL_CSS, SPEC_MODAL_HTML
+from index_spec import SPEC_MODAL_CSS, get_spec_modal_html
 
 
 st.set_page_config(
@@ -996,6 +996,6 @@ __SPEC_MODAL_CSS__
 </div>
 """.replace("__DRAWING_DATA_URI__", drawing_data_uri)
     .replace("__SPEC_MODAL_CSS__", SPEC_MODAL_CSS.strip())
-    .replace("__SPEC_MODAL_HTML__", SPEC_MODAL_HTML.strip()),
+    .replace("__SPEC_MODAL_HTML__", get_spec_modal_html().strip()),
     unsafe_allow_html=True,
 )

@@ -1,5 +1,10 @@
 """검색 결과 행에서 여는 특허 상세 팝업 UI."""
 
+import base64
+from pathlib import Path
+
+REGISTRATION_PDF_PATH = Path(__file__).parent / "data" / "1020180011648B1.pdf"
+
 SPEC_MODAL_CSS = """
 #spec-modal-toggle {
   position: absolute;
@@ -111,9 +116,29 @@ SPEC_MODAL_CSS = """
   font-size: 12px;
   line-height: 1.62;
 }
-.spec-page h2 { margin: 0 0 18px; color: #172db0; text-align: center; font-size: 19px; font-weight: 500; }
-.spec-biblio { white-space: pre-wrap; }
-.spec-line { margin: 10px 0; border-top: 1px solid #777; }
+.spec-page.spec-pdf-view {
+  padding: 10px 12px;
+  overflow-y: auto;
+  font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+  background: #e8eaed;
+}
+.spec-pdf-page {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto 10px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(34, 46, 58, .14);
+}
+.spec-pdf-fallback {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #697582;
+  text-align: center;
+  line-height: 1.6;
+}
 .spec-right {
   grid-column: 3;
   grid-row: 2;
@@ -206,7 +231,7 @@ SPEC_MODAL_CSS = """
 .spec-compare-box { height: 68px; padding: 8px; background: #effcf7; border: 1px solid #9cdec8; border-radius: 5px; line-height: 1.45; }
 """
 
-SPEC_MODAL_HTML = """
+SPEC_MODAL_HTML_TEMPLATE = """
 <section class="spec-modal">
   <header class="spec-top">
     <div class="spec-number">1020180133661</div>
@@ -230,27 +255,7 @@ SPEC_MODAL_HTML = """
   </nav>
   <main class="spec-document">
     <div class="spec-doc-tabs"><div class="spec-doc-tab">공개전문</div><div class="spec-doc-tab active">등록공보</div></div>
-    <div class="spec-page-wrap"><div class="spec-page">
-      <h2>(19) 대한민국특허청(KR)<br>(12) 공개특허공보(A)</h2>
-      <div class="spec-biblio">(51)  Int. Cl. 8
-　H01L 21/67 (2005.01)　　　　　　　　(11) 공개번호　10-2025-0106744
-　H01L 37/32 (2003.01)　　　　　　　　(43) 공개일자　2025년07월11일
-　H01L 21/687 (2005.01)
-
-(52)  C08 C.I.
-　H01L 21/6719 (2013.01)
-　H01L 31/3244 (2013.01)
-　H01L 37/32513 (2013.01)
-　H01L 37/32715 (2013.01)
-　H01L 31/32890 (2013.01)
-　H01L 21/67128 (2013.01)
-　H01L 21/68742 (2013.01)</div>
-      <div class="spec-line"></div>
-      <div>(21) 출원번호　　　10-2024-0006652<br>(22) 출원일자　　　2024년01월08일<br>　　심사청구일자　2024년01월08일</div>
-      <div class="spec-line"></div>
-      <div>(71) 출원인　　　　주식회사 아이에스티이<br>　　　　　　　　 경기도 화성시 향남읍 토성로 306</div>
-      <div>(72) 발명자　　　　박세욱<br>　　　　　　　　 경기도 수원시 두산중앙로 12</div>
-    </div></div>
+    <div class="spec-page-wrap"><div class="spec-page spec-pdf-view">__SPEC_PDF_VIEW__</div></div>
   </main>
   <aside class="spec-right">
     <div class="spec-result-head"><span class="spec-ai-badge">⚡ AI 분석</span><span class="spec-result-title">이송 핸들러 및 마찰패드를 이용한 기판 처리장치</span></div>
@@ -270,3 +275,47 @@ SPEC_MODAL_HTML = """
   </aside>
 </section>
 """
+
+
+def build_registration_pdf_view(pdf_path: Path = REGISTRATION_PDF_PATH, zoom: float = 1.1) -> str:
+    """등록공보 PDF를 페이지 이미지로 렌더링해 HTML 조각으로 반환."""
+    if not pdf_path.is_file():
+        return (
+            f'<div class="spec-pdf-fallback">PDF 파일을 찾을 수 없습니다.<br>{pdf_path.name}</div>'
+        )
+
+    try:
+        import fitz  # PyMuPDF
+    except ImportError:
+        return (
+            '<div class="spec-pdf-fallback">'
+            "PyMuPDF가 설치되지 않았습니다.<br>"
+            "<code>pip install pymupdf</code> 후 다시 실행해 주세요."
+            "</div>"
+        )
+
+    pages: list[str] = []
+    matrix = fitz.Matrix(zoom, zoom)
+    doc = fitz.open(str(pdf_path))
+    try:
+        for page_index in range(len(doc)):
+            pixmap = doc.load_page(page_index).get_pixmap(matrix=matrix, alpha=False)
+            image_b64 = base64.standard_b64encode(pixmap.tobytes("png")).decode("ascii")
+            page_no = page_index + 1
+            pages.append(
+                f'<img class="spec-pdf-page" src="data:image/png;base64,{image_b64}" alt="등록공보 {page_no}페이지">'
+            )
+    finally:
+        doc.close()
+
+    if not pages:
+        return '<div class="spec-pdf-fallback">PDF 페이지를 불러올 수 없습니다.</div>'
+    return "".join(pages)
+
+
+def get_spec_modal_html() -> str:
+    pdf_view = build_registration_pdf_view()
+    return SPEC_MODAL_HTML_TEMPLATE.replace("__SPEC_PDF_VIEW__", pdf_view)
+
+
+SPEC_MODAL_HTML = get_spec_modal_html()
