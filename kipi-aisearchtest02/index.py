@@ -3,6 +3,7 @@
 
 import base64
 import html
+import random
 from pathlib import Path
 
 import streamlit as st
@@ -80,6 +81,91 @@ def build_bulk_drawings_modal_html() -> str:
 
 
 drawing_batch_modal_html = build_bulk_drawings_modal_html()
+
+PATENT_TABLE_BASE_ROWS = [
+    {"state": "공개", "cpc": "G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)", "title": "메모리 장치 및 이를 포함하는 메모리 시스템", "app_no": "1020180133661", "app_date": "20181102", "pub_no": "1020200050705"},
+    {"state": "공개", "cpc": "G11C 29/38<br>G11C 16/34<br>G11C 16/12(i)", "title": "반도체 메모리 장치 및 그의 동작 방법", "app_no": "1020140178426", "app_date": "20141211", "pub_no": "1020160071120"},
+    {"state": "공개", "cpc": "G11C 16/10<br>G11C 16/3403<br>G11C 16/3459(i)", "title": "메모리 장치 및 이의 동작 방법", "app_no": "1020200126702", "app_date": "20200929", "pub_no": "1020220043365"},
+    {"state": "등록", "cpc": "G11C 16/3459<br>G11C 16/08<br>G11C 16/10(i)", "title": "메모리 장치", "app_no": "1020200098794", "app_date": "20200806", "pub_no": "1020220018354"},
+    {"state": "공개", "cpc": "G11C 16/30<br>G11C 16/08<br>G11C 16/24(i)", "title": "메모리 장치 및 이의 동작 방법", "app_no": "1020200098765", "app_date": "20200806", "pub_no": "1020220018341"},
+    {"state": "등록", "cpc": "G11C 16/3459<br>G11C 16/10(i)<br>G11C 16/24", "title": "페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템", "app_no": "1020220164302", "app_date": "20221130", "pub_no": "1020240080715"},
+    {"state": "공개", "cpc": "G11C 16/3445<br>G11C 16/3459<br>G11C 29/26(i)", "title": "메모리 장치 및 그의 동작방법", "app_no": "1020150172401", "app_date": "20151204", "pub_no": "1020170065969"},
+    {"state": "공개", "cpc": "G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)", "title": "메모리 장치 및 그 동작 방법", "app_no": "1020190160174", "app_date": "20191204", "pub_no": "1020210070107"},
+    {"state": "공개", "cpc": "G11C 16/3459<br>G11C 16/24<br>G11C 16/08(i)", "title": "메모리 장치 및 그 동작 방법", "app_no": "1020200104937", "app_date": "20200820", "pub_no": "1020220023263"},
+    {"state": "공개", "cpc": "G11C 16/3459<br>G11C 16/24<br>G11C 16/10(i)", "title": "메모리 장치 및 그 동작 방법", "app_no": "1020210025654", "app_date": "20210223", "pub_no": "1020230120033"},
+    {"state": "등록", "cpc": "G11C 16/06<br>G11C 16/125(i)", "title": "불휘발성 메모리 장치 및 그것의 동작 방법", "app_no": "1020140093320", "app_date": "20140723", "pub_no": "1020160012300"},
+]
+
+PATENT_TABLE_EXTRA_TITLES = [
+    "낸드 플래시 메모리 장치 및 그 제어 방법",
+    "저전력 메모리 컨트롤러 및 반도체 장치",
+    "다층 메모리 셀 어레이 구조",
+    "고속 직렬 인터페이스 메모리 시스템",
+    "온칩 오류 정정 회로를 포함하는 메모리 장치",
+    "워드라인 구동 회로 및 메모리 장치",
+    "비트라인 센싱 증폭기를 포함하는 메모리 장치",
+    "셀 전류 기반 검증 방법 및 메모리 장치",
+    "다중 플레인 동시 동작 메모리 시스템",
+    "메모리 셀 프로그램 전압 제어 장치",
+    "스마트 컨트롤러를 포함하는 스토리지 모듈",
+    "반도체 메모리 장치의 리프레시 방법",
+    "고밀도 메모리 어레이 및 제조 방법",
+    "전하 누설 보상 메모리 장치",
+    "메모리 인터페이스 및 데이터 전송 방법",
+    "플래시 메모리 소거 동작 제어 회로",
+    "메모리 블록 선택 회로 및 동작 방법",
+    "온도 보상 기반 메모리 동작 장치",
+    "메모리 셀 상태 판별 회로",
+]
+
+PATENT_TABLE_EXTRA_CPC = [
+    "G11C 16/04<br>G11C 7/10",
+    "G11C 16/06<br>G11C 16/34",
+    "G11C 16/08<br>G11C 16/26(i)",
+    "G11C 16/12<br>G11C 16/30",
+    "G11C 16/18<br>G11C 16/24",
+    "G11C 16/26<br>G11C 16/3459",
+    "G11C 16/28<br>G11C 16/10(i)",
+    "G11C 16/32<br>G11C 16/08",
+    "G11C 29/06<br>G11C 16/34",
+    "G11C 29/50<br>G11C 16/10",
+]
+
+
+def build_patent_table_rows_html(count: int = 30) -> str:
+    rng = random.Random(42)
+    states = ["공개", "등록"]
+    rows: list[str] = []
+    for index in range(1, count + 1):
+        if index <= len(PATENT_TABLE_BASE_ROWS):
+            row = PATENT_TABLE_BASE_ROWS[index - 1]
+        else:
+            year = rng.randint(2014, 2024)
+            month = rng.randint(1, 12)
+            day = rng.randint(1, 28)
+            row = {
+                "state": rng.choice(states),
+                "cpc": rng.choice(PATENT_TABLE_EXTRA_CPC),
+                "title": rng.choice(PATENT_TABLE_EXTRA_TITLES),
+                "app_no": f"10{year}{rng.randint(10000000, 99999999)}",
+                "app_date": f"{year}{month:02d}{day:02d}",
+                "pub_no": f"10{year + 2}{rng.randint(10000000, 99999999)}",
+            }
+        rows.append(
+            f'<tr class="clickable-row">'
+            f'<td><label for="spec-modal-toggle" class="row-open"></label>{index}</td>'
+            f'<td><span class="state-chip">{row["state"]}</span></td>'
+            f'<td class="cpc">{row["cpc"]}</td>'
+            f'<td class="title">{html.escape(row["title"])}</td>'
+            f'<td>{row["app_no"]}</td>'
+            f'<td>{row["app_date"]}</td>'
+            f'<td>{row["pub_no"]}</td>'
+            f"</tr>"
+        )
+    return "\n              ".join(rows)
+
+
+patent_table_rows_html = build_patent_table_rows_html()
 
 DEFAULT_COMPONENT_ITEMS = [
     "워드라인 및 비트라인들에 연결된 메모리 셀들",
@@ -838,30 +924,39 @@ button.result-tool {
   border-radius: 3px;
   font-size: var(--fs-body);
 }
-.patent-table-wrap { min-height: 0; flex: 1; overflow-x: hidden; overflow-y: auto; }
+.patent-table-wrap {
+  min-height: 0;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: auto;
+}
 .patent-table {
   width: 100%;
+  min-width: 1240px;
   height: auto;
   table-layout: fixed;
   border-collapse: collapse;
   color: #4e5b68;
   font-size: 12px;
 }
-.patent-table col:nth-child(1) { width: 4%; }
-.patent-table col:nth-child(2) { width: 6%; }
-.patent-table col:nth-child(3) { width: 18%; }
-.patent-table col:nth-child(4) { width: 39%; }
-.patent-table col:nth-child(5) { width: 12%; }
-.patent-table col:nth-child(6) { width: 10%; }
-.patent-table col:nth-child(7) { width: 11%; }
-.patent-table.has-component-col col:nth-child(1) { width: 4%; }
-.patent-table.has-component-col col:nth-child(2) { width: 5%; }
-.patent-table.has-component-col col:nth-child(3) { width: 14%; }
-.patent-table.has-component-col col:nth-child(4) { width: 10%; }
-.patent-table.has-component-col col:nth-child(5) { width: 30%; }
-.patent-table.has-component-col col:nth-child(6) { width: 12%; }
-.patent-table.has-component-col col:nth-child(7) { width: 9%; }
-.patent-table.has-component-col col:nth-child(8) { width: 10%; }
+.patent-table col:nth-child(1) { width: 52px; }
+.patent-table col:nth-child(2) { width: 60px; }
+.patent-table col:nth-child(3) { width: 210px; }
+.patent-table col:nth-child(4) { width: 420px; }
+.patent-table col:nth-child(5) { width: 140px; }
+.patent-table col:nth-child(6) { width: 100px; }
+.patent-table col:nth-child(7) { width: 140px; }
+.patent-table.has-component-col {
+  min-width: 1360px;
+}
+.patent-table.has-component-col col:nth-child(1) { width: 52px; }
+.patent-table.has-component-col col:nth-child(2) { width: 56px; }
+.patent-table.has-component-col col:nth-child(3) { width: 180px; }
+.patent-table.has-component-col col:nth-child(4) { width: 110px; }
+.patent-table.has-component-col col:nth-child(5) { width: 340px; }
+.patent-table.has-component-col col:nth-child(6) { width: 140px; }
+.patent-table.has-component-col col:nth-child(7) { width: 100px; }
+.patent-table.has-component-col col:nth-child(8) { width: 140px; }
 .patent-table th {
   height: 24px;
   padding: 4px;
@@ -894,18 +989,18 @@ button.result-tool {
 .patent-table td.component-chips-cell {
   padding: 6px 4px;
   vertical-align: middle;
-  text-align: center;
+  text-align: left;
 }
 .component-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   align-items: center;
-  justify-content: center;
-  align-content: center;
+  justify-content: flex-start;
+  align-content: flex-start;
   width: 100%;
   min-height: 20px;
-  margin: 0 auto;
+  margin: 0;
 }
 .comp-chip {
   width: 20px;
@@ -1343,22 +1438,12 @@ __SPEC_MODAL_CSS__
             <colgroup><col><col><col><col><col><col><col></colgroup>
             <thead><tr><th>순번</th><th>구분</th><th>CPC</th><th>발명의 명칭</th><th>출원번호</th><th>출원일자</th><th>공개번호</th></tr></thead>
             <tbody id="patent-table-body">
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>1</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)</td><td class="title">메모리 장치 및 이를 포함하는 메모리 시스템</td><td>1020180133661</td><td>20181102</td><td>1020200050705</td></tr>
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>2</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 29/38<br>G11C 16/34<br>G11C 16/12(i)</td><td class="title">반도체 메모리 장치 및 그의 동작 방법</td><td>1020140178426</td><td>20141211</td><td>1020160071120</td></tr>
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>3</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/10<br>G11C 16/3403<br>G11C 16/3459(i)</td><td class="title">메모리 장치 및 이의 동작 방법</td><td>1020200126702</td><td>20200929</td><td>1020220043365</td></tr>
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>4</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/3459<br>G11C 16/08<br>G11C 16/10(i)</td><td class="title">메모리 장치</td><td>1020200098794</td><td>20200806</td><td>1020220018354</td></tr>
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>5</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/30<br>G11C 16/08<br>G11C 16/24(i)</td><td class="title">메모리 장치 및 이의 동작 방법</td><td>1020200098765</td><td>20200806</td><td>1020220018341</td></tr>
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>6</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10(i)<br>G11C 16/24</td><td class="title">페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템</td><td>1020220164302</td><td>20221130</td><td>1020240080715</td></tr>
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>7</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3445<br>G11C 16/3459<br>G11C 29/26(i)</td><td class="title">메모리 장치 및 그의 동작방법</td><td>1020150172401</td><td>20151204</td><td>1020170065969</td></tr>
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>8</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020190160174</td><td>20191204</td><td>1020210070107</td></tr>
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>9</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/24<br>G11C 16/08(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020200104937</td><td>20200820</td><td>1020220023263</td></tr>
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>10</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/24<br>G11C 16/10(i)</td><td class="title">메모리 장치 및 그 동작 방법</td><td>1020210025654</td><td>20210223</td><td>1020230120033</td></tr>
-              <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>11</td><td><span class="state-chip">등록</span></td><td class="cpc">G11C 16/06<br>G11C 16/125(i)</td><td class="title">불휘발성 메모리 장치 및 그것의 동작 방법</td><td>1020140093320</td><td>20140723</td><td>1020160012300</td></tr>
+              __PATENT_TABLE_ROWS__
             </tbody>
           </table>
         </div>
         <div class="result-pager">
-          <span>보기:</span><span class="page-size">50⌄</span><span>총 200건 중 1 - 50</span>
+          <span>보기:</span><span class="page-size">50⌄</span><span>총 200건 중 1 - 30</span>
           <span class="pager-spacer"></span><span class="page">이전</span><span class="page active">1</span><span class="page">2</span><span class="page">3</span><span class="page">4</span><span class="page">다음</span>
         </div>
       </section>
@@ -1433,6 +1518,7 @@ __SPEC_MODAL_CSS__
   __SPEC_MODAL_HTML__
 </div>
 """.replace("__DRAWING_DATA_URI__", drawing_data_uri)
+    .replace("__PATENT_TABLE_ROWS__", patent_table_rows_html)
     .replace("__COMPONENTS_LIST_HTML__", components_list_html)
     .replace("__BULK_DRAWINGS_MODAL_HTML__", drawing_batch_modal_html)
     .replace("__SPEC_MODAL_CSS__", SPEC_MODAL_CSS.strip())
