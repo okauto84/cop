@@ -736,11 +736,18 @@ input[type="checkbox"] {
 }
 .bulk-claims-modal, .bulk-drawings-modal {
   position: absolute;
-  inset: 0;
+  top: 36px;
+  right: 48px;
+  bottom: 36px;
+  left: 48px;
   z-index: 100;
   display: none;
   flex-direction: column;
   background: #f7f8fa;
+  border: 1px solid #dfe5ec;
+  border-radius: 10px;
+  box-shadow: 0 10px 36px rgba(23, 36, 50, .14);
+  overflow: hidden;
 }
 #bulk-claims-toggle:checked ~ .bulk-claims-modal,
 #bulk-drawings-toggle:checked ~ .bulk-drawings-modal {
@@ -748,15 +755,15 @@ input[type="checkbox"] {
   animation: modal-fade-in .18s ease-out;
 }
 @keyframes modal-fade-in {
-  from { opacity: 0; transform: scale(.995); }
+  from { opacity: 0; transform: scale(.985); }
   to { opacity: 1; transform: scale(1); }
 }
 .bulk-modal-header {
-  height: 62px;
-  flex: 0 0 62px;
+  height: 54px;
+  flex: 0 0 54px;
   display: flex;
   align-items: center;
-  padding: 0 15px;
+  padding: 0 12px;
   background: #fafbfc;
   border-bottom: 1px solid #e6e9ed;
 }
@@ -820,12 +827,12 @@ input[type="checkbox"] {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 16px 15px 14px;
+  gap: 10px;
+  padding: 12px;
 }
 .bulk-claim-card {
   min-width: 0;
-  padding: 12px;
+  padding: 10px;
   background: #fff;
   border: 1px solid #edf0f3;
   border-radius: 8px;
@@ -852,18 +859,18 @@ input[type="checkbox"] {
 }
 .bulk-state { color: #3e4954; font-weight: 700; }
 .bulk-invention-title {
-  margin: 7px 0 9px;
+  margin: 5px 0 7px;
   color: #266fcf;
   font-size: var(--fs-subtitle);
   font-weight: 700;
   line-height: 1.35;
 }
 .bulk-claim-body {
-  padding-top: 8px;
+  padding-top: 6px;
   color: #727d87;
   border-top: 1px solid #eef1f4;
   font-size: 12px;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 .bulk-claim-label {
   display: block;
@@ -878,7 +885,7 @@ input[type="checkbox"] {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  padding: 10px;
   background: #fff;
   border: 1px solid #edf0f3;
   border-radius: 8px;
@@ -896,8 +903,8 @@ input[type="checkbox"] {
   min-height: 0;
   display: grid;
   place-items: center;
-  margin-top: 8px;
-  padding: 6px;
+  margin-top: 6px;
+  padding: 4px;
   background: #f8f9fb;
   border: 1px solid #eef1f4;
   border-radius: 4px;
