@@ -32,7 +32,13 @@ SPEC_MODAL_CSS = """
   grid-template-rows: 47px minmax(0, 1fr);
   color: #34404c;
   background: #f7f8fa;
-  font-size: 10px;
+  --fs-body: 12px;
+  --fs-caption: 12px;
+  --fs-label: 13px;
+  --fs-subtitle: 14px;
+  --fs-title: 15px;
+  --fs-display: 18px;
+  font-size: var(--fs-body);
 }
 #spec-modal-toggle:checked ~ .spec-modal { display: grid; }
 .spec-top {
@@ -43,7 +49,7 @@ SPEC_MODAL_CSS = """
   background: #fff;
   border-bottom: 1px solid #dfe4e9;
 }
-.spec-number { width: 96px; color: #26313c; font-weight: 700; }
+.spec-number { width: 96px; color: #26313c; font-size: var(--fs-label); font-weight: 700; }
 .spec-search {
   width: 200px;
   height: 25px;
@@ -51,6 +57,7 @@ SPEC_MODAL_CSS = """
   align-items: center;
   padding: 0 8px;
   color: #929ca6;
+  font-size: var(--fs-body);
   border: 1px solid #dce2e8;
   border-radius: 4px;
 }
@@ -58,6 +65,7 @@ SPEC_MODAL_CSS = """
   margin-left: auto;
   padding: 6px 10px;
   color: #53606c;
+  font-size: var(--fs-body);
   border: 1px solid #dce2e8;
   border-radius: 4px;
 }
@@ -71,7 +79,7 @@ SPEC_MODAL_CSS = """
   border: 1px solid #dce2e8;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 17px;
+  font-size: var(--fs-display);
 }
 .spec-nav {
   grid-column: 1;
@@ -80,11 +88,11 @@ SPEC_MODAL_CSS = """
   background: #fafbfc;
   border-right: 1px solid #e2e7ec;
 }
-.spec-nav-title { margin-bottom: 18px; color: #36424e; font-weight: 700; }
-.spec-nav-item { margin: 0 -10px; padding: 7px 12px; color: #68747f; }
+.spec-nav-title { margin-bottom: 18px; color: #36424e; font-size: var(--fs-subtitle); font-weight: 700; }
+.spec-nav-item { margin: 0 -10px; padding: 7px 12px; color: #68747f; font-size: var(--fs-body); }
 .spec-nav-item.active { color: #2874dc; background: #edf5ff; font-weight: 700; }
-.spec-nav-group { margin-top: 12px; color: #3f4b57; font-weight: 700; }
-.spec-nav-child { padding: 5px 10px; color: #7a8590; font-weight: 400; }
+.spec-nav-group { margin-top: 12px; color: #3f4b57; font-size: var(--fs-label); font-weight: 700; }
+.spec-nav-child { padding: 5px 10px; color: #7a8590; font-size: var(--fs-body); font-weight: 400; }
 .spec-document {
   grid-column: 2;
   grid-row: 2;
@@ -103,7 +111,7 @@ SPEC_MODAL_CSS = """
   background: #fff;
   border-bottom: 1px solid #dfe4e9;
 }
-.spec-doc-tab { height: 28px; padding-top: 8px; color: #697580; }
+.spec-doc-tab { height: 28px; padding-top: 8px; color: #697580; font-size: var(--fs-label); }
 .spec-doc-tab.active { color: #2874dc; border-bottom: 2px solid #2874dc; font-weight: 700; }
 .spec-page-wrap { min-height: 0; flex: 1; padding: 8px 13px; overflow: hidden; }
 .spec-page {
@@ -114,7 +122,7 @@ SPEC_MODAL_CSS = """
   overflow: hidden;
   font-family: "Batang", "바탕", serif;
   color: #171717;
-  font-size: 12px;
+  font-size: var(--fs-body);
   line-height: 1.62;
 }
 .spec-page.spec-pdf-view {
@@ -210,8 +218,8 @@ SPEC_MODAL_CSS = """
   background: #fff;
   border-bottom: 1px solid #e1e6eb;
 }
-.spec-ai-badge { padding: 4px 8px; color: #fff; background: #7545e8; border-radius: 3px; font-weight: 700; }
-.spec-result-title { margin-left: 7px; color: #26313c; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spec-ai-badge { padding: 4px 8px; color: #fff; background: #7545e8; border-radius: 3px; font-size: var(--fs-caption); font-weight: 700; }
+.spec-result-title { margin-left: 7px; color: #26313c; font-size: var(--fs-subtitle); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .spec-right-tabs {
   height: 26px;
   flex: 0 0 26px;
@@ -222,7 +230,7 @@ SPEC_MODAL_CSS = """
   background: #fff;
   border-bottom: 1px solid #e1e6eb;
 }
-.spec-right-tab { height: 25px; padding-top: 7px; color: #6f7a85; }
+.spec-right-tab { height: 25px; padding-top: 7px; color: #6f7a85; font-size: var(--fs-label); }
 .spec-right-tab.active { color: #2874dc; border-bottom: 2px solid #2874dc; font-weight: 700; }
 .spec-summary-row {
   height: 291px;
@@ -239,7 +247,7 @@ SPEC_MODAL_CSS = """
   border-radius: 6px;
   overflow: hidden;
 }
-.spec-panel-title { height: 27px; padding: 7px 9px; font-weight: 700; border-bottom: 1px solid #edf0f3; }
+.spec-panel-title { height: 27px; padding: 7px 9px; font-size: var(--fs-subtitle); font-weight: 700; border-bottom: 1px solid #edf0f3; }
 .spec-drawing {
   height: auto;
   min-height: 176px;
@@ -259,8 +267,8 @@ SPEC_MODAL_CSS = """
   object-fit: contain;
 }
 .spec-ai-summary { padding: 7px; }
-.spec-ai-box { margin-bottom: 6px; padding: 7px; border: 1px solid; border-radius: 4px; line-height: 1.45; }
-.spec-ai-box strong { display: block; margin-bottom: 3px; }
+.spec-ai-box { margin-bottom: 6px; padding: 7px; border: 1px solid; border-radius: 4px; line-height: 1.45; font-size: var(--fs-body); }
+.spec-ai-box strong { display: block; margin-bottom: 3px; font-size: var(--fs-label); }
 .spec-ai-box.red { color: #c3453e; background: #fffafa; border-color: #efd5d2; }
 .spec-ai-box.red span, .spec-ai-box.green span, .spec-ai-box.blue span { color: #4e5964; }
 .spec-ai-box.green { color: #149b72; background: #f5fffb; border-color: #c8ebdf; }
@@ -283,6 +291,7 @@ SPEC_MODAL_CSS = """
   align-items: center;
   padding: 0 8px;
   border-bottom: 1px solid #e4e8ed;
+  font-size: var(--fs-subtitle);
   font-weight: 700;
 }
 .spec-components-head span {
@@ -291,7 +300,7 @@ SPEC_MODAL_CSS = """
   color: #fff;
   background: #16a980;
   border-radius: 3px;
-  font-size: 9px;
+  font-size: var(--fs-caption);
   font-weight: 600;
 }
 .spec-compare-table {
@@ -305,6 +314,7 @@ SPEC_MODAL_CSS = """
   gap: 0;
   padding: 8px 8px 4px;
   color: #4f5b67;
+  font-size: var(--fs-label);
   font-weight: 700;
   border-bottom: 1px solid #e7ebef;
 }
@@ -347,9 +357,10 @@ SPEC_MODAL_CSS = """
   background: #f3efff;
   border: 1px solid #d8ccf8;
   border-radius: 3px;
+  font-size: var(--fs-label);
   font-weight: 700;
 }
-.spec-applied-text { color: #4e5964; line-height: 1.45; }
+.spec-applied-text { color: #4e5964; font-size: var(--fs-body); line-height: 1.45; }
 .spec-compare-card {
   min-height: 118px;
   display: flex;
@@ -369,6 +380,7 @@ SPEC_MODAL_CSS = """
   grid-template-columns: 1fr 1fr;
   align-items: center;
   padding: 0 8px;
+  font-size: var(--fs-label);
   font-weight: 700;
 }
 .spec-compare-card.same .spec-compare-card-head { color: #149b72; background: #effcf7; }
@@ -380,7 +392,7 @@ SPEC_MODAL_CSS = """
   padding: 1px 5px;
   border: 1px solid;
   border-radius: 3px;
-  font-size: 8px;
+  font-size: var(--fs-caption);
   font-weight: 600;
 }
 .spec-status-tag.doc { color: #2d73dc; background: #f3f8ff; border-color: #b8d4f5; }
@@ -393,7 +405,7 @@ SPEC_MODAL_CSS = """
   gap: 8px;
   padding: 8px;
   color: #697582;
-  font-size: 9px;
+  font-size: var(--fs-body);
 }
 .spec-compare-card-foot {
   display: flex;
@@ -406,7 +418,7 @@ SPEC_MODAL_CSS = """
   background: #fff;
   border: 1px solid #d9e1e9;
   border-radius: 4px;
-  font-size: 9px;
+  font-size: var(--fs-caption);
   text-decoration: none;
   cursor: pointer;
 }
@@ -591,10 +603,10 @@ def build_registration_pdf_view(pdf_path: Path = REGISTRATION_PDF_PATH, zoom: fl
                             x1 * scale_x,
                             y1 * scale_y,
                         )
-                        font_pct = max((sy1 - sy0) / ph * 100 * 0.92, 0.35)
+                        font_px = max((sy1 - sy0) * 0.92, 12)
                         pos = _bbox_to_style(sx0, sy0, sx1, sy1, pw, ph, pad=0.2)
                         text_spans.append(
-                            f'<span class="spec-pdf-text" style="{pos};font-size:{font_pct:.4f}%">{_html_escape(text)}</span>'
+                            f'<span class="spec-pdf-text" style="{pos};font-size:{font_px:.2f}px">{_html_escape(text)}</span>'
                         )
 
             highlight_spans: list[str] = []
