@@ -168,14 +168,97 @@ COMPONENT_INTERACTION_HTML = """
     return true;
   }
 
-  function initComponentPanel() {
-  bindComponentCheckboxes();
-  return bindAddButton();
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  if (!initComponentPanel()) {
+  function buildComponentChipsCell() {
+    const td = document.createElement("td");
+    td.className = "component-chips";
+    const count = randomInt(2, 6);
+    for (let i = 1; i <= count; i += 1) {
+      const chip = document.createElement("span");
+      chip.className = "comp-chip tone-" + randomInt(1, 6);
+      chip.textContent = String(i);
+      td.appendChild(chip);
+    }
+    return td;
+  }
+
+  function updateRowNumbers(tbody) {
+    tbody.querySelectorAll("tr").forEach(function (row, index) {
+      const cell = row.cells[0];
+      const label = cell.querySelector(".row-open");
+      cell.textContent = "";
+      if (label) cell.appendChild(label);
+      cell.appendChild(document.createTextNode(String(index + 1)));
+    });
+  }
+
+  function shuffleRows(tbody) {
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    for (let i = rows.length - 1; i > 0; i -= 1) {
+      const j = randomInt(0, i);
+      const temp = rows[i];
+      rows[i] = rows[j];
+      rows[j] = temp;
+    }
+    rows.forEach(function (row) { tbody.appendChild(row); });
+    updateRowNumbers(tbody);
+  }
+
+  function ensureComponentColumn(table, tbody) {
+    if (table.classList.contains("has-component-col")) {
+      tbody.querySelectorAll(".component-chips").forEach(function (cell) {
+        cell.replaceWith(buildComponentChipsCell());
+      });
+      return;
+    }
+    const headerRow = table.querySelector("thead tr");
+    const th = document.createElement("th");
+    th.textContent = "구성요소";
+    headerRow.insertBefore(th, headerRow.cells[3]);
+    const colgroup = table.querySelector("colgroup");
+    const col = document.createElement("col");
+    colgroup.insertBefore(col, colgroup.children[3]);
+    tbody.querySelectorAll("tr").forEach(function (row) {
+      row.insertBefore(buildComponentChipsCell(), row.cells[3]);
+    });
+    table.classList.add("has-component-col");
+  }
+
+  function applyLlmRerank(doc) {
+    const table = doc.querySelector(".patent-table");
+    const tbody = doc.getElementById("patent-table-body");
+    if (!table || !tbody) return;
+    ensureComponentColumn(table, tbody);
+    shuffleRows(tbody);
+  }
+
+  function bindLlmRerankButton() {
+    const doc = getAppDocument();
+    if (!doc) return false;
+    const button = doc.getElementById("llm-rerank-btn");
+    if (!button || button.dataset.bound === "true") return !!button;
+    button.dataset.bound = "true";
+    button.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      applyLlmRerank(doc);
+    });
+    return true;
+  }
+
+  function initInteractions() {
+    bindComponentCheckboxes();
+    const addOk = bindAddButton();
+    const rerankOk = bindLlmRerankButton();
+    return addOk && rerankOk;
+  }
+
+  if (!initInteractions()) {
     const timer = window.setInterval(function () {
-      if (initComponentPanel()) window.clearInterval(timer);
+      if (initInteractions()) window.clearInterval(timer);
     }, 200);
     window.setTimeout(function () { window.clearInterval(timer); }, 8000);
   }
@@ -410,7 +493,7 @@ input[type="checkbox"] {
   display: grid;
   grid-template-columns: 19px 1fr 90px 90px;
   align-items: center;
-  height: 25px;
+  height: 40px;
   color: #5f6b78;
   border-bottom: 1px solid #e8edf2;
 }
@@ -721,6 +804,16 @@ button.mini-button { width: 100%; }
   font-weight: 600;
 }
 .result-tool.active { color: #2673df; background: #eef5ff; border-color: #bcd5fa; }
+button.result-tool {
+  font-family: inherit;
+  cursor: pointer;
+}
+.llm-rerank-btn {
+  color: #7055cf;
+  background: #f6f2ff;
+  border-color: #d8ccf8;
+}
+.llm-rerank-btn:hover { background: #efe8ff; }
 .result-search {
   height: 22px;
   min-width: 100px;
@@ -758,6 +851,14 @@ button.mini-button { width: 100%; }
 .patent-table col:nth-child(5) { width: 12%; }
 .patent-table col:nth-child(6) { width: 10%; }
 .patent-table col:nth-child(7) { width: 11%; }
+.patent-table.has-component-col col:nth-child(1) { width: 4%; }
+.patent-table.has-component-col col:nth-child(2) { width: 5%; }
+.patent-table.has-component-col col:nth-child(3) { width: 14%; }
+.patent-table.has-component-col col:nth-child(4) { width: 10%; }
+.patent-table.has-component-col col:nth-child(5) { width: 30%; }
+.patent-table.has-component-col col:nth-child(6) { width: 12%; }
+.patent-table.has-component-col col:nth-child(7) { width: 9%; }
+.patent-table.has-component-col col:nth-child(8) { width: 10%; }
 .patent-table th {
   height: 24px;
   padding: 4px;
@@ -778,6 +879,34 @@ button.mini-button { width: 100%; }
 .patent-table tr:first-child td { background: #f1f6fd; }
 .patent-table tr:first-child td:first-child { border-left: 2px solid #4e94ee; }
 .patent-table td.cpc { line-height: 1.25; }
+.patent-table td.component-chips {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  vertical-align: middle;
+}
+.component-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+}
+.comp-chip {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 3px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 3px;
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  line-height: 1;
+}
+.comp-chip.tone-1 { background: #dce9fb; color: #2a5080; border: 1px solid #b8d4f5; }
+.comp-chip.tone-2 { background: #b8d4f5; color: #234870; border: 1px solid #93bbf1; }
+.comp-chip.tone-3 { background: #93bbf1; color: #fff; border: 1px solid #6fa3eb; }
+.comp-chip.tone-4 { background: #5f94e8; color: #fff; border: 1px solid #4a7fd4; }
+.comp-chip.tone-5 { background: #3d7ad8; color: #fff; border: 1px solid #2f66bb; }
+.comp-chip.tone-6 { background: #2a5fa8; color: #fff; border: 1px solid #1f4a85; }
 .patent-table td.title {
   color: #1d6ed7;
   text-align: left;
@@ -1185,6 +1314,7 @@ __SPEC_MODAL_CSS__
           <label for="bulk-drawings-toggle" class="result-tool bulk-drawings-trigger">▣ 대표 도면 일괄조회</label>
           <div class="result-tool">♙ 화학식 일괄조회</div>
           <label for="bulk-claims-toggle" class="result-tool bulk-claims-trigger">▧ 청구항 일괄조회</label>
+          <button type="button" class="result-tool llm-rerank-btn" id="llm-rerank-btn">⚡ LLM 재정렬</button>
           <div class="result-search">⌕ &nbsp; 결과 내 키워드검색...</div>
           <div class="result-search-btn">검색</div>
         </div>
@@ -1192,7 +1322,7 @@ __SPEC_MODAL_CSS__
           <table class="patent-table">
             <colgroup><col><col><col><col><col><col><col></colgroup>
             <thead><tr><th>순번</th><th>구분</th><th>CPC</th><th>발명의 명칭</th><th>출원번호</th><th>출원일자</th><th>공개번호</th></tr></thead>
-            <tbody>
+            <tbody id="patent-table-body">
               <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>1</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)</td><td class="title">메모리 장치 및 이를 포함하는 메모리 시스템</td><td>1020180133661</td><td>20181102</td><td>1020200050705</td></tr>
               <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>2</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 29/38<br>G11C 16/34<br>G11C 16/12(i)</td><td class="title">반도체 메모리 장치 및 그의 동작 방법</td><td>1020140178426</td><td>20141211</td><td>1020160071120</td></tr>
               <tr class="clickable-row"><td><label for="spec-modal-toggle" class="row-open"></label>3</td><td><span class="state-chip">공개</span></td><td class="cpc">G11C 16/10<br>G11C 16/3403<br>G11C 16/3459(i)</td><td class="title">메모리 장치 및 이의 동작 방법</td><td>1020200126702</td><td>20200929</td><td>1020220043365</td></tr>
