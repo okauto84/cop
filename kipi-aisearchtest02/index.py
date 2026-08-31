@@ -174,14 +174,17 @@ COMPONENT_INTERACTION_HTML = """
 
   function buildComponentChipsCell() {
     const td = document.createElement("td");
-    td.className = "component-chips";
+    td.className = "component-chips-cell";
+    const wrap = document.createElement("div");
+    wrap.className = "component-chips";
     const count = randomInt(2, 6);
     for (let i = 1; i <= count; i += 1) {
       const chip = document.createElement("span");
       chip.className = "comp-chip tone-" + randomInt(1, 6);
       chip.textContent = String(i);
-      td.appendChild(chip);
+      wrap.appendChild(chip);
     }
+    td.appendChild(wrap);
     return td;
   }
 
@@ -209,7 +212,7 @@ COMPONENT_INTERACTION_HTML = """
 
   function ensureComponentColumn(table, tbody) {
     if (table.classList.contains("has-component-col")) {
-      tbody.querySelectorAll(".component-chips").forEach(function (cell) {
+      tbody.querySelectorAll(".component-chips-cell").forEach(function (cell) {
         cell.replaceWith(buildComponentChipsCell());
       });
       return;
@@ -879,35 +882,44 @@ button.result-tool {
 }
 .patent-table.has-component-col td {
   height: auto;
+  vertical-align: middle;
 }
 .patent-table tr:first-child td { background: #f1f6fd; }
 .patent-table tr:first-child td:first-child { border-left: 2px solid #4e94ee; }
-.patent-table td.cpc { line-height: 1.25; vertical-align: top; }
-.patent-table td.component-chips {
-  padding: 5px 4px;
-  vertical-align: top;
-  overflow: visible;
-  white-space: normal;
+.patent-table td.cpc { line-height: 1.25; }
+.patent-table.has-component-col td.cpc,
+.patent-table.has-component-col td.title {
+  vertical-align: middle;
+}
+.patent-table td.component-chips-cell {
+  padding: 6px 4px;
+  vertical-align: middle;
+  text-align: center;
 }
 .component-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
-  align-items: flex-start;
+  gap: 4px;
+  align-items: center;
   justify-content: center;
+  align-content: center;
   width: 100%;
-  overflow: visible;
+  min-height: 20px;
+  margin: 0 auto;
 }
 .comp-chip {
-  min-width: 18px;
-  height: 18px;
-  padding: 0 3px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  flex: 0 0 20px;
+  padding: 0;
   display: inline-grid;
   place-items: center;
   border-radius: 3px;
   font-size: var(--fs-caption);
   font-weight: 700;
   line-height: 1;
+  box-sizing: border-box;
 }
 .comp-chip.tone-1 { background: #dce9fb; color: #2a5080; border: 1px solid #b8d4f5; }
 .comp-chip.tone-2 { background: #b8d4f5; color: #234870; border: 1px solid #93bbf1; }
@@ -921,7 +933,6 @@ button.result-tool {
   font-weight: 600;
   white-space: normal;
   line-height: 1.3;
-  vertical-align: top;
 }
 .state-chip {
   display: inline-block;
