@@ -2,9 +2,11 @@
 """AI 특허 검색 로딩 화면 목업."""
 
 import base64
+import html
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 from index_spec import SPEC_MODAL_CSS, get_spec_modal_html
 
 
@@ -78,6 +80,85 @@ def build_bulk_drawings_modal_html() -> str:
 
 
 drawing_batch_modal_html = build_bulk_drawings_modal_html()
+
+DEFAULT_COMPONENT_ITEMS = [
+    "워드라인 및 비트라인들에 연결된 메모리 셀들",
+    "상기 워드라인 및 상기 비트라인들에 인가되는 프로그램 관련 전압들을 제어하는 메인 프로세서",
+    "상기 메모리 셀들의 물리 전압을 기초로 센싱된 데이터를 저장하는 페이지 버퍼",
+    "상기 센싱된 데이터에 대응되는 센싱 전류와 상기 센싱된 전류를 비교하는 비교 회로",
+    "상기 메인 프로세서가 상기 프로그램 관련 전압을 제어하는 구성",
+]
+
+
+def build_component_row(index: int, text: str) -> str:
+    return (
+        f'<div class="component">'
+        f'<input type="checkbox" checked>'
+        f"<div>"
+        f'<div class="component-title"><span>구성요소 {index}</span><span>☆ 핵심</span></div>'
+        f'<textarea class="component-text" rows="2">{html.escape(text)}</textarea>'
+        f"</div></div>"
+    )
+
+
+def build_components_list_html() -> str:
+    rows = "".join(
+        build_component_row(index, text)
+        for index, text in enumerate(DEFAULT_COMPONENT_ITEMS, start=1)
+    )
+    return f'<div id="components-list" class="components-list">{rows}</div>'
+
+
+components_list_html = build_components_list_html()
+
+COMPONENT_INTERACTION_HTML = """
+<script>
+(function () {
+  function getAppDocument() {
+    try {
+      const doc = window.parent.document;
+      if (doc.getElementById("components-list")) return doc;
+    } catch (error) {}
+    return null;
+  }
+
+  function createComponentHtml(index) {
+    return (
+      '<div class="component">' +
+      '<input type="checkbox" checked>' +
+      "<div>" +
+      '<div class="component-title"><span>구성요소 ' + index + '</span><span>☆ 핵심</span></div>' +
+      '<textarea class="component-text" rows="2" placeholder="구성요소 내용을 입력하세요"></textarea>' +
+      "</div></div>"
+    );
+  }
+
+  function bindAddButton() {
+    const doc = getAppDocument();
+    if (!doc) return false;
+    const button = doc.getElementById("component-add-btn");
+    const list = doc.getElementById("components-list");
+    if (!button || !list || button.dataset.bound === "true") return !!button;
+    button.dataset.bound = "true";
+    button.addEventListener("click", function () {
+      const index = list.querySelectorAll(".component").length + 1;
+      list.insertAdjacentHTML("beforeend", createComponentHtml(index));
+      const textareas = list.querySelectorAll(".component-text");
+      const lastTextarea = textareas[textareas.length - 1];
+      if (lastTextarea) lastTextarea.focus();
+    });
+    return true;
+  }
+
+  if (!bindAddButton()) {
+    const timer = window.setInterval(function () {
+      if (bindAddButton()) window.clearInterval(timer);
+    }, 200);
+    window.setTimeout(function () { window.clearInterval(timer); }, 8000);
+  }
+})();
+</script>
+"""
 
 st.markdown(
     """
@@ -228,7 +309,8 @@ html, body, .stApp {
 .filter-scroll {
   min-height: 0;
   flex: 1;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 7px 4px 4px;
 }
 .section { margin-bottom: 8px; }
@@ -293,11 +375,14 @@ input[type="checkbox"] {
   text-align: center;
   font-size: var(--fs-label);
   background: #7a48eb;
+  border: none;
   border-radius: 3px;
   cursor: pointer;
   user-select: none;
+  font-family: inherit;
   transition: filter .15s ease, transform .15s ease;
 }
+button.mini-button { width: 100%; }
 .mini-button:hover { filter: brightness(1.08); }
 .mini-button:active { transform: translateY(1px); }
 .mini-button.blue { background: #2878ef; }
@@ -316,7 +401,25 @@ input[type="checkbox"] {
   font-weight: 600;
 }
 .component-title span:last-child { color: #7a8490; font-size: var(--fs-caption); font-weight: 400; }
-.component-text { color: #44505d; line-height: 1.5; }
+.component-text {
+  width: 100%;
+  min-height: 42px;
+  padding: 4px 6px;
+  color: #44505d;
+  line-height: 1.5;
+  font-family: inherit;
+  font-size: var(--fs-body);
+  background: #fff;
+  border: 1px solid #dfe5ec;
+  border-radius: 4px;
+  resize: vertical;
+}
+.component-text:focus {
+  outline: none;
+  border-color: #93bbf1;
+  box-shadow: 0 0 0 2px rgba(40, 120, 239, .12);
+}
+.component-text::placeholder { color: #9aa3ad; }
 .filter-footer { padding: 5px 4px 4px; border-top: 1px solid var(--line); }
 .footer-buttons { display: grid; grid-template-columns: 1fr 1.55fr; gap: 4px; }
 .footer-button {
@@ -985,13 +1088,9 @@ __SPEC_MODAL_CSS__
       </div>
       <div class="section-title">▏구성요소</div>
       <div class="components-head">
-        <input type="checkbox"><span>구성요소 내용</span><label for="ai-panel-toggle" class="mini-button">AI 선택</label><span class="mini-button blue">+ 추가</span>
+        <input type="checkbox"><span>구성요소 내용</span><label for="ai-panel-toggle" class="mini-button">AI 선택</label><button type="button" class="mini-button blue" id="component-add-btn">+ 추가</button>
       </div>
-      <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 1</span><span>☆ 핵심</span></div><div class="component-text">워드라인 및 비트라인들에 연결된 메모리 셀들</div></div></div>
-      <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 2</span><span>☆ 핵심</span></div><div class="component-text">상기 워드라인 및 상기 비트라인들에 인가되는 프로그램 관련 전압들을 제어하는 메인 프로세서</div></div></div>
-      <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 3</span><span>☆ 핵심</span></div><div class="component-text">상기 메모리 셀들의 물리 전압을 기초로 센싱된 데이터를 저장하는 페이지 버퍼</div></div></div>
-      <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 4</span><span>☆ 핵심</span></div><div class="component-text">상기 센싱된 데이터에 대응되는 센싱 전류와 상기 센싱된 전류를 비교하는 비교 회로</div></div></div>
-      <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 5</span><span>☆ 핵심</span></div><div class="component-text">상기 메인 프로세서가 상기 프로그램 관련 전압을 제어하는 구성</div></div></div>
+      __COMPONENTS_LIST_HTML__
     </div>
     <div class="filter-footer">
       <div class="footer-buttons"><div class="footer-button">↻ 초기화</div><label for="search-start-toggle" class="footer-button primary search-trigger search-first-trigger">⌕ 검색</label><label for="search-result-toggle" class="footer-button primary search-trigger search-second-trigger">⌕ 검색</label></div>
@@ -1137,8 +1236,11 @@ __SPEC_MODAL_CSS__
   __SPEC_MODAL_HTML__
 </div>
 """.replace("__DRAWING_DATA_URI__", drawing_data_uri)
+    .replace("__COMPONENTS_LIST_HTML__", components_list_html)
     .replace("__BULK_DRAWINGS_MODAL_HTML__", drawing_batch_modal_html)
     .replace("__SPEC_MODAL_CSS__", SPEC_MODAL_CSS.strip())
     .replace("__SPEC_MODAL_HTML__", get_spec_modal_html().strip()),
     unsafe_allow_html=True,
 )
+
+components.html(COMPONENT_INTERACTION_HTML, height=0, scrolling=False)
