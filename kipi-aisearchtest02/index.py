@@ -664,6 +664,151 @@ input[type="checkbox"] {
 .summary-box.green { color: #20a57c; background: #f7fffc; border-color: #caeee1; }
 .summary-box.blue { color: #3978c8; background: #f7faff; border-color: #d6e2f4; }
 
+.bulk-claims-trigger { cursor: pointer; user-select: none; }
+#bulk-claims-toggle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.bulk-claims-modal {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+  background: #f7f8fa;
+}
+#bulk-claims-toggle:checked ~ .bulk-claims-modal {
+  display: flex;
+  animation: modal-fade-in .18s ease-out;
+}
+@keyframes modal-fade-in {
+  from { opacity: 0; transform: scale(.995); }
+  to { opacity: 1; transform: scale(1); }
+}
+.bulk-modal-header {
+  height: 62px;
+  flex: 0 0 62px;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  background: #fafbfc;
+  border-bottom: 1px solid #e6e9ed;
+}
+.bulk-title-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  margin-right: 9px;
+  color: #3279df;
+  background: #eaf3ff;
+  border-radius: 5px;
+  font-size: 15px;
+}
+.bulk-title { color: #27323d; font-size: 15px; font-weight: 700; }
+.bulk-subtitle { margin-top: 2px; color: #8a949e; font-size: 9px; font-weight: 400; }
+.bulk-header-spacer { flex: 1; }
+.bulk-sort {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  color: #4c5966;
+  background: #fff;
+  border: 1px solid #dfe4ea;
+  border-radius: 5px;
+  font-size: 10px;
+}
+.bulk-sort strong { margin: 0 8px; color: #2c6fc9; }
+.bulk-nav {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 16px;
+  padding: 0 12px;
+  color: #65717d;
+  background: #fff;
+  border: 1px solid #e0e5ea;
+  border-radius: 5px;
+  font-size: 10px;
+}
+.bulk-nav .disabled { color: #bdc4cb; }
+.bulk-nav strong { color: #27323d; }
+.bulk-close {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  margin-left: 17px;
+  color: #7d8791;
+  background: #fff;
+  border: 1px solid #dfe4e9;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+.bulk-card-grid {
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px 15px 14px;
+}
+.bulk-claim-card {
+  min-width: 0;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #edf0f3;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(35, 47, 60, .07);
+  overflow: hidden;
+}
+.bulk-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #65717c;
+  white-space: nowrap;
+  font-size: 9px;
+}
+.bulk-number {
+  min-width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  color: #65717c;
+  background: #f1f3f5;
+  border-radius: 2px;
+  font-weight: 700;
+}
+.bulk-state { color: #3e4954; font-weight: 700; }
+.bulk-invention-title {
+  margin: 7px 0 9px;
+  color: #266fcf;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.bulk-claim-body {
+  padding-top: 8px;
+  color: #727d87;
+  border-top: 1px solid #eef1f4;
+  font-size: 10px;
+  line-height: 1.55;
+}
+.bulk-claim-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #7a67d5;
+  font-weight: 700;
+}
+
 @media (min-width: 1300px) {
   .patent-app { grid-template-columns: 336px 0 minmax(0, 1fr); font-size: 13px; }
   .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 336px 331.5px minmax(0, 1fr); }
@@ -676,6 +821,7 @@ input[type="checkbox"] {
 <div class="patent-app">
   <input type="checkbox" id="ai-panel-toggle">
   <input type="checkbox" id="search-result-toggle">
+  <input type="checkbox" id="bulk-claims-toggle">
   <header class="topbar">
     <div class="top-left">▏특허 검색 <button>직접 입력</button></div>
     <div class="tabs"><div class="tab">⌂&nbsp; INFO</div><div class="tab active">1020220167018</div></div>
@@ -757,7 +903,7 @@ input[type="checkbox"] {
           <div class="result-tool">▦ 구성요소</div>
           <div class="result-tool">▣ 대표 도면 일괄조회</div>
           <div class="result-tool">♙ 화학식 일괄조회</div>
-          <div class="result-tool">▧ 청구항 일괄조회</div>
+          <label for="bulk-claims-toggle" class="result-tool bulk-claims-trigger">▧ 청구항 일괄조회</label>
           <div class="result-search">⌕ &nbsp; 결과 내 키워드검색...</div>
           <div class="result-search-btn">검색</div>
         </div>
@@ -792,13 +938,65 @@ input[type="checkbox"] {
         </div>
         <div class="side-card ai-card">
           <div class="side-heading">AI 요약</div>
-          <div class="summary-box red"><strong>해결과제 및 목적</strong><span>메모리 장치 및 이를 포함하는 메모리 시스템</span></div>
-          <div class="summary-box green"><strong>발명의 효과</strong><span>(향후 LLM 연동)</span></div>
-          <div class="summary-box blue"><strong>청구범위 요약</strong><span>(향후 LLM 연동)</span></div>
+          <div class="summary-box red"><strong>해결과제 및 목적</strong><span>인터포저 기반 패키지 구조에서 수동소자와 전력 관리 회로를 효율적으로 통합하여 패키지 실장 면적을 줄이면서도 전력 공급 안정성과 시스템 성능을 향상시킬 수 있는 전자 소자 패키지를 제공</span></div>
+          <div class="summary-box green"><strong>발명의 효과</strong><span>패키지 기판 상부에 인터포저를 배치하고, 인터포저 상부에 프로세싱 소자와 고대역폭 메모리 소자 및 전력 관리 집적 회로 소자를 탑재하며, 인터포저 내부 또는 상부에 인덕터 및 커패시터와 같은 수동소자를 형성한다. 특히 인덕터는 인터포저 상하부에 형성된 자석층과 이를 연결하는 관통 실리콘 비아 및 재배선층을 이용하여 형성되며, 전력 관리 집적 회로와 전기적으로 연결되어 안정적인 전력 공급을 구현한다.</span></div>
+          <div class="summary-box blue"><strong>청구범위 요약</strong><span>인터포저 내부에 수동소자와 전력 관리 회로를 통합함으로써 패키지 기판 상의 실장 면적을 줄일 수 있고, 프로세싱 소자와 고대역폭 메모리에 안정적인 전력 공급을 제공하여 전체 전자 시스템의 성능 및 전력 효율을 향상</span></div>
         </div>
       </aside>
     </div>
   </main>
+  <section class="bulk-claims-modal">
+    <header class="bulk-modal-header">
+      <div class="bulk-title-icon">▧</div>
+      <div><div class="bulk-title">청구항 일괄조회</div><div class="bulk-subtitle">필터링된 데이터 200건 중 8개씩 보기</div></div>
+      <div class="bulk-header-spacer"></div>
+      <div class="bulk-sort">배열: <strong>4열⌄</strong><span>|</span><strong>2행⌄</strong></div>
+      <div class="bulk-nav"><span class="disabled">이전</span><strong>1 / 25</strong><span>다음</span></div>
+      <label for="bulk-claims-toggle" class="bulk-close">×</label>
+    </header>
+    <div class="bulk-card-grid">
+      <article class="bulk-claim-card">
+        <div class="bulk-meta"><span class="bulk-number">1</span><span class="bulk-state">공개</span><span>출원번호 : 1020180133661 (20181102)</span></div>
+        <div class="bulk-invention-title">메모리 장치 및 이를 포함하는 메모리 시스템</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+      </article>
+      <article class="bulk-claim-card">
+        <div class="bulk-meta"><span class="bulk-number">2</span><span class="bulk-state">공개</span><span>출원번호 : 1020140178426 (20141211)</span></div>
+        <div class="bulk-invention-title">반도체 메모리 장치 및 그의 동작 방법</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+      </article>
+      <article class="bulk-claim-card">
+        <div class="bulk-meta"><span class="bulk-number">3</span><span class="bulk-state">공개</span><span>출원번호 : 1020200126702 (20200929)</span></div>
+        <div class="bulk-invention-title">메모리 장치 및 이의 동작 방법</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+      </article>
+      <article class="bulk-claim-card">
+        <div class="bulk-meta"><span class="bulk-number">4</span><span class="bulk-state">등록</span><span>출원번호 : 1020200098794 (20200806)</span></div>
+        <div class="bulk-invention-title">메모리 장치</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+      </article>
+      <article class="bulk-claim-card">
+        <div class="bulk-meta"><span class="bulk-number">5</span><span class="bulk-state">공개</span><span>출원번호 : 1020200098765 (20200806)</span></div>
+        <div class="bulk-invention-title">메모리 장치 및 이의 동작 방법</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+      </article>
+      <article class="bulk-claim-card">
+        <div class="bulk-meta"><span class="bulk-number">6</span><span class="bulk-state">공개</span><span>출원번호 : 1020220164302 (20221130)</span></div>
+        <div class="bulk-invention-title">페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+      </article>
+      <article class="bulk-claim-card">
+        <div class="bulk-meta"><span class="bulk-number">7</span><span class="bulk-state">공개</span><span>출원번호 : 1020150172401 (20151204)</span></div>
+        <div class="bulk-invention-title">메모리 장치 및 그의 동작방법</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+      </article>
+      <article class="bulk-claim-card">
+        <div class="bulk-meta"><span class="bulk-number">8</span><span class="bulk-state">공개</span><span>출원번호 : 1020190160174 (20191204)</span></div>
+        <div class="bulk-invention-title">메모리 장치 및 그 동작 방법</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+      </article>
+    </div>
+  </section>
 </div>
 """.replace("__DRAWING_DATA_URI__", drawing_data_uri),
     unsafe_allow_html=True,
