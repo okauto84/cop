@@ -932,39 +932,40 @@ button.result-tool {
 }
 .patent-table {
   width: 100%;
-  min-width: 1240px;
+  min-width: 920px;
   height: auto;
   table-layout: fixed;
   border-collapse: collapse;
   color: #4e5b68;
   font-size: 12px;
 }
-.patent-table col:nth-child(1) { width: 52px; }
-.patent-table col:nth-child(2) { width: 60px; }
-.patent-table col:nth-child(3) { width: 210px; }
-.patent-table col:nth-child(4) { width: 420px; }
-.patent-table col:nth-child(5) { width: 140px; }
-.patent-table col:nth-child(6) { width: 100px; }
-.patent-table col:nth-child(7) { width: 140px; }
+.patent-table col:nth-child(1) { width: 36px; }
+.patent-table col:nth-child(2) { width: 44px; }
+.patent-table col:nth-child(3) { width: 132px; }
+.patent-table col:nth-child(4) { width: auto; }
+.patent-table col:nth-child(5) { width: 112px; }
+.patent-table col:nth-child(6) { width: 72px; }
+.patent-table col:nth-child(7) { width: 112px; }
 .patent-table.has-component-col {
-  min-width: 1360px;
+  min-width: 980px;
 }
-.patent-table.has-component-col col:nth-child(1) { width: 52px; }
-.patent-table.has-component-col col:nth-child(2) { width: 56px; }
-.patent-table.has-component-col col:nth-child(3) { width: 180px; }
-.patent-table.has-component-col col:nth-child(4) { width: 110px; }
-.patent-table.has-component-col col:nth-child(5) { width: 340px; }
-.patent-table.has-component-col col:nth-child(6) { width: 140px; }
-.patent-table.has-component-col col:nth-child(7) { width: 100px; }
-.patent-table.has-component-col col:nth-child(8) { width: 140px; }
+.patent-table.has-component-col col:nth-child(1) { width: 36px; }
+.patent-table.has-component-col col:nth-child(2) { width: 44px; }
+.patent-table.has-component-col col:nth-child(3) { width: 124px; }
+.patent-table.has-component-col col:nth-child(4) { width: 96px; }
+.patent-table.has-component-col col:nth-child(5) { width: auto; }
+.patent-table.has-component-col col:nth-child(6) { width: 112px; }
+.patent-table.has-component-col col:nth-child(7) { width: 72px; }
+.patent-table.has-component-col col:nth-child(8) { width: 112px; }
 .patent-table th {
   height: 24px;
-  padding: 4px;
+  padding: 4px 3px;
   color: #4b5865;
   background: #f8fafc;
   border-bottom: 1px solid #dfe5eb;
   text-align: center;
   font-weight: 600;
+  white-space: nowrap;
 }
 .patent-table td {
   min-height: 34px;
@@ -975,19 +976,38 @@ button.result-tool {
   vertical-align: middle;
   overflow: visible;
 }
+.patent-table td:nth-child(1),
+.patent-table td:nth-child(2) {
+  padding: 3px 2px;
+}
+.patent-table:not(.has-component-col) td:nth-child(5),
+.patent-table:not(.has-component-col) td:nth-child(6),
+.patent-table:not(.has-component-col) td:nth-child(7),
+.patent-table.has-component-col td:nth-child(6),
+.patent-table.has-component-col td:nth-child(7),
+.patent-table.has-component-col td:nth-child(8) {
+  padding: 3px 4px;
+  white-space: nowrap;
+  font-size: var(--fs-caption);
+}
 .patent-table.has-component-col td {
   height: auto;
   vertical-align: middle;
 }
 .patent-table tr:first-child td { background: #f1f6fd; }
 .patent-table tr:first-child td:first-child { border-left: 2px solid #4e94ee; }
-.patent-table td.cpc { line-height: 1.25; }
+.patent-table td.cpc {
+  line-height: 1.25;
+  padding: 3px 4px;
+  text-align: left;
+  font-size: var(--fs-caption);
+}
 .patent-table.has-component-col td.cpc,
 .patent-table.has-component-col td.title {
   vertical-align: middle;
 }
 .patent-table td.component-chips-cell {
-  padding: 6px 4px;
+  padding: 5px 4px;
   vertical-align: middle;
   text-align: left;
 }
@@ -998,7 +1018,8 @@ button.result-tool {
   align-items: center;
   justify-content: flex-start;
   align-content: flex-start;
-  width: 100%;
+  width: 88px;
+  max-width: 100%;
   min-height: 20px;
 }
 .comp-chip {
@@ -1027,13 +1048,16 @@ button.result-tool {
   font-weight: 600;
   white-space: normal;
   line-height: 1.3;
+  padding: 3px 6px 3px 4px;
 }
 .state-chip {
   display: inline-block;
-  padding: 2px 5px;
+  padding: 1px 4px;
   color: #5c6671;
   background: #f1f3f5;
   border-radius: 3px;
+  font-size: var(--fs-caption);
+  white-space: nowrap;
 }
 .result-pager {
   height: 29px;
