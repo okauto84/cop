@@ -443,6 +443,7 @@ input[type="checkbox"] {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .search-trigger { cursor: pointer; user-select: none; }
+#search-start-toggle,
 #search-result-toggle {
   position: absolute;
   width: 1px;
@@ -450,6 +451,9 @@ input[type="checkbox"] {
   opacity: 0;
   pointer-events: none;
 }
+.search-second-trigger { display: none; }
+#search-start-toggle:checked ~ .filter-panel .search-first-trigger { display: none; }
+#search-start-toggle:checked ~ .filter-panel .search-second-trigger { display: grid; }
 .result-view {
   position: absolute;
   inset: 0;
@@ -458,25 +462,12 @@ input[type="checkbox"] {
   height: 100%;
   min-width: 0;
 }
-#search-result-toggle:checked ~ .filter-panel .search-trigger { background: #3478e9; }
-#search-result-toggle:checked ~ .filter-panel .search-trigger .searching-label { display: none; }
-#search-result-toggle:checked ~ .filter-panel .search-trigger::after { content: "⌕ 검색"; }
 #search-result-toggle:checked ~ .workspace .loading-view {
-  display: block;
-  animation: hide-loading-view .01s linear 3s forwards;
+  display: none;
 }
 #search-result-toggle:checked ~ .workspace .result-view {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 409.5px;
-  visibility: hidden;
-  opacity: 0;
-  animation: show-result-view .01s linear 3s forwards;
-}
-@keyframes hide-loading-view {
-  to { visibility: hidden; opacity: 0; pointer-events: none; }
-}
-@keyframes show-result-view {
-  to { visibility: visible; opacity: 1; }
 }
 
 .result-center {
@@ -820,6 +811,7 @@ input[type="checkbox"] {
 
 <div class="patent-app">
   <input type="checkbox" id="ai-panel-toggle">
+  <input type="checkbox" id="search-start-toggle">
   <input type="checkbox" id="search-result-toggle">
   <input type="checkbox" id="bulk-claims-toggle">
   <header class="topbar">
@@ -859,7 +851,7 @@ input[type="checkbox"] {
       <div class="component"><input type="checkbox" checked><div><div class="component-title"><span>구성요소 5</span><span>☆ 핵심</span></div><div class="component-text">상기 메인 프로세서가 상기 프로그램 관련 전압을 제어하는 구성</div></div></div>
     </div>
     <div class="filter-footer">
-      <div class="footer-buttons"><div class="footer-button">↻ 초기화</div><label for="search-result-toggle" class="footer-button primary search-trigger"><span class="searching-label">⌕ 검색 </span></label></div>
+      <div class="footer-buttons"><div class="footer-button">↻ 초기화</div><label for="search-start-toggle" class="footer-button primary search-trigger search-first-trigger">⌕ 검색</label><label for="search-result-toggle" class="footer-button primary search-trigger search-second-trigger">⌕ 검색 중...</label></div>
       <div class="copyright">Copyright © 2026 KIPI. All rights reserved. Version 2.0</div>
     </div>
   </aside>
@@ -958,42 +950,42 @@ input[type="checkbox"] {
       <article class="bulk-claim-card">
         <div class="bulk-meta"><span class="bulk-number">1</span><span class="bulk-state">공개</span><span>출원번호 : 1020180133661 (20181102)</span></div>
         <div class="bulk-invention-title">메모리 장치 및 이를 포함하는 메모리 시스템</div>
-        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>복수의 워드라인 및 비트라인에 연결된 메모리 셀 어레이; 상기 메모리 셀 어레이에 프로그램 전압을 공급하는 전압 생성기; 및 선택된 메모리 셀의 상태에 기초하여 프로그램 동작을 제어하는 제어 로직을 포함하는 메모리 장치.</div>
       </article>
       <article class="bulk-claim-card">
         <div class="bulk-meta"><span class="bulk-number">2</span><span class="bulk-state">공개</span><span>출원번호 : 1020140178426 (20141211)</span></div>
         <div class="bulk-invention-title">반도체 메모리 장치 및 그의 동작 방법</div>
-        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>메모리 셀들에 대한 독출 명령을 수신하는 단계; 선택 워드라인에 독출 전압을 인가하는 단계; 비트라인의 전류 변화를 감지하여 데이터를 판별하는 단계; 및 판별된 데이터를 외부 장치로 출력하는 단계를 포함하는 반도체 메모리 장치의 동작 방법.</div>
       </article>
       <article class="bulk-claim-card">
         <div class="bulk-meta"><span class="bulk-number">3</span><span class="bulk-state">공개</span><span>출원번호 : 1020200126702 (20200929)</span></div>
         <div class="bulk-invention-title">메모리 장치 및 이의 동작 방법</div>
-        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>서로 다른 문턱 전압 분포를 갖는 복수의 메모리 셀; 상기 복수의 메모리 셀에 연결된 페이지 버퍼; 및 프로그램 검증 결과에 따라 후속 프로그램 펄스의 크기와 인가 시간을 조절하는 제어 회로를 포함하는 메모리 장치.</div>
       </article>
       <article class="bulk-claim-card">
         <div class="bulk-meta"><span class="bulk-number">4</span><span class="bulk-state">등록</span><span>출원번호 : 1020200098794 (20200806)</span></div>
         <div class="bulk-invention-title">메모리 장치</div>
-        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>기판 상에 수직 방향으로 적층된 복수의 셀 스트링; 상기 셀 스트링과 공통 소스 라인 사이에 배치된 선택 트랜지스터; 및 소거 동작 시 상기 공통 소스 라인의 전위를 단계적으로 증가시키는 주변 회로를 포함하는 비휘발성 메모리 장치.</div>
       </article>
       <article class="bulk-claim-card">
         <div class="bulk-meta"><span class="bulk-number">5</span><span class="bulk-state">공개</span><span>출원번호 : 1020200098765 (20200806)</span></div>
         <div class="bulk-invention-title">메모리 장치 및 이의 동작 방법</div>
-        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>호스트로부터 수신한 쓰기 데이터를 임시 저장하는 버퍼 메모리; 상기 쓰기 데이터의 오류 정정 부호를 생성하는 오류 정정 회로; 및 메모리 블록의 열화도에 따라 오류 정정 강도를 선택적으로 변경하는 메모리 컨트롤러를 포함하는 저장 장치.</div>
       </article>
       <article class="bulk-claim-card">
         <div class="bulk-meta"><span class="bulk-number">6</span><span class="bulk-state">공개</span><span>출원번호 : 1020220164302 (20221130)</span></div>
         <div class="bulk-invention-title">페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템</div>
-        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>감지 노드에 연결되어 비트라인의 전압을 센싱하는 센싱 래치; 센싱된 데이터를 임시 저장하는 데이터 래치; 및 상기 센싱 래치와 데이터 래치 사이의 데이터 전달 경로를 선택 신호에 따라 연결하는 스위칭 회로를 포함하는 페이지 버퍼.</div>
       </article>
       <article class="bulk-claim-card">
         <div class="bulk-meta"><span class="bulk-number">7</span><span class="bulk-state">공개</span><span>출원번호 : 1020150172401 (20151204)</span></div>
         <div class="bulk-invention-title">메모리 장치 및 그의 동작방법</div>
-        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>선택된 메모리 블록에 제1 패스 전압을 인가하여 프로그램 검증 동작을 수행하는 단계; 검증 실패 셀의 개수를 산출하는 단계; 및 산출된 개수가 기준값을 초과하면 제1 패스 전압보다 높은 제2 패스 전압을 인가하는 단계를 포함하는 동작 방법.</div>
       </article>
       <article class="bulk-claim-card">
         <div class="bulk-meta"><span class="bulk-number">8</span><span class="bulk-state">공개</span><span>출원번호 : 1020190160174 (20191204)</span></div>
         <div class="bulk-invention-title">메모리 장치 및 그 동작 방법</div>
-        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>여기에 청구항 1의 원문이 표시됩니다. LLM이 이 텍스트를 바탕으로 구성요소를 추출하게 됩니다.</div>
+        <div class="bulk-claim-body"><span class="bulk-claim-label">[청구항 1]</span>복수의 플레인으로 구분된 메모리 셀 어레이; 각 플레인에 대응하는 독립적인 페이지 버퍼 회로; 및 외부 명령에 응답하여 제1 플레인의 독출 동작과 제2 플레인의 프로그램 동작을 병렬로 수행하도록 제어하는 제어기를 포함하는 메모리 장치.</div>
       </article>
     </div>
   </section>
