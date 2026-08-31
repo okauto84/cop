@@ -699,8 +699,8 @@ input[type="checkbox"] {
   border-radius: 5px;
   font-size: 15px;
 }
-.bulk-title { color: #27323d; font-size: 15px; font-weight: 700; }
-.bulk-subtitle { margin-top: 2px; color: #8a949e; font-size: 9px; font-weight: 400; }
+.bulk-title { color: #27323d; font-size: 17px; font-weight: 700; }
+.bulk-subtitle { margin-top: 2px; color: #8a949e; font-size: 11px; font-weight: 400; }
 .bulk-header-spacer { flex: 1; }
 .bulk-sort {
   height: 28px;
@@ -711,7 +711,7 @@ input[type="checkbox"] {
   background: #fff;
   border: 1px solid #dfe4ea;
   border-radius: 5px;
-  font-size: 10px;
+  font-size: 12px;
 }
 .bulk-sort strong { margin: 0 8px; color: #2c6fc9; }
 .bulk-nav {
@@ -725,7 +725,7 @@ input[type="checkbox"] {
   background: #fff;
   border: 1px solid #e0e5ea;
   border-radius: 5px;
-  font-size: 10px;
+  font-size: 12px;
 }
 .bulk-nav .disabled { color: #bdc4cb; }
 .bulk-nav strong { color: #27323d; }
@@ -740,7 +740,7 @@ input[type="checkbox"] {
   border: 1px solid #dfe4e9;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
 }
 .bulk-card-grid {
   min-height: 0;
@@ -766,7 +766,7 @@ input[type="checkbox"] {
   gap: 6px;
   color: #65717c;
   white-space: nowrap;
-  font-size: 9px;
+  font-size: 11px;
 }
 .bulk-number {
   min-width: 17px;
@@ -782,7 +782,7 @@ input[type="checkbox"] {
 .bulk-invention-title {
   margin: 7px 0 9px;
   color: #266fcf;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
 }
@@ -790,7 +790,7 @@ input[type="checkbox"] {
   padding-top: 8px;
   color: #727d87;
   border-top: 1px solid #eef1f4;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.55;
 }
 .bulk-claim-label {
