@@ -27,11 +27,11 @@ drawing_data_uri = (
 
 DRAWING_BATCH_ITEMS = [
     {"no": 1, "state": "공개", "app_no": "1020180133661", "date": "20181102", "title": "메모리 장치 및 이를 포함하는 메모리 시스템"},
-    {"no": 2, "state": "공개", "app_no": "1020140178426", "date": "20141211", "title": "반도체 메모리 장치 및 그의 동작 방법"},
+    {"no": 2, "state": "거절", "app_no": "1020140178426", "date": "20141211", "title": "반도체 메모리 장치 및 그의 동작 방법"},
     {"no": 3, "state": "공개", "app_no": "1020200126702", "date": "20200929", "title": "메모리 장치 및 이의 동작 방법"},
     {"no": 4, "state": "등록", "app_no": "1020200098794", "date": "20200806", "title": "메모리 장치"},
     {"no": 5, "state": "공개", "app_no": "1020200098765", "date": "20200806", "title": "메모리 장치 및 이의 동작 방법"},
-    {"no": 6, "state": "공개", "app_no": "1020220164302", "date": "20221130", "title": "페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템"},
+    {"no": 6, "state": "취하", "app_no": "1020220164302", "date": "20221130", "title": "페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템"},
     {"no": 7, "state": "공개", "app_no": "1020150172401", "date": "20151204", "title": "메모리 장치 및 그의 동작방법"},
     {"no": 8, "state": "공개", "app_no": "1020190160174", "date": "20191204", "title": "메모리 장치 및 그 동작 방법"},
 ]
@@ -85,14 +85,14 @@ drawing_batch_modal_html = build_bulk_drawings_modal_html()
 PATENT_TABLE_BASE_ROWS = [
     {"state": "공개", "cpc": "G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)", "title": "메모리 장치 및 이를 포함하는 메모리 시스템", "app_no": "1020180133661", "app_date": "20181102", "pub_no": "1020200050705"},
     {"state": "공개", "cpc": "G11C 29/38<br>G11C 16/34<br>G11C 16/12(i)", "title": "반도체 메모리 장치 및 그의 동작 방법", "app_no": "1020140178426", "app_date": "20141211", "pub_no": "1020160071120"},
-    {"state": "공개", "cpc": "G11C 16/10<br>G11C 16/3403<br>G11C 16/3459(i)", "title": "메모리 장치 및 이의 동작 방법", "app_no": "1020200126702", "app_date": "20200929", "pub_no": "1020220043365"},
+    {"state": "거절", "cpc": "G11C 16/10<br>G11C 16/3403<br>G11C 16/3459(i)", "title": "메모리 장치 및 이의 동작 방법", "app_no": "1020200126702", "app_date": "20200929", "pub_no": "1020220043365"},
     {"state": "등록", "cpc": "G11C 16/3459<br>G11C 16/08<br>G11C 16/10(i)", "title": "메모리 장치", "app_no": "1020200098794", "app_date": "20200806", "pub_no": "1020220018354"},
     {"state": "공개", "cpc": "G11C 16/30<br>G11C 16/08<br>G11C 16/24(i)", "title": "메모리 장치 및 이의 동작 방법", "app_no": "1020200098765", "app_date": "20200806", "pub_no": "1020220018341"},
     {"state": "등록", "cpc": "G11C 16/3459<br>G11C 16/10(i)<br>G11C 16/24", "title": "페이지 버퍼, 페이지 버퍼를 포함하는 메모리 장치 및 메모리 장치를 포함하는 메모리 시스템", "app_no": "1020220164302", "app_date": "20221130", "pub_no": "1020240080715"},
-    {"state": "공개", "cpc": "G11C 16/3445<br>G11C 16/3459<br>G11C 29/26(i)", "title": "메모리 장치 및 그의 동작방법", "app_no": "1020150172401", "app_date": "20151204", "pub_no": "1020170065969"},
+    {"state": "취하", "cpc": "G11C 16/3445<br>G11C 16/3459<br>G11C 29/26(i)", "title": "메모리 장치 및 그의 동작방법", "app_no": "1020150172401", "app_date": "20151204", "pub_no": "1020170065969"},
     {"state": "공개", "cpc": "G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)", "title": "메모리 장치 및 그 동작 방법", "app_no": "1020190160174", "app_date": "20191204", "pub_no": "1020210070107"},
     {"state": "공개", "cpc": "G11C 16/3459<br>G11C 16/24<br>G11C 16/08(i)", "title": "메모리 장치 및 그 동작 방법", "app_no": "1020200104937", "app_date": "20200820", "pub_no": "1020220023263"},
-    {"state": "공개", "cpc": "G11C 16/3459<br>G11C 16/24<br>G11C 16/10(i)", "title": "메모리 장치 및 그 동작 방법", "app_no": "1020210025654", "app_date": "20210223", "pub_no": "1020230120033"},
+    {"state": "거", "cpc": "G11C 16/3459<br>G11C 16/24<br>G11C 16/10(i)", "title": "메모리 장치 및 그 동작 방법", "app_no": "1020210025654", "app_date": "20210223", "pub_no": "1020230120033"},
     {"state": "등록", "cpc": "G11C 16/06<br>G11C 16/125(i)", "title": "불휘발성 메모리 장치 및 그것의 동작 방법", "app_no": "1020140093320", "app_date": "20140723", "pub_no": "1020160012300"},
 ]
 
@@ -316,12 +316,58 @@ COMPONENT_INTERACTION_HTML = """
     table.classList.add("has-component-col");
   }
 
+  let originalPatentTableState = null;
+
+  function captureOriginalPatentTable(doc) {
+    const table = doc.querySelector(".patent-table");
+    const tbody = doc.getElementById("patent-table-body");
+    const thead = table ? table.querySelector("thead") : null;
+    const colgroup = table ? table.querySelector("colgroup") : null;
+    if (!table || !tbody || !thead || !colgroup || originalPatentTableState) return;
+    originalPatentTableState = {
+      tbodyHtml: tbody.innerHTML,
+      theadHtml: thead.innerHTML,
+      colgroupHtml: colgroup.innerHTML,
+      tableClass: table.className,
+    };
+  }
+
+  function resetPatentTable(doc) {
+    const table = doc.querySelector(".patent-table");
+    const tbody = doc.getElementById("patent-table-body");
+    const thead = table ? table.querySelector("thead") : null;
+    const colgroup = table ? table.querySelector("colgroup") : null;
+    if (!table || !tbody || !thead || !colgroup || !originalPatentTableState) return;
+    tbody.innerHTML = originalPatentTableState.tbodyHtml;
+    thead.innerHTML = originalPatentTableState.theadHtml;
+    colgroup.innerHTML = originalPatentTableState.colgroupHtml;
+    table.className = originalPatentTableState.tableClass;
+  }
+
   function applyLlmRerank(doc) {
     const table = doc.querySelector(".patent-table");
     const tbody = doc.getElementById("patent-table-body");
     if (!table || !tbody) return;
     ensureComponentColumn(table, tbody);
     shuffleRows(tbody);
+  }
+
+  function bindSearchButtons() {
+    const doc = getAppDocument();
+    if (!doc) return false;
+    const startToggle = doc.getElementById("search-start-toggle");
+    const resultToggle = doc.getElementById("search-result-toggle");
+    if (!startToggle || !resultToggle || startToggle.dataset.searchBound === "true") {
+      return !!(startToggle && resultToggle);
+    }
+    startToggle.dataset.searchBound = "true";
+    startToggle.addEventListener("change", function () {
+      if (startToggle.checked) resetPatentTable(doc);
+    });
+    resultToggle.addEventListener("change", function () {
+      if (resultToggle.checked) resetPatentTable(doc);
+    });
+    return true;
   }
 
   function bindLlmRerankButton() {
@@ -339,10 +385,13 @@ COMPONENT_INTERACTION_HTML = """
   }
 
   function initInteractions() {
+    const doc = getAppDocument();
+    if (doc) captureOriginalPatentTable(doc);
     bindComponentCheckboxes();
     const addOk = bindAddButton();
+    const searchOk = bindSearchButtons();
     const rerankOk = bindLlmRerankButton();
-    return addOk && rerankOk;
+    return addOk && searchOk && rerankOk;
   }
 
   if (!initInteractions()) {
