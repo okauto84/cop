@@ -173,8 +173,8 @@ SPEC_MODAL_CSS = """
 .spec-right-tab { height: 25px; padding-top: 7px; color: #6f7a85; }
 .spec-right-tab.active { color: #2874dc; border-bottom: 2px solid #2874dc; font-weight: 700; }
 .spec-summary-row {
-  height: 194px;
-  flex: 0 0 194px;
+  height: 291px;
+  flex: 0 0 291px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 7px;
@@ -190,7 +190,7 @@ SPEC_MODAL_CSS = """
 .spec-panel-title { height: 27px; padding: 7px 9px; font-weight: 700; border-bottom: 1px solid #edf0f3; }
 .spec-drawing {
   height: auto;
-  min-height: 117px;
+  min-height: 176px;
   margin: 7px;
   display: grid;
   place-items: center;
@@ -401,33 +401,33 @@ SPEC_MODAL_HTML_TEMPLATE = """
           <div>인용발명 구성요소</div>
         </div>
         <div class="spec-compare-row">
-          <div class="spec-applied"><input type="checkbox" checked><div><span class="spec-applied-badge">구성요소 1</span><div class="spec-applied-text">워드라인 및 비트라인들에 연결된 메모리 셀들</div></div></div>
+          <div class="spec-applied"><input type="checkbox" checked><div><span class="spec-applied-badge">구성요소 1</span><div class="spec-applied-text">복수의 워드라인과 비트라인에 교차 배치되어 연결되는 플래시 메모리 셀 어레이로서, 각 메모리 셀이 선택 트랜지스터를 통해 해당 비트라인에 전기적으로 연결되는 구조</div></div></div>
           <div class="spec-compare-card same">
             <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>동일</span></div><div class="result-label">대비결과</div></div>
-            <div class="spec-compare-card-body"><div>(LLM이 추출한 인용문헌 대응 내용 예시)</div><div>출원발명의 구성요소와 인용발명의 대응 관계에 대한 분석 결과입니다.</div></div>
+            <div class="spec-compare-card-body"><div>인용문헌은 워드라인 및 비트라인에 연결된 다수의 메모리 셀을 포함하는 비휘발성 메모리 장치를 개시하고 있으며, 셀 어레이의 배열 방식과 선택 구조가 출원발명과 동일하게 기재되어 있습니다.</div><div>메모리 셀의 배치 구조와 워드라인·비트라인 연결 관계가 문언상 동일하여, 구성요소 1은 인용발명과 실질적으로 같은 기술적 의미를 갖는 것으로 판단됩니다.</div></div>
             <div class="spec-compare-card-foot"><span class="spec-source-btn">⌕ 원문 위치 확인</span></div>
           </div>
         </div>
         <div class="spec-compare-row">
-          <div class="spec-applied"><input type="checkbox" checked><div><span class="spec-applied-badge">구성요소 2</span><div class="spec-applied-text">상기 워드라인 및 상기 비트라인들에 인가되는 프로그램 관련 전압들을 제어하는 메인 프로세서</div></div></div>
+          <div class="spec-applied"><input type="checkbox" checked><div><span class="spec-applied-badge">구성요소 2</span><div class="spec-applied-text">프로그램 동작 시 워드라인에 인가되는 프로그램 전압의 크기와 인가 시간을 단계적으로 조절하며, 패스 페일 체크 동작의 타이밍을 제어하는 메인 프로세서</div></div></div>
           <div class="spec-compare-card partial">
             <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>일부 차이</span><span class="spec-status-tag doc">문헌</span><span class="spec-status-tag sentence">문장</span></div><div class="result-label">대비결과</div></div>
-            <div class="spec-compare-card-body"><div>(LLM이 추출한 인용문헌 대응 내용 예시)</div><div>출원발명의 구성요소와 인용발명의 대응 관계에 대한 분석 결과입니다.</div></div>
+            <div class="spec-compare-card-body"><div>인용문헌은 컨트롤러가 프로그램 전압을 제어한다고 기재하고 있으나, 패스 페일 체크 타이밍을 별도 서브 프로세서가 병렬 처리한다는 점에서 출원발명과 차이가 있습니다.</div><div>전압 제어 기능 자체는 대응되나, 제어 주체와 타이밍 제어 방식에서 일부 차이가 확인됩니다. 따라서 전체 구성은 유사하나 세부 실시 형태는 부분적으로 상이합니다.</div></div>
             <div class="spec-compare-card-foot"><span class="spec-source-btn">⌕ 원문 위치 확인</span></div>
           </div>
         </div>
         <div class="spec-compare-row">
-          <div class="spec-applied"><input type="checkbox" checked><div><span class="spec-applied-badge">구성요소 3</span><div class="spec-applied-text">상기 메모리 셀들의 문턱 전압을 기초로 센싱된 데이터를 저장하는 페이지 버퍼</div></div></div>
+          <div class="spec-applied"><input type="checkbox" checked><div><span class="spec-applied-badge">구성요소 3</span><div class="spec-applied-text">센싱 동작에서 비트라인 전압을 감지하여 디지털 데이터로 변환하고, 프로그램 검증 결과에 따라 재프로그램 여부를 판단하는 페이지 버퍼 회로</div></div></div>
           <div class="spec-compare-card diff">
             <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>차이</span><span class="spec-status-tag doc">문헌</span><span class="spec-status-tag sentence">문장</span></div><div class="result-label">대비결과</div></div>
-            <div class="spec-compare-card-body"><div>(LLM이 추출한 인용문헌 대응 내용 예시)</div><div>출원발명의 구성요소와 인용발명의 대응 관계에 대한 분석 결과입니다.</div></div>
+            <div class="spec-compare-card-body"><div>인용문헌은 데이터 레지스터가 센싱 결과를 일시 저장한다고만 기재하고 있으며, 프로그램 검증 결과에 따른 재프로그램 판단 로직은 명시적으로 개시되어 있지 않습니다.</div><div>페이지 버퍼의 센싱·검증 연동 구조는 인용발명에 직접 대응하는 기재가 없어 기술적 구성이 다르다고 볼 수 있습니다. 단순 데이터 저장 기능만으로는 동일 구성요소로 보기 어렵습니다.</div></div>
           </div>
         </div>
         <div class="spec-compare-row">
-          <div class="spec-applied"><input type="checkbox" checked><div><span class="spec-applied-badge">구성요소 4</span><div class="spec-applied-text">상기 센싱된 데이터에 대응되는 센싱 전류와 기준 전류를 비교하는 패스 페일 체크 동작을 수행하는 센싱 회로</div></div></div>
+          <div class="spec-applied"><input type="checkbox" checked><div><span class="spec-applied-badge">구성요소 4</span><div class="spec-applied-text">패스 페일 체크 동작 시 센싱 전류와 기준 전류를 비교하여 메모리 셀의 문턱 전압 분포를 검증하고, 실패 셀 수에 따라 후속 프로그램 전압을 조정하는 센싱 회로</div></div></div>
           <div class="spec-compare-card substantial">
             <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>실질적 동일</span></div><div class="result-label">대비결과</div></div>
-            <div class="spec-compare-card-body"><div>(LLM이 추출한 인용문헌 대응 내용 예시)</div><div>출원발명의 구성요소와 인용발명의 대응 관계에 대한 분석 결과입니다.</div></div>
+            <div class="spec-compare-card-body"><div>인용문헌은 센싱 회로가 비트라인 전류와 기준 전류를 비교하여 셀 상태를 판별한다고 기재하고 있으며, 검증 실패 시 프로그램 전압을 재조정하는 흐름이 출원발명과 유사합니다.</div><div>회로 구성의 명칭과 세부 파라미터 조절 방식은 다소 다르지만, 센싱·비교·후속 전압 조정이라는 기술적 효과와 수단이 실질적으로 동일한 것으로 분석됩니다.</div></div>
             <div class="spec-compare-card-foot"><span class="spec-source-btn">⌕ 원문 위치 확인</span></div>
           </div>
         </div>
