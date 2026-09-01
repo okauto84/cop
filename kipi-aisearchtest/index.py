@@ -82,6 +82,167 @@ def build_bulk_drawings_modal_html() -> str:
 
 drawing_batch_modal_html = build_bulk_drawings_modal_html()
 
+MYPAGE_APP_NO = "1020017004375"
+MYPAGE_CITED_DOCS = [
+    "1020017000723",
+    "1020017004375",
+    "1020017008752",
+    "102001701086",
+]
+MYPAGE_COMPONENTS = [
+    {
+        "text": (
+            "주된 가스 터빈 시스템의 편익이 일반적으로 가연기의 입구단, 압축기, 연소실 및 터빈을 "
+            "포함하는 전체 경로적 부분이 기체온도와 압력에 표면에 최대 노출되는 순간, 그리고 반전된 "
+            "순간에 변화되는 비틀림 구배의 변화를 바이패스된다."
+        ),
+        "cells": [
+            ("same", "명세서 0006문단"),
+            ("same", "명세서 0006문단"),
+            ("same", "명세서 0006문단"),
+            ("same", "명세서 0006문단"),
+        ],
+    },
+    {
+        "text": (
+            "주된 가스 터빈 시스템의 편익이 일반적으로 가연기의 입구단, 압축기, 연소실 및 터빈을 "
+            "포함하는 전체 경로적 부분이 기체온도와 압력에 표면에 최대 노출되는 순간, 그리고 반전된 "
+            "순간에 가연기 다음에 직상기 단열 내주차구에 뜨거운 가스가 충돌하는 순간에 변화되는 "
+            "대형 직사각 보강 방식을 포함한다."
+        ),
+        "cells": [
+            ("partial", "청구항 1"),
+            ("partial", "청구항 1"),
+            ("partial", "청구항 1"),
+            ("partial", "청구항 1"),
+        ],
+    },
+    {
+        "text": (
+            "혼합 장치는 혼합 챔버를 포함하고, 혼합 챔버는 혼합 챔버의 입구단에 배치된 혼합 챔버 "
+            "입구, 혼합 챔버의 출구단에 배치된 혼합 챔버 출구, 및 혼합 챔버 입구와 혼합 챔버 출구 "
+            "사이에 배치된 혼합 챔버 내부를 포함한다."
+        ),
+        "cells": [
+            ("diff", "명세서 0010문단"),
+            ("diff", "명세서 0010문단"),
+            ("none", ""),
+            ("diff", "명세서 0010문단"),
+        ],
+    },
+]
+
+
+def _mypage_compare_cell(status: str, ref: str) -> str:
+    if status == "none":
+        return (
+            '<td class="mp-compare-cell mp-compare-none">'
+            "<span>저장된 대응 구성요소 없음</span></td>"
+        )
+    status_map = {
+        "same": ("동일", "mp-status-same"),
+        "partial": ("일부 차이", "mp-status-partial"),
+        "diff": ("차이", "mp-status-diff"),
+    }
+    label, cls = status_map[status]
+    return (
+        f'<td class="mp-compare-cell {cls}">'
+        f'<div class="mp-compare-card">'
+        f'<span class="mp-status-badge">{label}</span>'
+        f'<div class="mp-compare-body">(LLM이 추출한 인용문헌 대응 내용 예시)</div>'
+        f'<div class="mp-compare-foot">'
+        f'<span class="mp-compare-link">▶ 대비결과 보기</span>'
+        f'<span class="mp-compare-ref">{ref}</span>'
+        f"</div></div></td>"
+    )
+
+
+def build_mypage_modal_html() -> str:
+    cited_headers = []
+    for doc_no in MYPAGE_CITED_DOCS:
+        cited_headers.append(
+            f'<th class="mp-cited-col">'
+            f'<div class="mp-cited-head">'
+            f'<div class="mp-cited-label">인용발명 출원번호</div>'
+            f'<div class="mp-cited-no">{doc_no}</div>'
+            f"</div>"
+            f'<div class="mp-col-controls">'
+            f'<span class="mp-col-btn" title="왼쪽으로">←</span>'
+            f'<span class="mp-col-btn" title="오른쪽으로">→</span>'
+            f'<span class="mp-col-btn mp-col-drag" title="순서 변경">▦</span>'
+            f'<span class="mp-col-btn mp-col-del" title="삭제">×</span>'
+            f"</div></th>"
+        )
+
+    body_rows = []
+    for index, component in enumerate(MYPAGE_COMPONENTS, start=1):
+        cells = "".join(
+            _mypage_compare_cell(status, ref)
+            for status, ref in component["cells"]
+        )
+        body_rows.append(
+            f'<tr class="mp-component-row">'
+            f'<td class="mp-component-cell">'
+            f'<label class="mp-row-check"><input type="checkbox"></label>'
+            f'<div class="mp-component-body">'
+            f'<span class="mp-component-badge">구성요소 {index}</span>'
+            f'<p class="mp-component-text">{html.escape(component["text"])}</p>'
+            f"</div></td>{cells}</tr>"
+        )
+
+    return (
+        '<section class="mypage-modal">'
+        '<header class="mp-modal-header">'
+        '<div class="mp-title-wrap">'
+        '<span class="mp-title-icon">▱</span>'
+        '<span class="mp-title">마이페이지 나만의 참조 저장소</span>'
+        "</div>"
+        '<div class="mp-header-controls">'
+        '<div class="mp-view-toggle">'
+        '<span class="mp-view-opt">문헌별 보기</span>'
+        '<span class="mp-view-opt active">테이블 보기</span>'
+        "</div>"
+        '<div class="mp-app-select">'
+        '<span class="mp-app-select-label">출원번호 선택:</span>'
+        f'<span class="mp-app-select-value">{MYPAGE_APP_NO} ⌄</span>'
+        "</div>"
+        '<span class="mp-refresh-btn" title="새로고침">↻</span>'
+        '<label for="mypage-toggle" class="mp-close">×</label>'
+        "</div></header>"
+        '<div class="mp-info-bar">'
+        '<div class="mp-info-left">'
+        '<span class="mp-info-badge">출원번호</span>'
+        f'<span class="mp-info-app-no">{MYPAGE_APP_NO}</span>'
+        "</div>"
+        '<div class="mp-info-right">'
+        '<span class="mp-cited-count">저장된 인용문헌 4개</span>'
+        '<button type="button" class="mp-delete-all">현재 출원번호 전체 삭제</button>'
+        "</div></div>"
+        '<div class="mp-content">'
+        '<div class="mp-section-head">'
+        "<div>"
+        '<div class="mp-section-title">기술 구성요소별 인용문헌 구성요소 비교</div>'
+        '<div class="mp-section-hint">'
+        "첫 번째 열은 고정되고, 나머지 열은 가로 스크롤됩니다. "
+        "열 헤더의 화살표 또는 드래그로 열 순서를 변경하고 삭제할 수 있습니다."
+        "</div></div>"
+        '<button type="button" class="mp-research-btn">⌕ 선택 구성요소 재검색</button>'
+        "</div>"
+        '<div class="mp-table-wrap">'
+        '<table class="mp-compare-table">'
+        "<thead><tr>"
+        '<th class="mp-component-head">'
+        '<label class="mp-row-check"><input type="checkbox"></label>'
+        "<span>출원발명 구성요소</span></th>"
+        f'{"".join(cited_headers)}'
+        "</tr></thead>"
+        f"<tbody>{''.join(body_rows)}</tbody>"
+        "</table></div></div></section>"
+    )
+
+
+mypage_modal_html = build_mypage_modal_html()
+
 PATENT_TABLE_BASE_ROWS = [
     {"state": "공개", "cpc": "G11C 16/3459<br>G11C 16/10<br>G11C 16/26(i)", "title": "메모리 장치 및 이를 포함하는 메모리 시스템", "app_no": "1020180133661", "app_date": "20181102", "pub_no": "1020200050705"},
     {"state": "공개", "cpc": "G11C 29/38<br>G11C 16/34<br>G11C 16/12(i)", "title": "반도체 메모리 장치 및 그의 동작 방법", "app_no": "1020140178426", "app_date": "20141211", "pub_no": "1020160071120"},
@@ -1217,7 +1378,8 @@ button.result-tool {
   pointer-events: none;
 }
 #bulk-claims-toggle:checked ~ .bulk-modal-backdrop,
-#bulk-drawings-toggle:checked ~ .bulk-modal-backdrop {
+#bulk-drawings-toggle:checked ~ .bulk-modal-backdrop,
+#mypage-toggle:checked ~ .bulk-modal-backdrop {
   display: block;
   animation: backdrop-fade-in .18s ease-out;
 }
@@ -1413,6 +1575,399 @@ button.result-tool {
   font-size: var(--fs-label);
 }
 
+.mypage-trigger {
+  cursor: pointer;
+  user-select: none;
+  display: inline-block;
+  text-decoration: none;
+  line-height: 1;
+}
+#mypage-toggle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+#mypage-toggle:checked ~ .mypage-modal {
+  display: flex;
+  animation: modal-fade-in .18s ease-out;
+}
+.mypage-modal {
+  position: absolute;
+  top: 28px;
+  right: 32px;
+  bottom: 28px;
+  left: 32px;
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #dfe5ec;
+  border-radius: 10px;
+  box-shadow: 0 10px 36px rgba(23, 36, 50, .14);
+  overflow: hidden;
+}
+.mp-modal-header {
+  height: 48px;
+  flex: 0 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: #fafbfc;
+  border-bottom: 1px solid #e6e9ed;
+}
+.mp-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mp-title-icon {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  color: #7c5fd4;
+  background: #f3edff;
+  border-radius: 5px;
+  font-size: 13px;
+}
+.mp-title {
+  color: #27323d;
+  font-size: 15px;
+  font-weight: 700;
+}
+.mp-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mp-view-toggle {
+  display: flex;
+  height: 28px;
+  padding: 2px;
+  background: #eef1f4;
+  border: 1px solid #dfe4ea;
+  border-radius: 6px;
+}
+.mp-view-opt {
+  display: grid;
+  place-items: center;
+  padding: 0 12px;
+  color: #6b7785;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.mp-view-opt.active {
+  color: #2c6fc9;
+  font-weight: 700;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(35, 47, 60, .08);
+}
+.mp-app-select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  background: #fff;
+  border: 1px solid #dfe4ea;
+  border-radius: 5px;
+  font-size: 12px;
+}
+.mp-app-select-label { color: #6b7785; white-space: nowrap; }
+.mp-app-select-value { color: #27323d; font-weight: 600; }
+.mp-refresh-btn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: #6b7785;
+  background: #fff;
+  border: 1px solid #dfe4ea;
+  border-radius: 50%;
+  font-size: 14px;
+}
+.mp-close {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: #7d8791;
+  background: #fff;
+  border: 1px solid #dfe4ea;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.mp-info-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f5f0ff;
+  border-bottom: 1px solid #ebe3f8;
+}
+.mp-info-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mp-info-badge {
+  padding: 3px 8px;
+  color: #7c5fd4;
+  background: #ede6ff;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.mp-info-app-no {
+  color: #27323d;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+.mp-info-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mp-cited-count {
+  color: #5d6978;
+  font-size: 12px;
+}
+.mp-delete-all {
+  height: 28px;
+  padding: 0 12px;
+  color: #d64545;
+  background: #fff;
+  border: 1px solid #e8b4b4;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.mp-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px 14px;
+  background: #f7f8fa;
+}
+.mp-section-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.mp-section-title {
+  color: #27323d;
+  font-size: 14px;
+  font-weight: 700;
+}
+.mp-section-hint {
+  margin-top: 4px;
+  color: #8a949e;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.mp-research-btn {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 14px;
+  color: #fff;
+  background: #1fa67a;
+  border: 1px solid #1a946d;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mp-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #e3e8ee;
+  border-radius: 8px;
+}
+.mp-compare-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+}
+.mp-compare-table th,
+.mp-compare-table td {
+  vertical-align: top;
+  border-bottom: 1px solid #edf0f3;
+  border-right: 1px solid #edf0f3;
+}
+.mp-compare-table th:last-child,
+.mp-compare-table td:last-child { border-right: 0; }
+.mp-component-head,
+.mp-component-cell {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+  background: #fafbfc;
+}
+.mp-component-head {
+  top: 0;
+  z-index: 3;
+  padding: 10px 12px;
+  color: #4c5966;
+  font-weight: 700;
+  background: #f3f5f7;
+  border-bottom: 1px solid #e3e8ee;
+}
+.mp-cited-col {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  min-width: 210px;
+  max-width: 210px;
+  padding: 8px 10px;
+  background: #f3f5f7;
+  border-bottom: 1px solid #e3e8ee;
+}
+.mp-cited-head { margin-bottom: 6px; }
+.mp-cited-label {
+  color: #8a949e;
+  font-size: 10px;
+  font-weight: 600;
+}
+.mp-cited-no {
+  margin-top: 2px;
+  color: #2c6fc9;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.mp-col-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.mp-col-btn {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  color: #7d8791;
+  background: #fff;
+  border: 1px solid #dfe4ea;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.mp-col-del {
+  color: #d64545;
+  border-color: #e8c4c4;
+}
+.mp-row-check {
+  display: inline-flex;
+  align-items: flex-start;
+  margin-right: 8px;
+}
+.mp-component-cell {
+  padding: 10px 12px;
+  background: #fff;
+}
+.mp-component-body { display: inline-block; width: calc(100% - 28px); vertical-align: top; }
+.mp-component-badge {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 7px;
+  color: #2c6fc9;
+  background: #eaf3ff;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.mp-component-text {
+  margin: 0;
+  color: #3d4855;
+  line-height: 1.5;
+  font-size: 12px;
+}
+.mp-compare-cell {
+  min-width: 210px;
+  max-width: 210px;
+  padding: 8px;
+  background: #fff;
+}
+.mp-compare-card {
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px 6px;
+  border: 1px solid #e8ebef;
+  border-radius: 6px;
+  border-top-width: 3px;
+}
+.mp-status-badge {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.mp-compare-body {
+  flex: 1;
+  color: #5d6978;
+  line-height: 1.45;
+  font-size: 11px;
+}
+.mp-compare-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #eef1f4;
+}
+.mp-compare-link {
+  color: #2c6fc9;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mp-compare-ref {
+  color: #9aa3ad;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.mp-status-same .mp-compare-card { border-top-color: #43a047; background: #f3fbf4; }
+.mp-status-same .mp-status-badge { color: #2e7d32; background: #e8f5e9; }
+.mp-status-partial .mp-compare-card { border-top-color: #f9a825; background: #fffdf5; }
+.mp-status-partial .mp-status-badge { color: #ef6c00; background: #fff8e1; }
+.mp-status-diff .mp-compare-card { border-top-color: #e53935; background: #fff8f8; }
+.mp-status-diff .mp-status-badge { color: #c62828; background: #ffebee; }
+.mp-compare-none {
+  text-align: center;
+  vertical-align: middle;
+}
+.mp-compare-none span {
+  display: block;
+  padding: 36px 8px;
+  color: #b8c0c8;
+  font-size: 11px;
+}
+
 @media (min-width: 1300px) {
   .patent-app { grid-template-columns: 336px 0 minmax(0, 1fr); font-size: var(--fs-body); }
   .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 336px 331.5px minmax(0, 1fr); }
@@ -1430,11 +1985,12 @@ __SPEC_MODAL_CSS__
   <input type="checkbox" id="bulk-claims-toggle">
   <input type="checkbox" id="bulk-drawings-toggle">
   <input type="checkbox" id="spec-modal-toggle">
+  <input type="checkbox" id="mypage-toggle">
   <header class="topbar">
     <div class="top-left">▏특허 검색 <button>직접 입력</button></div>
     <div class="tabs"><div class="tab">⌂&nbsp; INFO</div><div class="tab active">1020220167018</div></div>
     <div class="main-actions">
-      <div class="action-pill">▱&nbsp; 마이페이지</div>
+      <label for="mypage-toggle" class="action-pill mypage-trigger">▱&nbsp; 마이페이지</label>
       <div class="icon-box">✎</div><div class="icon-box">▣</div>
       <div class="icon-box">▥</div><div class="icon-box">⚙</div>
     </div>
@@ -1595,13 +2151,15 @@ __SPEC_MODAL_CSS__
   </section>
   __BULK_DRAWINGS_MODAL_HTML__
   __SPEC_MODAL_HTML__
+  __MYPAGE_MODAL_HTML__
 </div>
 """.replace("__DRAWING_DATA_URI__", drawing_data_uri)
     .replace("__PATENT_TABLE_ROWS__", patent_table_rows_html)
     .replace("__COMPONENTS_LIST_HTML__", components_list_html)
     .replace("__BULK_DRAWINGS_MODAL_HTML__", drawing_batch_modal_html)
     .replace("__SPEC_MODAL_CSS__", SPEC_MODAL_CSS.strip())
-    .replace("__SPEC_MODAL_HTML__", get_spec_modal_html().strip()),
+    .replace("__SPEC_MODAL_HTML__", get_spec_modal_html().strip())
+    .replace("__MYPAGE_MODAL_HTML__", mypage_modal_html),
     unsafe_allow_html=True,
 )
 
