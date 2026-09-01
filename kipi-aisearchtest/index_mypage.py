@@ -1,52 +1,67 @@
 """마이페이지 나만의 참조 저장소 팝업 UI."""
 
 import html
+import random
 
+MYPAGE_COMPONENT_COL_WIDTH = 360
 MYPAGE_APP_NO = "1020017004375"
 MYPAGE_CITED_DOCS = [
     "1020017000723",
     "1020017001933",
     "1020007001612",
 ]
-MYPAGE_COMPONENTS = [
-    {
-        "text": (
-            "주된 가스 터빈 시스템의 편익이 일반적으로 가연기의 입구단, 압축기, 연소실 및 터빈을 "
-            "포함하는 전체 경로적 부분이 기체온도와 압력에 표면에 최대 노출되는 순간, 그리고 반전된 "
-            "순간에 변화되는 비틀림 구배의 변화를 바이패스된다."
-        ),
-        "cells": [
-            ("same", "명세서 0006문단"),
-            ("same", "명세서 0006문단"),
-            ("same", "명세서 0006문단"),
-        ],
-    },
-    {
-        "text": (
-            "주된 가스 터빈 시스템의 편익이 일반적으로 가연기의 입구단, 압축기, 연소실 및 터빈을 "
-            "포함하는 전체 경로적 부분이 기체온도와 압력에 표면에 최대 노출되는 순간, 그리고 반전된 "
-            "순간에 가연기 다음에 직상기 단열 내주차구에 뜨거운 가스가 충돌하는 순간에 변화되는 "
-            "대형 직사각 보강 방식을 포함한다."
-        ),
-        "cells": [
-            ("partial", "청구항 1"),
-            ("partial", "청구항 1"),
-            ("partial", "청구항 1"),
-        ],
-    },
-    {
-        "text": (
-            "혼합 장치는 혼합 챔버를 포함하고, 혼합 챔버는 혼합 챔버의 입구단에 배치된 혼합 챔버 "
-            "입구, 혼합 챔버의 출구단에 배치된 혼합 챔버 출구, 및 혼합 챔버 입구와 혼합 챔버 출구 "
-            "사이에 배치된 혼합 챔버 내부를 포함한다."
-        ),
-        "cells": [
-            ("diff", "명세서 0010문단"),
-            ("none", ""),
-            ("none", ""),
-        ],
-    },
+MYPAGE_CELL_PATTERNS = [
+    [
+        ("same", "명세서 0006문단"),
+        ("same", "명세서 0006문단"),
+        ("same", "명세서 0006문단"),
+    ],
+    [
+        ("partial", "청구항 1"),
+        ("partial", "청구항 1"),
+        ("partial", "청구항 1"),
+    ],
+    [
+        ("diff", "명세서 0010문단"),
+        ("none", ""),
+        ("none", ""),
+    ],
+    [
+        ("same", "명세서 0008문단"),
+        ("partial", "청구항 2"),
+        ("same", "명세서 0008문단"),
+    ],
+    [
+        ("partial", "청구항 3"),
+        ("diff", "명세서 0012문단"),
+        ("partial", "청구항 3"),
+    ],
 ]
+
+CITED_CONTENT_SAMPLES = [
+    "압축기 입구단 가스 유량 제어 밸브",
+    "연소실 내부 온도 센서 배치 구조",
+    "터빈 출구 냉각 가스 순환 경로",
+    "가연기 직후 단열 내주 환류 챔버",
+    "혼합 챔버 입구 확산판 형상",
+    "고온 가스 압력 완화 노즐",
+    "연소 배기가스 재순환 덕트",
+    "압축 단계 간 냉각 코일 배치",
+    "터빈 회전자 열응력 완화 슬롯",
+    "연소실 점화기 주변 혼합 영역",
+]
+
+
+def _random_cited_text(seed: int) -> str:
+    rng = random.Random(seed)
+    words = ["가스", "온도", "압력", "유량", "밸브", "센서", "챔버", "노즐", "덕트", "판"]
+    parts = ["압축기", "연소실", "터빈", "가연기", "혼합", "냉각", "배기", "입구", "출구", "제어"]
+    for _ in range(12):
+        text = f"{rng.choice(parts)}{rng.choice(parts)} {rng.choice(words)} {rng.choice(words)}"
+        text = text[: rng.randint(10, 39)].strip()
+        if 5 <= len(text) < 40:
+            return text
+    return rng.choice(CITED_CONTENT_SAMPLES)
 
 MYPAGE_MODAL_CSS = """
 #mypage-toggle {
@@ -299,9 +314,9 @@ MYPAGE_MODAL_CSS = """
   position: sticky;
   left: 0;
   z-index: 2;
-  width: 290px;
-  min-width: 290px;
-  max-width: 290px;
+  width: __MYPAGE_COMPONENT_COL_WIDTH__px;
+  min-width: __MYPAGE_COMPONENT_COL_WIDTH__px;
+  max-width: __MYPAGE_COMPONENT_COL_WIDTH__px;
   background: #fff;
 }
 .mp-component-head {
@@ -453,10 +468,10 @@ MYPAGE_MODAL_CSS = """
   color: #b8c0c8;
   font-size: 11px;
 }
-"""
+""".replace("__MYPAGE_COMPONENT_COL_WIDTH__", str(MYPAGE_COMPONENT_COL_WIDTH))
 
 
-def _compare_cell(status: str, ref: str) -> str:
+def _compare_cell(status: str, ref: str, seed: int) -> str:
     if status == "none":
         return (
             '<td class="mp-compare-cell mp-compare-none">'
@@ -468,11 +483,12 @@ def _compare_cell(status: str, ref: str) -> str:
         "diff": ("차이", "mp-status-diff"),
     }
     label, cls = status_map[status]
+    cited_text = html.escape(_random_cited_text(seed))
     return (
         f'<td class="mp-compare-cell {cls}">'
         f'<div class="mp-compare-card">'
         f'<div class="mp-status-strip">{label}</div>'
-        f'<div class="mp-compare-body">(LLM이 추출한 인용문헌 대응 내용 예시)</div>'
+        f'<div class="mp-compare-body">{cited_text}</div>'
         f'<div class="mp-compare-foot">'
         f'<span class="mp-compare-link">▶ 대비결과 보기</span>'
         f'<span class="mp-compare-ref">{ref}</span>'
@@ -499,12 +515,16 @@ def _build_cited_headers() -> str:
     return "".join(headers)
 
 
-def _build_table_body() -> str:
+def _cells_for_row(row_index: int) -> list[tuple[str, str]]:
+    return MYPAGE_CELL_PATTERNS[(row_index - 1) % len(MYPAGE_CELL_PATTERNS)]
+
+
+def _build_table_body(component_items: list[str]) -> str:
     rows = []
-    for index, component in enumerate(MYPAGE_COMPONENTS, start=1):
+    for index, text in enumerate(component_items, start=1):
         cells = "".join(
-            _compare_cell(status, ref)
-            for status, ref in component["cells"]
+            _compare_cell(status, ref, seed=index * 100 + cell_index)
+            for cell_index, (status, ref) in enumerate(_cells_for_row(index), start=1)
         )
         rows.append(
             f'<tr class="mp-component-row">'
@@ -512,7 +532,7 @@ def _build_table_body() -> str:
             f'<label class="mp-row-check"><input type="checkbox"></label>'
             f'<div class="mp-component-body">'
             f'<span class="mp-component-badge">구성요소 {index}</span>'
-            f'<p class="mp-component-text">{html.escape(component["text"])}</p>'
+            f'<p class="mp-component-text">{html.escape(text)}</p>'
             f"</div></td>{cells}</tr>"
         )
     return "".join(rows)
@@ -575,13 +595,10 @@ MYPAGE_MODAL_HTML_TEMPLATE = """
 """
 
 
-def get_mypage_modal_html() -> str:
+def get_mypage_modal_html(component_items: list[str]) -> str:
     return (
         MYPAGE_MODAL_HTML_TEMPLATE.replace("__MYPAGE_APP_NO__", MYPAGE_APP_NO)
         .replace("__MYPAGE_CITED_COUNT__", str(len(MYPAGE_CITED_DOCS)))
         .replace("__MYPAGE_CITED_HEADERS__", _build_cited_headers())
-        .replace("__MYPAGE_TABLE_BODY__", _build_table_body())
+        .replace("__MYPAGE_TABLE_BODY__", _build_table_body(component_items))
     )
-
-
-MYPAGE_MODAL_HTML = get_mypage_modal_html()

@@ -1676,7 +1676,7 @@ __MYPAGE_MODAL_CSS__
     .replace("__SPEC_MODAL_CSS__", SPEC_MODAL_CSS.strip())
     .replace("__SPEC_MODAL_HTML__", get_spec_modal_html().strip())
     .replace("__MYPAGE_MODAL_CSS__", MYPAGE_MODAL_CSS.strip())
-    .replace("__MYPAGE_MODAL_HTML__", get_mypage_modal_html().strip()),
+    .replace("__MYPAGE_MODAL_HTML__", get_mypage_modal_html(DEFAULT_COMPONENT_ITEMS).strip()),
     unsafe_allow_html=True,
 )
 
