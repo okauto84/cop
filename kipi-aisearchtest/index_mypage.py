@@ -38,30 +38,43 @@ MYPAGE_CELL_PATTERNS = [
     ],
 ]
 
+CITED_TEXT_MIN_LEN = 40
+CITED_TEXT_MAX_LEN = 49
+
 CITED_CONTENT_SAMPLES = [
-    "압축기 입구단 가스 유량 제어 밸브",
-    "연소실 내부 온도 센서 배치 구조",
-    "터빈 출구 냉각 가스 순환 경로",
-    "가연기 직후 단열 내주 환류 챔버",
-    "혼합 챔버 입구 확산판 형상",
-    "고온 가스 압력 완화 노즐",
-    "연소 배기가스 재순환 덕트",
-    "압축 단계 간 냉각 코일 배치",
-    "터빈 회전자 열응력 완화 슬롯",
-    "연소실 점화기 주변 혼합 영역",
+    "워드라인 및 비트라인에 연결된 복수의 메모리 셀과 상기 셀을 구동하는 제어회로",
+    "프로그램 관련 전압을 제어하는 메인 프로세서와 상기 전압을 생성하는 주변회로부",
+    "메모리 셀의 물리 전압을 기초로 센싱된 데이터를 저장하는 페이지 버퍼 회로",
+    "센싱된 데이터에 대응하는 센싱 전류와 기준 전류를 비교하여 출력하는 비교 회로",
+    "상기 메인 프로세서가 프로그램 관련 전압을 제어하도록 구성된 메모리 장치",
+    "선택된 워드라인에 프로그램 전압을 인가하고 검증 동작을 수행하는 제어회로",
+    "비트라인의 전압 변화를 감지하여 데이터를 판별하고 증폭하는 센싱 증폭기 회로",
+    "프로그램 펄스 동작에서 워드라인 전압 크기를 단계적으로 조절하는 제어 회로",
+    "패스 레벨 체크 동작을 병렬적으로 수행하도록 페이지 버퍼를 제어하는 서브 프로세서",
+    "검증 실패 셀 수에 따라 후속 프로그램 펄스 크기와 시간을 조절하는 제어 로직",
+]
+
+CITED_TEXT_CHUNKS = [
+    "워드라인", "비트라인", "메모리 셀", "프로그램 전압", "메인 프로세서",
+    "페이지 버퍼", "센싱 데이터", "센싱 전류", "비교 회로", "제어 신호",
+    "기준 전류", "물리 전압", "검증 동작", "프로그램 펄스", "선택 워드라인",
+    "에 연결된", "를 제어하는", "를 저장하는", "와 비교하는", "을 포함하고",
+    "상기", "복수의", "및", "또는", "하도록 구성된", "를 감지하는",
 ]
 
 
 def _random_cited_text(seed: int) -> str:
     rng = random.Random(seed)
-    words = ["가스", "온도", "압력", "유량", "밸브", "센서", "챔버", "노즐", "덕트", "판"]
-    parts = ["압축기", "연소실", "터빈", "가연기", "혼합", "냉각", "배기", "입구", "출구", "제어"]
-    for _ in range(12):
-        text = f"{rng.choice(parts)}{rng.choice(parts)} {rng.choice(words)} {rng.choice(words)}"
-        text = text[: rng.randint(10, 39)].strip()
-        if 5 <= len(text) < 40:
+    target_len = rng.randint(CITED_TEXT_MIN_LEN, CITED_TEXT_MAX_LEN)
+    for _ in range(20):
+        text = ""
+        while len(text) < target_len:
+            text += rng.choice(CITED_TEXT_CHUNKS)
+        text = text[:target_len]
+        if CITED_TEXT_MIN_LEN <= len(text) < 50:
             return text
-    return rng.choice(CITED_CONTENT_SAMPLES)
+    sample = rng.choice(CITED_CONTENT_SAMPLES)
+    return sample[:CITED_TEXT_MAX_LEN]
 
 MYPAGE_MODAL_CSS = """
 #mypage-toggle {
