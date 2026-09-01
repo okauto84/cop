@@ -203,11 +203,38 @@ components_list_html = build_components_list_html()
 COMPONENT_INTERACTION_HTML = """
 <script>
 (function () {
-  function getAppDocument() {
+  function collectDocuments(rootDoc) {
+    const docs = [];
+    const seen = new Set();
+    function add(doc) {
+      if (!doc || seen.has(doc)) return;
+      seen.add(doc);
+      docs.push(doc);
+    }
+    add(rootDoc);
     try {
-      const doc = window.parent.document;
-      if (doc.getElementById("components-list")) return doc;
+      rootDoc.querySelectorAll("iframe").forEach(function (frame) {
+        try { add(frame.contentDocument); } catch (error) {}
+      });
     } catch (error) {}
+    return docs;
+  }
+
+  function getAppDocument() {
+    const roots = [];
+    try { roots.push(window.document); } catch (error) {}
+    try {
+      if (window.parent && window.parent.document) roots.push(window.parent.document);
+    } catch (error) {}
+    for (let r = 0; r < roots.length; r += 1) {
+      const docs = collectDocuments(roots[r]);
+      for (let i = 0; i < docs.length; i += 1) {
+        const doc = docs[i];
+        if (doc.getElementById("mypage-open-btn") || doc.getElementById("components-list")) {
+          return doc;
+        }
+      }
+    }
     return null;
   }
 
@@ -385,25 +412,36 @@ COMPONENT_INTERACTION_HTML = """
     return true;
   }
 
+  function setMypageOpen(doc, open) {
+    const toggle = doc.getElementById("mypage-toggle");
+    const backdrop = doc.querySelector(".mypage-modal-backdrop");
+    const modal = doc.querySelector(".mypage-modal");
+    if (toggle) toggle.checked = open;
+    if (backdrop) backdrop.classList.toggle("is-open", open);
+    if (modal) modal.classList.toggle("is-open", open);
+  }
+
   function bindMypageModal() {
     const doc = getAppDocument();
     if (!doc) return false;
-    const toggle = doc.getElementById("mypage-toggle");
-    const trigger = doc.querySelector(".mypage-trigger");
-    if (!toggle || !trigger || trigger.dataset.bound === "true") {
-      return !!(toggle && trigger);
+    const trigger = doc.getElementById("mypage-open-btn");
+    const modal = doc.querySelector(".mypage-modal");
+    if (!trigger || !modal || trigger.dataset.bound === "true") {
+      return !!(trigger && modal);
     }
     trigger.dataset.bound = "true";
     trigger.addEventListener("click", function (event) {
       event.preventDefault();
-      toggle.checked = true;
+      event.stopPropagation();
+      setMypageOpen(doc, true);
     });
-    doc.querySelectorAll('label.mp-close[for="mypage-toggle"]').forEach(function (closeBtn) {
+    doc.querySelectorAll(".mp-close").forEach(function (closeBtn) {
       if (closeBtn.dataset.bound === "true") return;
       closeBtn.dataset.bound = "true";
       closeBtn.addEventListener("click", function (event) {
         event.preventDefault();
-        toggle.checked = false;
+        event.stopPropagation();
+        setMypageOpen(doc, false);
       });
     });
     return true;
@@ -426,6 +464,11 @@ COMPONENT_INTERACTION_HTML = """
     }, 200);
     window.setTimeout(function () { window.clearInterval(timer); }, 8000);
   }
+
+  const mypageTimer = window.setInterval(function () {
+    if (bindMypageModal()) window.clearInterval(mypageTimer);
+  }, 200);
+  window.setTimeout(function () { window.clearInterval(mypageTimer); }, 15000);
 })();
 </script>
 """
@@ -1228,7 +1271,7 @@ button.result-tool {
 .summary-box.blue { color: #3978c8; background: #f7faff; border-color: #d6e2f4; }
 
 .bulk-claims-trigger, .bulk-drawings-trigger { cursor: pointer; user-select: none; }
-#bulk-claims-toggle, #bulk-drawings-toggle {
+#bulk-claims-toggle, #bulk-drawings-toggle, #mypage-toggle {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1459,11 +1502,12 @@ __MYPAGE_MODAL_CSS__
   <input type="checkbox" id="bulk-drawings-toggle">
   <input type="checkbox" id="spec-modal-toggle">
   <input type="checkbox" id="mypage-toggle">
+  __MYPAGE_MODAL_HTML__
   <header class="topbar">
     <div class="top-left">▏특허 검색 <button>직접 입력</button></div>
     <div class="tabs"><div class="tab">⌂&nbsp; INFO</div><div class="tab active">1020220167018</div></div>
     <div class="main-actions">
-      <label for="mypage-toggle" class="action-pill mypage-trigger">▱&nbsp; 마이페이지</label>
+      <button type="button" class="action-pill mypage-trigger" id="mypage-open-btn">▱&nbsp; 참증 저장</button>
       <div class="icon-box">✎</div><div class="icon-box">▣</div>
       <div class="icon-box">▥</div><div class="icon-box">⚙</div>
     </div>
@@ -1624,7 +1668,6 @@ __MYPAGE_MODAL_CSS__
   </section>
   __BULK_DRAWINGS_MODAL_HTML__
   __SPEC_MODAL_HTML__
-  __MYPAGE_MODAL_HTML__
 </div>
 """.replace("__DRAWING_DATA_URI__", drawing_data_uri)
     .replace("__PATENT_TABLE_ROWS__", patent_table_rows_html)

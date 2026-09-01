@@ -62,6 +62,10 @@ MYPAGE_MODAL_CSS = """
   display: inline-block;
   text-decoration: none;
   line-height: 1;
+  color: inherit;
+  font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
 }
 .mypage-modal-backdrop {
   position: absolute;
@@ -71,7 +75,9 @@ MYPAGE_MODAL_CSS = """
   background: rgba(33, 43, 54, .48);
   pointer-events: none;
 }
-#mypage-toggle:checked ~ .mypage-modal-backdrop {
+#mypage-toggle:checked ~ .mypage-modal-backdrop,
+.patent-app:has(#mypage-toggle:checked) .mypage-modal-backdrop,
+.mypage-modal-backdrop.is-open {
   display: block;
   animation: mp-backdrop-fade-in .18s ease-out;
 }
@@ -98,7 +104,9 @@ MYPAGE_MODAL_CSS = """
   --fs-display: 18px;
   font-size: var(--fs-body);
 }
-#mypage-toggle:checked ~ .mypage-modal {
+#mypage-toggle:checked ~ .mypage-modal,
+.patent-app:has(#mypage-toggle:checked) .mypage-modal,
+.mypage-modal.is-open {
   display: flex;
   animation: mp-modal-fade-in .18s ease-out;
 }
@@ -204,6 +212,9 @@ MYPAGE_MODAL_CSS = """
   border-radius: 5px;
   font-size: var(--fs-display);
   cursor: pointer;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
 }
 .mp-info-bar {
   flex: 0 0 auto;
@@ -514,7 +525,7 @@ MYPAGE_MODAL_HTML_TEMPLATE = """
     <div class="mp-title-wrap">
       <span class="mp-title-icon">▱</span>
       <div class="mp-title-text">
-        <span class="mp-title">마이페이지</span>
+        <span class="mp-title">참증 저장</span>
         <span class="mp-subtitle">나만의 참조 저장소</span>
       </div>
     </div>
@@ -527,7 +538,7 @@ MYPAGE_MODAL_HTML_TEMPLATE = """
         <span class="mp-app-select-label">출원번호 선택 :</span>
         <span class="mp-app-select-value">__MYPAGE_APP_NO__</span>
       </div>
-      <label for="mypage-toggle" class="mp-close">×</label>
+      <button type="button" class="mp-close" aria-label="닫기">×</button>
     </div>
   </header>
   <div class="mp-info-bar">
