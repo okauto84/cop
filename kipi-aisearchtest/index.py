@@ -385,6 +385,30 @@ COMPONENT_INTERACTION_HTML = """
     return true;
   }
 
+  function bindMypageModal() {
+    const doc = getAppDocument();
+    if (!doc) return false;
+    const toggle = doc.getElementById("mypage-toggle");
+    const trigger = doc.querySelector(".mypage-trigger");
+    if (!toggle || !trigger || trigger.dataset.bound === "true") {
+      return !!(toggle && trigger);
+    }
+    trigger.dataset.bound = "true";
+    trigger.addEventListener("click", function (event) {
+      event.preventDefault();
+      toggle.checked = true;
+    });
+    doc.querySelectorAll('label.mp-close[for="mypage-toggle"]').forEach(function (closeBtn) {
+      if (closeBtn.dataset.bound === "true") return;
+      closeBtn.dataset.bound = "true";
+      closeBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+        toggle.checked = false;
+      });
+    });
+    return true;
+  }
+
   function initInteractions() {
     const doc = getAppDocument();
     if (doc) captureOriginalPatentTable(doc);
@@ -392,7 +416,8 @@ COMPONENT_INTERACTION_HTML = """
     const addOk = bindAddButton();
     const searchOk = bindSearchButtons();
     const rerankOk = bindLlmRerankButton();
-    return addOk && searchOk && rerankOk;
+    const mypageOk = bindMypageModal();
+    return addOk && searchOk && rerankOk && mypageOk;
   }
 
   if (!initInteractions()) {
@@ -457,6 +482,7 @@ html, body, .stApp {
   box-shadow: 0 3px 14px rgba(35, 48, 64, .08);
   overflow: hidden;
   transition: grid-template-columns .38s ease;
+  isolation: isolate;
 }
 .patent-app:has(#ai-panel-toggle:checked) {
   grid-template-columns: 270px 261.3px minmax(0, 1fr);

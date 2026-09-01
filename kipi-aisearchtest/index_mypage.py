@@ -73,7 +73,7 @@ MYPAGE_MODAL_CSS = """
 }
 #mypage-toggle:checked ~ .mypage-modal-backdrop {
   display: block;
-  animation: backdrop-fade-in .18s ease-out;
+  animation: mp-backdrop-fade-in .18s ease-out;
 }
 .mypage-modal {
   position: absolute;
@@ -100,7 +100,15 @@ MYPAGE_MODAL_CSS = """
 }
 #mypage-toggle:checked ~ .mypage-modal {
   display: flex;
-  animation: modal-fade-in .18s ease-out;
+  animation: mp-modal-fade-in .18s ease-out;
+}
+@keyframes mp-backdrop-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes mp-modal-fade-in {
+  from { opacity: 0; transform: scale(.985); }
+  to { opacity: 1; transform: scale(1); }
 }
 .mp-modal-header {
   height: 52px;
