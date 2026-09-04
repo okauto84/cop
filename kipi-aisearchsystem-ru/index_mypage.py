@@ -522,7 +522,7 @@ def _compare_cell(status: str, ref: str, seed: int) -> str:
         f'<div class="mp-status-strip">{label}</div>'
         f'<div class="mp-compare-body">{cited_text}</div>'
         f'<div class="mp-compare-foot">'
-        f'<span class="mp-compare-link">▶ Показать результат сравнения</span>'
+        f'<span class="mp-compare-link">▶ View Comparison</span>'
         f'<span class="mp-compare-ref">{ref}</span>'
         f"</div></div></td>"
     )
@@ -536,10 +536,10 @@ def _build_cited_headers() -> str:
             f'<div class="mp-cited-top">'
             f'<span class="mp-cited-label">№ заявки цитируемого изобретения</span>'
             f'<div class="mp-col-controls">'
-            f'<span class="mp-col-btn" title="Влево">←</span>'
-            f'<span class="mp-col-btn" title="Вправо">→</span>'
-            f'<span class="mp-col-btn mp-col-drag" title="Изменить порядок">⋮⋮</span>'
-            f'<span class="mp-col-btn mp-col-del" title="Удалить">×</span>'
+            f'<span class="mp-col-btn" title="Move Left">←</span>'
+            f'<span class="mp-col-btn" title="Move Right">→</span>'
+            f'<span class="mp-col-btn mp-col-drag" title="Reorder">⋮⋮</span>'
+            f'<span class="mp-col-btn mp-col-del" title="Delete">×</span>'
             f"</div></div>"
             f'<div class="mp-cited-no">{doc_no}</div>'
             f"</th>"
@@ -583,16 +583,16 @@ MYPAGE_MODAL_HTML_TEMPLATE = """
     </div>
     <div class="mp-header-controls">
       <div class="mp-view-toggle">
-        <span class="mp-view-opt">По документам</span>
-        <span class="mp-view-opt active">Табличный вид</span>
+        <span class="mp-view-opt">By Document</span>
+        <span class="mp-view-opt active">Table View</span>
       </div>
       <div class="mp-app-select">
         <span class="mp-app-select-label">Выбор № заявки:</span>
-        <select id="mp-app-no-select" class="mp-app-select-combo" aria-label="Выбор № заявки" onchange="var el=this.closest('.mypage-modal').querySelector('.mp-info-app-no'); if(el) el.textContent=this.value;">
+        <select id="mp-app-no-select" class="mp-app-select-combo" aria-label="Select application number" onchange="var el=this.closest('.mypage-modal').querySelector('.mp-info-app-no'); if(el) el.textContent=this.value;">
           __MYPAGE_APP_OPTIONS__
         </select>
       </div>
-      <button type="button" class="mp-close" aria-label="Закрыть">×</button>
+      <button type="button" class="mp-close" aria-label="Close">×</button>
     </div>
   </header>
   <div class="mp-info-bar">

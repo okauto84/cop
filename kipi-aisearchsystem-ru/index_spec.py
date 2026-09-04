@@ -532,7 +532,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
       </div></div>
     </div>
     <div class="spec-components">
-      <div class="spec-components-head">▣ Таблица сравнения элементов <div class="spec-components-actions"><span class="spec-btn spec-btn-research">⌕ Повторный поиск выбранных элементов</span><span class="spec-btn spec-btn-save">Сохранить выбранные элементы</span></div></div>
+      <div class="spec-components-head">▣ Таблица сравнения элементов <div class="spec-components-actions"><span class="spec-btn spec-btn-research">⌕ Research Selected Components</span><span class="spec-btn spec-btn-save">Save Selected Components</span></div></div>
       <div class="spec-compare-table">
         <div class="spec-compare-columns">
           <div class="spec-compare-col-title"><input type="checkbox" checked>Элементы заявленного изобретения</div>
@@ -546,7 +546,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
               <div class="spec-compare-cited">(Пример соответствующего содержания цитируемого документа, извлечённого LLM)</div>
               <div class="spec-compare-result">
                 <div class="spec-compare-result-text">Результат анализа соответствия элементов заявленного изобретения и цитируемого изобретения.</div>
-                <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ Проверить место в оригинале</a></div>
+                <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ Locate in Original</a></div>
               </div>
             </div>
           </div>
@@ -559,7 +559,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
               <div class="spec-compare-cited">В документе указано, что контроллер управляет программным напряжением, однако проверка прохождения/отказа выполняется отдельным субпроцессором параллельно, что отличается от заявленного изобретения.</div>
               <div class="spec-compare-result">
                 <div class="spec-compare-result-text">Сама функция управления напряжением соответствует, однако выявлены частичные различия в субъекте управления и способе управления таймингом. Таким образом, общая конструкция сходна, но детали реализации частично отличаются.</div>
-                <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ Проверить место в оригинале</a></div>
+                <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ Locate in Original</a></div>
               </div>
             </div>
           </div>
@@ -572,7 +572,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
               <div class="spec-compare-cited">Указано лишь, что регистр данных временно сохраняет результат считывания; логика принятия решения о перепрограммировании по результату проверки программирования явно не раскрыта.</div>
               <div class="spec-compare-result">
                 <div class="spec-compare-result-text">Связанная структура считывания и проверки буфера страницы не имеет прямого соответствия в цитируемом изобретении, поэтому техническая конструкция может считаться иной. Одна лишь функция хранения данных вряд ли позволяет считать элемент идентичным.</div>
-                <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ Проверить место в оригинале</a></div>
+                <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ Locate in Original</a></div>
               </div>
             </div>
           </div>
@@ -585,7 +585,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
               <div class="spec-compare-cited">Указано, что схема считывания сравнивает ток битовой линии с опорным током для определения состояния ячейки, а последовательность повторной настройки программного напряжения при неудачной проверке сходна с заявленным изобретением.</div>
               <div class="spec-compare-result">
                 <div class="spec-compare-result-text">Названия схемных узлов и способ настройки детальных параметров несколько различаются, однако технический эффект и средства считывания, сравнения и последующей регулировки напряжения анализируются как по существу идентичные.</div>
-                <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ Проверить место в оригинале</a></div>
+                <div class="spec-compare-card-foot"><a href="#spec-highlight-source" class="spec-source-btn">⌕ Locate in Original</a></div>
               </div>
             </div>
           </div>

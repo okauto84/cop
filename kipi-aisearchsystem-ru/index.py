@@ -73,7 +73,7 @@ def build_bulk_drawings_modal_html() -> str:
         '<div class="bulk-subtitle">Просмотр по 8 из 200 отфильтрованных записей</div></div>'
         '<div class="bulk-header-spacer"></div>'
         '<div class="bulk-sort">Сетка: <strong>4 столбца⌄</strong><span>|</span><strong>2 ряда⌄</strong></div>'
-        '<div class="bulk-nav"><span class="disabled">Назад</span><strong>1 / 25</strong><span>Далее</span></div>'
+        '<div class="bulk-nav"><span class="disabled">Previous</span><strong>1 / 25</strong><span>Next</span></div>'
         '<label for="bulk-drawings-toggle" class="bulk-close">×</label>'
         "</header>"
         f'<div class="bulk-card-grid">{"".join(cards)}</div>'
@@ -181,7 +181,7 @@ def build_component_row(index: int, text: str) -> str:
     return (
         f'<div class="component">'
         f'<label class="component-check-label">'
-        f'<input type="checkbox" class="component-check" checked="checked" aria-label="Выбрать элемент {index}">'
+        f'<input type="checkbox" class="component-check" checked="checked" aria-label="Select component {index}">'
         f"</label>"
         f"<div>"
         f'<div class="component-title"><span>Элемент {index}</span><span>☆ Ключевой</span></div>'
@@ -242,7 +242,7 @@ COMPONENT_INTERACTION_HTML = """
     return (
       '<div class="component">' +
       '<label class="component-check-label">' +
-      '<input type="checkbox" class="component-check" checked="checked" aria-label="Выбрать элемент ' + index + '">' +
+      '<input type="checkbox" class="component-check" checked="checked" aria-label="Select component ' + index + '">' +
       "</label>" +
       "<div>" +
       '<div class="component-title"><span>Элемент ' + index + '</span><span>☆ Ключевой</span></div>' +
@@ -1656,10 +1656,10 @@ __MYPAGE_MODAL_CSS__
   <input type="checkbox" id="mypage-toggle">
   __MYPAGE_MODAL_HTML__
   <header class="topbar">
-    <div class="top-left">▏Поиск патентов <button>Ручной ввод</button></div>
+    <div class="top-left">▏Поиск патентов <button>Manual Input</button></div>
     <div class="tabs"><div class="tab info-tab active">⌂&nbsp; INFO</div><div class="tab app-tab">1020220167018</div></div>
     <div class="main-actions">
-      <button type="button" class="action-pill mypage-trigger" id="mypage-open-btn">▱&nbsp; Сохранить доказательства</button>
+      <button type="button" class="action-pill mypage-trigger" id="mypage-open-btn">▱&nbsp; Save Evidence</button>
       <div class="icon-box">✎</div><div class="icon-box">▣</div>
       <div class="icon-box">▥</div><div class="icon-box">⚙</div>
     </div>
@@ -1683,12 +1683,12 @@ __MYPAGE_MODAL_CSS__
       </div>
       <div class="section-title">▏Элементы</div>
       <div class="components-head">
-        <label for="ai-panel-toggle" class="mini-button">Подробнее ИИ</label><button type="button" class="mini-button blue" id="component-add-btn">+ Добавить</button>
+        <label for="ai-panel-toggle" class="mini-button">AI More</label><button type="button" class="mini-button blue" id="component-add-btn">+ Add</button>
       </div>
       __COMPONENTS_LIST_HTML__
     </div>
     <div class="filter-footer">
-      <div class="footer-buttons"><div class="footer-button">↻ Сброс</div><label for="search-start-toggle" class="footer-button primary search-trigger search-first-trigger">⌕ Поиск</label><label for="search-result-toggle" class="footer-button primary search-trigger search-second-trigger">⌕ Поиск</label></div>
+      <div class="footer-buttons"><div class="footer-button">↻ Reset</div><label for="search-start-toggle" class="footer-button primary search-trigger search-first-trigger">⌕ Search</label><label for="search-result-toggle" class="footer-button primary search-trigger search-second-trigger">⌕ Search</label></div>
       <div class="copyright">Copyright © 2026 KIPI. All rights reserved. Version 2.0</div>
     </div>
   </aside>
@@ -1698,8 +1698,8 @@ __MYPAGE_MODAL_CSS__
       <span>Подробнее ИИ (реферат и пункты формулы)</span>
       <span class="title-spacer"></span>
       <div class="ai-view-toggle">
-        <span class="ai-view-opt">Вкладки</span>
-        <span class="ai-view-opt active">Разделённый вид</span>
+        <span class="ai-view-opt">Tab View</span>
+        <span class="ai-view-opt active">Split View</span>
       </div>
       <label for="ai-panel-toggle" class="close">×</label>
     </div>
@@ -1720,7 +1720,7 @@ __MYPAGE_MODAL_CSS__
       <section class="ai-claims-pane">
         <div class="ai-pane-head">
           <span class="ai-pane-title claims">Пункты формулы</span>
-          <span class="select-all">Выбрать все</span>
+          <span class="select-all">Select All</span>
         </div>
         <div class="claim-list">
           <div class="claim-card"><div class="claim-card-head"><input type="checkbox">Пункт 1</div>Отрицательный электрод для вторичной батареи, включающий токосъёмник; и первый и второй слои активного материала, расположенные на токосъёмнике и содержащие природный графит, искусственный графит и кремнийсодержащее вещество.</div>
@@ -1730,7 +1730,7 @@ __MYPAGE_MODAL_CSS__
           <div class="claim-card"><div class="claim-card-head"><input type="checkbox">Пункт 5</div>Отрицательный электрод для вторичной батареи по пункту 1, в котором содержание природного графита в первом слое активного материала составляет от 10 мас.% до 50 мас.% в расчёте на 100 мас.% всего первого слоя активного материала.</div>
           <div class="claim-card"><div class="claim-card-head"><input type="checkbox">Пункт 6</div>Отрицательный электрод для вторичной батареи по пункту 1, в котором содержание кремнийсодержащего вещества составляет от 1 мас.% до 20 мас.% в расчёте на 100 мас.% всего первого слоя активного материала.</div>
         </div>
-        <div class="extract-button">✧&nbsp; Извлечь и добавить элементы выбранных пунктов формулы с помощью LLM</div>
+        <div class="extract-button">✧&nbsp; Extract &amp; Add Components from Selected Claims via LLM</div>
       </section>
     </div>
   </aside>
@@ -1762,14 +1762,14 @@ __MYPAGE_MODAL_CSS__
     <div class="result-view">
       <section class="result-center">
         <div class="result-toolbar">
-          <div class="result-tool active">▣ Документы</div>
-          <div class="result-tool">▦ Элементы</div>
-          <label for="bulk-drawings-toggle" class="result-tool bulk-drawings-trigger">▣ Пакетный просмотр основных чертежей</label>
-          <div class="result-tool">♙ Пакетный просмотр химических формул</div>
-          <label for="bulk-claims-toggle" class="result-tool bulk-claims-trigger">▧ Пакетный просмотр пунктов формулы</label>
-          <button type="button" class="result-tool llm-rerank-btn" id="llm-rerank-btn">⚡ Переранжирование LLM</button>
+          <div class="result-tool active">▣ Documents</div>
+          <div class="result-tool">▦ Components</div>
+          <label for="bulk-drawings-toggle" class="result-tool bulk-drawings-trigger">▣ Bulk Drawing View</label>
+          <div class="result-tool">♙ Bulk Formula View</div>
+          <label for="bulk-claims-toggle" class="result-tool bulk-claims-trigger">▧ Bulk Claims View</label>
+          <button type="button" class="result-tool llm-rerank-btn" id="llm-rerank-btn">⚡ LLM Rerank</button>
           <div class="result-search">⌕ &nbsp; Поиск ключевых слов в результатах...</div>
-          <div class="result-search-btn">Поиск</div>
+          <div class="result-search-btn">Search</div>
         </div>
         <div class="patent-table-wrap">
           <table class="patent-table">
@@ -1782,7 +1782,7 @@ __MYPAGE_MODAL_CSS__
         </div>
         <div class="result-pager">
           <span>Показать:</span><span class="page-size">50⌄</span><span>1–30 из 200 записей</span>
-          <span class="pager-spacer"></span><span class="page">Назад</span><span class="page active">1</span><span class="page">2</span><span class="page">3</span><span class="page">4</span><span class="page">Далее</span>
+          <span class="pager-spacer"></span><span class="page">Previous</span><span class="page active">1</span><span class="page">2</span><span class="page">3</span><span class="page">4</span><span class="page">Next</span>
         </div>
       </section>
       <aside class="result-side">
@@ -1806,7 +1806,7 @@ __MYPAGE_MODAL_CSS__
       <div><div class="bulk-title">Пакетный просмотр пунктов формулы</div><div class="bulk-subtitle">Просмотр по 8 из 200 отфильтрованных записей</div></div>
       <div class="bulk-header-spacer"></div>
       <div class="bulk-sort">Сетка: <strong>4 столбца⌄</strong><span>|</span><strong>2 ряда⌄</strong></div>
-      <div class="bulk-nav"><span class="disabled">Назад</span><strong>1 / 25</strong><span>Далее</span></div>
+      <div class="bulk-nav"><span class="disabled">Previous</span><strong>1 / 25</strong><span>Next</span></div>
       <label for="bulk-claims-toggle" class="bulk-close">×</label>
     </header>
     <div class="bulk-card-grid">
