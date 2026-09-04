@@ -1,4 +1,4 @@
-"""마이페이지 나만의 참조 저장소 팝업 UI."""
+﻿"""留덉씠?섏씠吏 ?섎쭔??李몄“ ??μ냼 ?앹뾽 UI."""
 
 import html
 import random
@@ -12,29 +12,29 @@ MYPAGE_CITED_DOCS = [
 ]
 MYPAGE_CELL_PATTERNS = [
     [
-        ("same", "명세서 0006문단"),
-        ("same", "명세서 0006문단"),
-        ("same", "명세서 0006문단"),
+        ("same", "紐낆꽭??0006臾몃떒"),
+        ("same", "紐낆꽭??0006臾몃떒"),
+        ("same", "紐낆꽭??0006臾몃떒"),
     ],
     [
-        ("partial", "청구항 1"),
-        ("partial", "청구항 1"),
-        ("partial", "청구항 1"),
+        ("partial", "泥?뎄??1"),
+        ("partial", "泥?뎄??1"),
+        ("partial", "泥?뎄??1"),
     ],
     [
-        ("diff", "명세서 0010문단"),
+        ("diff", "紐낆꽭??0010臾몃떒"),
         ("none", ""),
         ("none", ""),
     ],
     [
-        ("same", "명세서 0008문단"),
-        ("partial", "청구항 2"),
-        ("same", "명세서 0008문단"),
+        ("same", "紐낆꽭??0008臾몃떒"),
+        ("partial", "泥?뎄??2"),
+        ("same", "紐낆꽭??0008臾몃떒"),
     ],
     [
-        ("partial", "청구항 3"),
-        ("diff", "명세서 0012문단"),
-        ("partial", "청구항 3"),
+        ("partial", "泥?뎄??3"),
+        ("diff", "紐낆꽭??0012臾몃떒"),
+        ("partial", "泥?뎄??3"),
     ],
 ]
 
@@ -42,24 +42,24 @@ CITED_TEXT_MIN_LEN = 40
 CITED_TEXT_MAX_LEN = 49
 
 CITED_CONTENT_SAMPLES = [
-    "워드라인 및 비트라인에 연결된 복수의 메모리 셀과 상기 셀을 구동하는 제어회로",
-    "프로그램 관련 전압을 제어하는 메인 프로세서와 상기 전압을 생성하는 주변회로부",
-    "메모리 셀의 물리 전압을 기초로 센싱된 데이터를 저장하는 페이지 버퍼 회로",
-    "센싱된 데이터에 대응하는 센싱 전류와 기준 전류를 비교하여 출력하는 비교 회로",
-    "상기 메인 프로세서가 프로그램 관련 전압을 제어하도록 구성된 메모리 장치",
-    "선택된 워드라인에 프로그램 전압을 인가하고 검증 동작을 수행하는 제어회로",
-    "비트라인의 전압 변화를 감지하여 데이터를 판별하고 증폭하는 센싱 증폭기 회로",
-    "프로그램 펄스 동작에서 워드라인 전압 크기를 단계적으로 조절하는 제어 회로",
-    "패스 레벨 체크 동작을 병렬적으로 수행하도록 페이지 버퍼를 제어하는 서브 프로세서",
-    "검증 실패 셀 수에 따라 후속 프로그램 펄스 크기와 시간을 조절하는 제어 로직",
+    "?뚮뱶?쇱씤 諛?鍮꾪듃?쇱씤???곌껐??蹂듭닔??硫붾え由??怨??곴린 ???援щ룞?섎뒗 ?쒖뼱?뚮줈",
+    "?꾨줈洹몃옩 愿???꾩븬???쒖뼱?섎뒗 硫붿씤 ?꾨줈?몄꽌? ?곴린 ?꾩븬???앹꽦?섎뒗 二쇰??뚮줈遺",
+    "硫붾え由????臾쇰━ ?꾩븬??湲곗큹濡??쇱떛???곗씠?곕? ??ν븯???섏씠吏 踰꾪띁 ?뚮줈",
+    "?쇱떛???곗씠?곗뿉 ??묓븯???쇱떛 ?꾨쪟? 湲곗? ?꾨쪟瑜?鍮꾧탳?섏뿬 異쒕젰?섎뒗 鍮꾧탳 ?뚮줈",
+    "?곴린 硫붿씤 ?꾨줈?몄꽌媛 ?꾨줈洹몃옩 愿???꾩븬???쒖뼱?섎룄濡?援ъ꽦??硫붾え由??μ튂",
+    "?좏깮???뚮뱶?쇱씤???꾨줈洹몃옩 ?꾩븬???멸??섍퀬 寃利??숈옉???섑뻾?섎뒗 ?쒖뼱?뚮줈",
+    "鍮꾪듃?쇱씤???꾩븬 蹂?붾? 媛먯??섏뿬 ?곗씠?곕? ?먮퀎?섍퀬 利앺룺?섎뒗 ?쇱떛 利앺룺湲??뚮줈",
+    "?꾨줈洹몃옩 ?꾩뒪 ?숈옉?먯꽌 ?뚮뱶?쇱씤 ?꾩븬 ?ш린瑜??④퀎?곸쑝濡?議곗젅?섎뒗 ?쒖뼱 ?뚮줈",
+    "?⑥뒪 ?덈꺼 泥댄겕 ?숈옉??蹂묐젹?곸쑝濡??섑뻾?섎룄濡??섏씠吏 踰꾪띁瑜??쒖뼱?섎뒗 ?쒕툕 ?꾨줈?몄꽌",
+    "寃利??ㅽ뙣 ? ?섏뿉 ?곕씪 ?꾩냽 ?꾨줈洹몃옩 ?꾩뒪 ?ш린? ?쒓컙??議곗젅?섎뒗 ?쒖뼱 濡쒖쭅",
 ]
 
 CITED_TEXT_CHUNKS = [
-    "워드라인", "비트라인", "메모리 셀", "프로그램 전압", "메인 프로세서",
-    "페이지 버퍼", "센싱 데이터", "센싱 전류", "비교 회로", "제어 신호",
-    "기준 전류", "물리 전압", "검증 동작", "프로그램 펄스", "선택 워드라인",
-    "에 연결된", "를 제어하는", "를 저장하는", "와 비교하는", "을 포함하고",
-    "상기", "복수의", "및", "또는", "하도록 구성된", "를 감지하는",
+    "?뚮뱶?쇱씤", "鍮꾪듃?쇱씤", "硫붾え由??", "?꾨줈洹몃옩 ?꾩븬", "硫붿씤 ?꾨줈?몄꽌",
+    "?섏씠吏 踰꾪띁", "?쇱떛 ?곗씠??, "?쇱떛 ?꾨쪟", "鍮꾧탳 ?뚮줈", "?쒖뼱 ?좏샇",
+    "湲곗? ?꾨쪟", "臾쇰━ ?꾩븬", "寃利??숈옉", "?꾨줈洹몃옩 ?꾩뒪", "?좏깮 ?뚮뱶?쇱씤",
+    "???곌껐??, "瑜??쒖뼱?섎뒗", "瑜???ν븯??, "? 鍮꾧탳?섎뒗", "???ы븿?섍퀬",
+    "?곴린", "蹂듭닔??, "諛?, "?먮뒗", "?섎룄濡?援ъ꽦??, "瑜?媛먯??섎뒗",
 ]
 
 
@@ -263,7 +263,7 @@ MYPAGE_MODAL_CSS = """
   color: #2c6fc9;
   background: #dceeff;
   border-radius: 5px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 .mp-info-app-no {
@@ -296,7 +296,7 @@ MYPAGE_MODAL_CSS = """
 .mp-section-hint {
   margin-top: 4px;
   color: #8a949e;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.45;
 }
 .mp-table-wrap {
@@ -360,7 +360,7 @@ MYPAGE_MODAL_CSS = """
 }
 .mp-cited-label {
   color: #8a949e;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.3;
 }
@@ -386,7 +386,7 @@ MYPAGE_MODAL_CSS = """
   background: #fff;
   border: 1px solid #dfe4ea;
   border-radius: 3px;
-  font-size: 10px;
+  font-size: 12px;
   cursor: pointer;
 }
 .mp-col-drag { letter-spacing: -1px; font-weight: 700; }
@@ -411,7 +411,7 @@ MYPAGE_MODAL_CSS = """
   color: #7c5fd4;
   background: #f3edff;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 .mp-component-text {
@@ -436,7 +436,7 @@ MYPAGE_MODAL_CSS = """
 }
 .mp-status-strip {
   padding: 4px 10px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 .mp-compare-body {
@@ -444,7 +444,7 @@ MYPAGE_MODAL_CSS = """
   padding: 8px 10px;
   color: #5d6978;
   line-height: 1.45;
-  font-size: 11px;
+  font-size: 12px;
 }
 .mp-compare-foot {
   display: flex;
@@ -455,13 +455,13 @@ MYPAGE_MODAL_CSS = """
 }
 .mp-compare-link {
   color: #2c6fc9;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
 .mp-compare-ref {
   color: #9aa3ad;
-  font-size: 10px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .mp-status-same .mp-compare-card { background: #f3fbf4; border-color: #c8e6c9; }
@@ -479,7 +479,7 @@ MYPAGE_MODAL_CSS = """
   display: block;
   padding: 40px 8px;
   color: #b8c0c8;
-  font-size: 11px;
+  font-size: 12px;
 }
 """.replace("__MYPAGE_COMPONENT_COL_WIDTH__", str(MYPAGE_COMPONENT_COL_WIDTH))
 
@@ -488,12 +488,12 @@ def _compare_cell(status: str, ref: str, seed: int) -> str:
     if status == "none":
         return (
             '<td class="mp-compare-cell mp-compare-none">'
-            "<span>저장된 대응 구성요소 없음</span></td>"
+            "<span>??λ맂 ???援ъ꽦?붿냼 ?놁쓬</span></td>"
         )
     status_map = {
-        "same": ("동일", "mp-status-same"),
-        "partial": ("일부 차이", "mp-status-partial"),
-        "diff": ("차이", "mp-status-diff"),
+        "same": ("?숈씪", "mp-status-same"),
+        "partial": ("?쇰? 李⑥씠", "mp-status-partial"),
+        "diff": ("李⑥씠", "mp-status-diff"),
     }
     label, cls = status_map[status]
     cited_text = html.escape(_random_cited_text(seed))
@@ -503,7 +503,7 @@ def _compare_cell(status: str, ref: str, seed: int) -> str:
         f'<div class="mp-status-strip">{label}</div>'
         f'<div class="mp-compare-body">{cited_text}</div>'
         f'<div class="mp-compare-foot">'
-        f'<span class="mp-compare-link">▶ 대비결과 보기</span>'
+        f'<span class="mp-compare-link">???鍮꾧껐怨?蹂닿린</span>'
         f'<span class="mp-compare-ref">{ref}</span>'
         f"</div></div></td>"
     )
@@ -515,12 +515,12 @@ def _build_cited_headers() -> str:
         headers.append(
             f'<th class="mp-cited-col">'
             f'<div class="mp-cited-top">'
-            f'<span class="mp-cited-label">인용발명 출원번호</span>'
+            f'<span class="mp-cited-label">?몄슜諛쒕챸 異쒖썝踰덊샇</span>'
             f'<div class="mp-col-controls">'
-            f'<span class="mp-col-btn" title="왼쪽으로">←</span>'
-            f'<span class="mp-col-btn" title="오른쪽으로">→</span>'
-            f'<span class="mp-col-btn mp-col-drag" title="순서 변경">⋮⋮</span>'
-            f'<span class="mp-col-btn mp-col-del" title="삭제">×</span>'
+            f'<span class="mp-col-btn" title="?쇱そ?쇰줈">??/span>'
+            f'<span class="mp-col-btn" title="?ㅻⅨ履쎌쑝濡?>??/span>'
+            f'<span class="mp-col-btn mp-col-drag" title="?쒖꽌 蹂寃?>??떘</span>'
+            f'<span class="mp-col-btn mp-col-del" title="??젣">횞</span>'
             f"</div></div>"
             f'<div class="mp-cited-no">{doc_no}</div>'
             f"</th>"
@@ -544,7 +544,7 @@ def _build_table_body(component_items: list[str]) -> str:
             f'<td class="mp-component-cell">'
             f'<label class="mp-row-check"><input type="checkbox"></label>'
             f'<div class="mp-component-body">'
-            f'<span class="mp-component-badge">구성요소 {index}</span>'
+            f'<span class="mp-component-badge">援ъ꽦?붿냼 {index}</span>'
             f'<p class="mp-component-text">{html.escape(text)}</p>'
             f"</div></td>{cells}</tr>"
         )
@@ -556,37 +556,37 @@ MYPAGE_MODAL_HTML_TEMPLATE = """
 <section class="mypage-modal">
   <header class="mp-modal-header">
     <div class="mp-title-wrap">
-      <span class="mp-title-icon">▱</span>
+      <span class="mp-title-icon">??/span>
       <div class="mp-title-text">
-        <span class="mp-title">참증 저장</span>
-        <span class="mp-subtitle">나만의 참조 저장소</span>
+        <span class="mp-title">李몄쬆 ???/span>
+        <span class="mp-subtitle">?섎쭔??李몄“ ??μ냼</span>
       </div>
     </div>
     <div class="mp-header-controls">
       <div class="mp-view-toggle">
-        <span class="mp-view-opt">문헌별 보기</span>
-        <span class="mp-view-opt active">테이블 보기</span>
+        <span class="mp-view-opt">臾명뿄蹂?蹂닿린</span>
+        <span class="mp-view-opt active">?뚯씠釉?蹂닿린</span>
       </div>
       <div class="mp-app-select">
-        <span class="mp-app-select-label">출원번호 선택 :</span>
+        <span class="mp-app-select-label">異쒖썝踰덊샇 ?좏깮 :</span>
         <span class="mp-app-select-value">__MYPAGE_APP_NO__</span>
       </div>
-      <button type="button" class="mp-close" aria-label="닫기">×</button>
+      <button type="button" class="mp-close" aria-label="?リ린">횞</button>
     </div>
   </header>
   <div class="mp-info-bar">
     <div class="mp-info-left">
-      <span class="mp-info-badge">출원번호</span>
+      <span class="mp-info-badge">異쒖썝踰덊샇</span>
       <span class="mp-info-app-no">__MYPAGE_APP_NO__</span>
     </div>
-    <div class="mp-info-right">저장된 인용문헌 __MYPAGE_CITED_COUNT__개</div>
+    <div class="mp-info-right">??λ맂 ?몄슜臾명뿄 __MYPAGE_CITED_COUNT__媛?/div>
   </div>
   <div class="mp-content">
     <div class="mp-section-head">
-      <div class="mp-section-title">기술 구성요소별 인용문헌 구성요소 비교</div>
+      <div class="mp-section-title">湲곗닠 援ъ꽦?붿냼蹂??몄슜臾명뿄 援ъ꽦?붿냼 鍮꾧탳</div>
       <div class="mp-section-hint">
-        첫 번째 열은 고정되고, 나머지 열은 가로 스크롤됩니다.
-        열 헤더의 화살표 또는 드래그로 열 순서를 변경하고 삭제할 수 있습니다.
+        泥?踰덉㎏ ?댁? 怨좎젙?섍퀬, ?섎㉧吏 ?댁? 媛濡??ㅽ겕濡ㅻ맗?덈떎.
+        ???ㅻ뜑???붿궡???먮뒗 ?쒕옒洹몃줈 ???쒖꽌瑜?蹂寃쏀븯怨???젣?????덉뒿?덈떎.
       </div>
     </div>
     <div class="mp-table-wrap">
@@ -595,7 +595,7 @@ MYPAGE_MODAL_HTML_TEMPLATE = """
           <tr>
             <th class="mp-component-head">
               <label class="mp-row-check"><input type="checkbox"></label>
-              <span>출원발명 구성요소</span>
+              <span>異쒖썝諛쒕챸 援ъ꽦?붿냼</span>
             </th>
             __MYPAGE_CITED_HEADERS__
           </tr>

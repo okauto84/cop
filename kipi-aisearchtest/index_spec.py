@@ -554,7 +554,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
         <div class="spec-compare-row">
           <div class="spec-applied"><input type="checkbox" checked><div><span class="spec-applied-badge">구성요소 2</span><div class="spec-applied-text">프로그램 동작 시 워드라인에 인가되는 프로그램 전압의 크기와 인가 시간을 단계적으로 조절하며, 패스 페일 체크 동작의 타이밍을 제어하는 메인 프로세서</div></div></div>
           <div class="spec-compare-card partial">
-            <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>일부 차이</span><span class="spec-status-tag doc">문헌</span><span class="spec-status-tag sentence">문장</span></div><div class="result-label">대비결과</div></div>
+            <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>일부 차이</span></div><div class="result-label">대비결과</div></div>
             <div class="spec-compare-card-body">
               <div class="spec-compare-cited">컨트롤러가 프로그램 전압을 제어한다고 기재하고 있으나, 패스 페일 체크 타이밍을 별도 서브 프로세서가 병렬 처리한다는 점에서 출원발명과 차이가 있습니다.</div>
               <div class="spec-compare-result">
@@ -567,7 +567,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
         <div class="spec-compare-row">
           <div class="spec-applied"><input type="checkbox" checked><div><span class="spec-applied-badge">구성요소 3</span><div class="spec-applied-text">센싱 동작에서 비트라인 전압을 감지하여 디지털 데이터로 변환하고, 프로그램 검증 결과에 따라 재프로그램 여부를 판단하는 페이지 버퍼 회로</div></div></div>
           <div class="spec-compare-card diff">
-            <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>차이</span><span class="spec-status-tag doc">문헌</span><span class="spec-status-tag sentence">문장</span></div><div class="result-label">대비결과</div></div>
+            <div class="spec-compare-card-head"><div class="spec-status-wrap"><span>차이</span></div><div class="result-label">대비결과</div></div>
             <div class="spec-compare-card-body">
               <div class="spec-compare-cited">데이터 레지스터가 센싱 결과를 일시 저장한다고만 기재하고 있으며, 프로그램 검증 결과에 따른 재프로그램 판단 로직은 명시적으로 개시되어 있지 않습니다.</div>
               <div class="spec-compare-result">
