@@ -585,6 +585,22 @@ html, body, .stApp {
   border-color: var(--line);
   border-bottom-color: #fff;
 }
+#search-start-toggle:checked ~ .topbar .tab.info-tab,
+#search-result-toggle:checked ~ .topbar .tab.info-tab {
+  color: #677383;
+  font-weight: 400;
+  background: #f8fafc;
+  border-color: transparent;
+  border-bottom-color: transparent;
+}
+#search-start-toggle:checked ~ .topbar .tab.app-tab,
+#search-result-toggle:checked ~ .topbar .tab.app-tab {
+  color: #273343;
+  font-weight: 600;
+  background: #fff;
+  border-color: var(--line);
+  border-bottom-color: #fff;
+}
 .main-actions {
   display: flex;
   align-items: center;
@@ -983,6 +999,30 @@ button.mini-button { width: 100%; }
   min-width: 0;
   overflow: hidden;
   background: #f8fafc;
+}
+.welcome-view {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 42%, rgba(120, 80, 230, .06), transparent 70%),
+    #f8fafc;
+}
+.welcome-title {
+  margin: 0;
+  color: #1d2733;
+  font-size: clamp(28px, 3.2vw, 42px);
+  font-weight: 700;
+  letter-spacing: -.04em;
+  text-align: center;
+  line-height: 1.35;
+}
+#search-start-toggle:checked ~ .workspace .welcome-view,
+#search-result-toggle:checked ~ .workspace .welcome-view {
+  display: none;
 }
 .loading-view {
   position: absolute;
@@ -1617,7 +1657,7 @@ __MYPAGE_MODAL_CSS__
   __MYPAGE_MODAL_HTML__
   <header class="topbar">
     <div class="top-left">▏특허 검색 <button>직접 입력</button></div>
-    <div class="tabs"><div class="tab">⌂&nbsp; INFO</div><div class="tab active">1020220167018</div></div>
+    <div class="tabs"><div class="tab info-tab active">⌂&nbsp; INFO</div><div class="tab app-tab">1020220167018</div></div>
     <div class="main-actions">
       <button type="button" class="action-pill mypage-trigger" id="mypage-open-btn">▱&nbsp; 참증 저장</button>
       <div class="icon-box">✎</div><div class="icon-box">▣</div>
@@ -1695,6 +1735,9 @@ __MYPAGE_MODAL_CSS__
     </div>
   </aside>
   <main class="workspace">
+    <div class="welcome-view">
+      <h1 class="welcome-title">AI 유사특허 검색 시스템</h1>
+    </div>
     <div class="loading-view">
       <div class="progress-wrap">
         <div class="progress">
