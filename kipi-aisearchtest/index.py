@@ -528,7 +528,7 @@ html, body, .stApp {
   isolation: isolate;
 }
 .patent-app:has(#ai-panel-toggle:checked) {
-  grid-template-columns: 270px 261.3px minmax(0, 1fr);
+  grid-template-columns: 270px 560px minmax(0, 1fr);
 }
 #ai-panel-toggle {
   position: absolute;
@@ -781,9 +781,9 @@ button.mini-button { width: 100%; }
   display: flex;
   flex-direction: column;
   margin: 7px 4px 7px 7px;
-  background: #fff;
+  background: #f7f8fa;
   border: 1px solid #dfe5ec;
-  border-radius: 7px;
+  border-radius: 8px;
   box-shadow: 0 2px 7px rgba(42, 55, 70, .08);
   overflow: hidden;
   opacity: 0;
@@ -798,70 +798,179 @@ button.mini-button { width: 100%; }
   transform: translateX(0);
 }
 .claims-title {
-  height: 31px;
+  height: 40px;
+  flex: 0 0 40px;
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 0 7px;
+  gap: 6px;
+  padding: 0 10px;
+  background: #fff;
+  border-bottom: 1px solid #edf0f4;
   font-size: var(--fs-subtitle);
   font-weight: 700;
-  border-bottom: 1px solid #edf0f4;
+  color: #27323d;
 }
 .doc-icon { color: #3479ee; font-size: var(--fs-label); }
 .title-spacer { flex: 1; }
-.view-chip { padding: 2px 5px; border-radius: 3px; font-size: var(--fs-caption); font-weight: 500; }
-.view-chip.on { color: #7442df; background: #f2eefe; }
-.view-chip.off { color: #738091; background: #f4f6f8; }
+.ai-view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 4px;
+}
+.ai-view-opt {
+  height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0 9px;
+  color: #738091;
+  background: #fff;
+  border: 1px solid #dfe4ea;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ai-view-opt.active {
+  color: #7442df;
+  border-color: #b9a3ef;
+  background: #f7f3ff;
+  font-weight: 700;
+}
 .close {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
   color: #8c96a2;
-  font-size: var(--fs-label);
+  font-size: 16px;
   cursor: pointer;
   user-select: none;
+  border-radius: 4px;
 }
-.claims-tabs {
-  height: 31px;
+.close:hover { background: #f3f5f7; }
+.ai-split-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.ai-summary-pane,
+.ai-claims-pane {
+  min-width: 0;
+  min-height: 0;
   display: flex;
-  align-items: end;
-  padding: 0 7px;
-  border-bottom: 1px solid #e9edf2;
+  flex-direction: column;
+  background: #fff;
 }
-.claims-tab {
-  height: 27px;
-  padding: 8px 12px 0;
-  color: #6f7a88;
+.ai-summary-pane {
+  border-right: 1px solid #e9edf2;
+  padding: 10px 10px 12px;
 }
-.claims-tab.active { color: #3479e6; border-bottom: 2px solid #3479e6; font-weight: 600; }
+.ai-claims-pane {
+  padding: 10px 10px 8px;
+}
+.ai-pane-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.ai-pane-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+.ai-pane-title.summary { color: #7442df; }
+.ai-pane-title.claims { color: #2c6fc9; }
 .select-all {
   margin-left: auto;
-  margin-bottom: 6px;
-  padding: 3px 7px;
+  height: 24px;
+  padding: 0 8px;
+  display: grid;
+  place-items: center;
   color: #65717e;
   background: #f7f8fa;
   border: 1px solid #e1e6eb;
-  border-radius: 3px;
-  font-size: var(--fs-label);
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
 }
-.claim-list { min-height: 0; flex: 1; overflow: hidden; padding: 4px 5px; }
+.ai-summary-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ai-summary-card {
+  padding: 10px;
+  border: 1px solid;
+  border-radius: 6px;
+  line-height: 1.5;
+  font-size: 12px;
+}
+.ai-summary-card strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.ai-summary-card.red {
+  color: #3f4954;
+  background: #fff8f7;
+  border-color: #f0d0cc;
+}
+.ai-summary-card.red strong { color: #c6463d; }
+.ai-summary-card.green {
+  color: #3f4954;
+  background: #f5fcf9;
+  border-color: #c5e8da;
+}
+.ai-summary-card.green strong { color: #1fa67a; }
+.claim-list {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}
 .claim-card {
-  margin-bottom: 5px;
-  padding: 6px;
+  margin-bottom: 7px;
+  padding: 8px 9px;
   color: #3d4855;
-  line-height: 1.45;
-  background: #f8fbff;
-  border: 1px solid #d9e6f7;
-  border-radius: 5px;
+  line-height: 1.5;
+  background: #fff;
+  border: 1px solid #e3e8ee;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(35, 47, 60, .04);
+  font-size: 12px;
 }
-.claim-card-head { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; color: #2472d4; font-weight: 700; }
-.claim-card-head .independent { margin-left: auto; color: #7d8792; font-size: var(--fs-caption); font-weight: 400; }
+.claim-card-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+  color: #2472d4;
+  font-weight: 700;
+  font-size: 12px;
+}
+.claim-card-head input { margin: 0; }
 .extract-button {
-  height: 27px;
-  margin: 0 5px 6px;
-  display: grid;
-  place-items: center;
+  flex: 0 0 auto;
+  height: 34px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   color: #fff;
   background: linear-gradient(90deg, #9348e9, #693ce8);
-  border-radius: 4px;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(105, 60, 232, .25);
 }
 
 .workspace {
@@ -880,7 +989,7 @@ button.mini-button { width: 100%; }
   height: 100%;
 }
 .progress-wrap {
-  height: 62px;
+  height: 100px;
   padding: 15px 8% 0;
   background: #fff;
   border-bottom: 1px solid #edf0f4;
@@ -938,7 +1047,7 @@ button.mini-button { width: 100%; }
   box-shadow: 0 1px 2px rgba(23, 36, 50, .03);
 }
 .loading-item {
-  height: 19px;
+  height: 30px;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -1485,8 +1594,8 @@ button.result-tool {
 
 @media (min-width: 1300px) {
   .patent-app { grid-template-columns: 336px 0 minmax(0, 1fr); font-size: var(--fs-body); }
-  .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 336px 331.5px minmax(0, 1fr); }
-  .topbar { grid-template-columns: 336px 331.5px 1fr; }
+  .patent-app:has(#ai-panel-toggle:checked) { grid-template-columns: 336px 620px minmax(0, 1fr); }
+  .topbar { grid-template-columns: 336px 620px 1fr; }
   .section-title { font-size: var(--fs-subtitle); }
   .loading-card { max-width: 635px; }
 }
@@ -1531,7 +1640,7 @@ __MYPAGE_MODAL_CSS__
       </div>
       <div class="section-title">▏구성요소</div>
       <div class="components-head">
-        <label for="ai-panel-toggle" class="mini-button">AI 선택</label><button type="button" class="mini-button blue" id="component-add-btn">+ 추가</button>
+        <label for="ai-panel-toggle" class="mini-button">AI 더보기</label><button type="button" class="mini-button blue" id="component-add-btn">+ 추가</button>
       </div>
       __COMPONENTS_LIST_HTML__
     </div>
@@ -1541,15 +1650,46 @@ __MYPAGE_MODAL_CSS__
     </div>
   </aside>
   <aside class="claims-panel">
-    <div class="claims-title"><span class="doc-icon">▧</span> AI 더보기<span class="title-spacer"></span><label for="ai-panel-toggle" class="close">×</label></div>
-    <div class="claims-tabs"><div class="claims-tab">요약</div><div class="claims-tab active">청구항</div><div class="select-all">전체 선택</div></div>
-    <div class="claim-list">
-      <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 1</div>워드라인 및 비트라인들에 연결된 메모리 셀들; 상기 워드라인 및 상기 비트라인들에 인가되는 프로그램 관련 전압들을 제어하는 메인 프로세서; 상기 메모리 셀들의 물리 전압을 기초로 센싱된 데이터를 저장하는 페이지 버퍼; 상기 센싱된 데이터에 대응하는 센싱 전류와 비교되는 기준 전류를 생성하는 센싱 회로; 및 상기 센싱 전류와 상기 기준 전류를 비교한 결과에 따라 상기 센싱 회로를 제어하는 메모리 장치.</div>
-      <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 2</div>제1 항에 있어서, 상기 서브 프로세서는, 상기 메인 프로세서가 제공하는 제어 신호에 응답하여 복수의 프로그램 상태들 중 상기 제어 신호에 대응되는 프로그램 상태에 대한 상기 패스 레벨 체크 동작을 병렬적으로 수행하도록 상기 페이지 버퍼 및 상기 센싱 회로를 제어하는 메모리 장치.</div>
-      <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 3</div>제1 항에 있어서, 상기 메인 프로세서는, 프로그램 펄스 동작에서 상기 워드라인에 전압 크기를 프로그램 전압의 크기로 제어하고, 패스 체크 동작에서 상기 워드라인 및 상기 비트라인들의 전압 크기를 정지 전압의 크기로 제어하는 메모리 장치.</div>
-      <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 4</div>제1 항에 있어서, 상기 메인 프로세서는 상기 프로그램 관련 동작의 진행 상태에 따라 프로그램 관련 전압들을 조절하는 메모리 장치.</div>
+    <div class="claims-title">
+      <span class="doc-icon">▧</span>
+      <span>AI 더보기(요약 및 청구항)</span>
+      <span class="title-spacer"></span>
+      <div class="ai-view-toggle">
+        <span class="ai-view-opt">탭 보기</span>
+        <span class="ai-view-opt active">나눠 보기</span>
+      </div>
+      <label for="ai-panel-toggle" class="close">×</label>
     </div>
-    <div class="extract-button">▱&nbsp; 선택한 청구항을 LLM으로 구성요소 추출 및 추가</div>
+    <div class="ai-split-body">
+      <section class="ai-summary-pane">
+        <div class="ai-pane-head"><span class="ai-pane-title summary">요약</span></div>
+        <div class="ai-summary-list">
+          <div class="ai-summary-card red">
+            <strong>해결과제 및 목적</strong>
+            (향후 LLM 결과 연동 예정) 창문형 에어컨 설치 시 본체와 커텐프레임 사이의 유격으로 인한 냉기 누설 및 조립 공정의 복잡함을 해결하고자 함.
+          </div>
+          <div class="ai-summary-card green">
+            <strong>발명의 효과</strong>
+            (향후 LLM 결과 연동 예정) 부품 수 절감으로 제조 원가를 낮추며, 완벽한 밀폐를 통해 에어컨의 냉방 효율을 획기적으로 향상시킴.
+          </div>
+        </div>
+      </section>
+      <section class="ai-claims-pane">
+        <div class="ai-pane-head">
+          <span class="ai-pane-title claims">청구항</span>
+          <span class="select-all">전체 선택</span>
+        </div>
+        <div class="claim-list">
+          <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 1</div>이차전지용 음극으로서, 집전체; 및 상기 집전체 상에 위치하고, 천연흑연, 인조흑연 및 실리콘계 물질을 포함하는 제1 활물질층과 제2 활물질층을 포함하는 이차전지용 음극.</div>
+          <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 2</div>청구항 1에 있어서, 상기 제1 활물질층은 도전재를 포함하지 않는 것인, 이차전지용 음극.</div>
+          <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 3</div>청구항 1에 있어서, 상기 제1 활물질층에 포함된 인조흑연과 천연흑연의 중량비는 1.5 내지 6인, 이차전지용 음극.</div>
+          <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 4</div>청구항 1에 있어서, 상기 제1 활물질층에 포함된 인조흑연의 함량은 상기 제1 활물질층 전체 100 중량%를 기준으로 30 중량% 내지 85 중량%인, 이차전지용 음극.</div>
+          <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 5</div>청구항 1에 있어서, 상기 제1 활물질층에 포함된 천연흑연의 함량은 상기 제1 활물질층 전체 100 중량%를 기준으로 10 중량% 내지 50 중량%인, 이차전지용 음극.</div>
+          <div class="claim-card"><div class="claim-card-head"><input type="checkbox">청구항 6</div>청구항 1에 있어서, 상기 실리콘계 물질의 함량은 상기 제1 활물질층 전체 100 중량%를 기준으로 1 중량% 내지 20 중량%인, 이차전지용 음극.</div>
+        </div>
+        <div class="extract-button">✧&nbsp; 선택한 청구항을 LLM으로 구성요소 추출 및 추가</div>
+      </section>
+    </div>
   </aside>
   <main class="workspace">
     <div class="loading-view">
