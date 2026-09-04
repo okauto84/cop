@@ -1219,7 +1219,7 @@ button.result-tool {
 }
 .patent-table {
   width: 100%;
-  min-width: 920px;
+  min-width: 1004px;
   height: auto;
   table-layout: fixed;
   border-collapse: collapse;
@@ -1227,17 +1227,17 @@ button.result-tool {
   font-size: 12px;
 }
 .patent-table col:nth-child(1) { width: 36px; }
-.patent-table col:nth-child(2) { width: 44px; }
+.patent-table col:nth-child(2) { width: 128px; }
 .patent-table col:nth-child(3) { width: 132px; }
 .patent-table col:nth-child(4) { width: auto; }
 .patent-table col:nth-child(5) { width: 112px; }
 .patent-table col:nth-child(6) { width: 72px; }
 .patent-table col:nth-child(7) { width: 112px; }
 .patent-table.has-component-col {
-  min-width: 992px;
+  min-width: 1076px;
 }
 .patent-table.has-component-col col:nth-child(1) { width: 36px; }
-.patent-table.has-component-col col:nth-child(2) { width: 44px; }
+.patent-table.has-component-col col:nth-child(2) { width: 128px; }
 .patent-table.has-component-col col:nth-child(3) { width: 124px; }
 .patent-table.has-component-col col:nth-child(4) { width: 108px; }
 .patent-table.has-component-col col:nth-child(5) { width: auto; }
