@@ -424,17 +424,26 @@ COMPONENT_INTERACTION_HTML = """
   function bindMypageModal() {
     const doc = getAppDocument();
     if (!doc) return false;
-    const trigger = doc.getElementById("mypage-open-btn");
     const modal = doc.querySelector(".mypage-modal");
-    if (!trigger || !modal || trigger.dataset.bound === "true") {
-      return !!(trigger && modal);
-    }
-    trigger.dataset.bound = "true";
-    trigger.addEventListener("click", function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      setMypageOpen(doc, true);
+    if (!modal) return false;
+
+    const triggers = [
+      doc.getElementById("mypage-open-btn"),
+      doc.getElementById("spec-save-evidence-btn"),
+    ].filter(Boolean);
+
+    if (!triggers.length) return false;
+
+    triggers.forEach(function (trigger) {
+      if (trigger.dataset.bound === "true") return;
+      trigger.dataset.bound = "true";
+      trigger.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        setMypageOpen(doc, true);
+      });
     });
+
     doc.querySelectorAll(".mp-close").forEach(function (closeBtn) {
       if (closeBtn.dataset.bound === "true") return;
       closeBtn.dataset.bound = "true";
