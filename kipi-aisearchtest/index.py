@@ -545,6 +545,9 @@ html, body, .stApp {
   background: #fff;
   border-bottom: 1px solid var(--line);
 }
+.patent-app:has(#ai-panel-toggle:checked) .topbar {
+  grid-template-columns: 270px 560px 1fr;
+}
 .top-left {
   padding: 7px 5px;
   color: #0e65cf;
