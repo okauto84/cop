@@ -1736,7 +1736,7 @@ __MYPAGE_MODAL_CSS__
   </aside>
   <main class="workspace">
     <div class="welcome-view">
-      <h1 class="welcome-title">AI 유사특허 검색 시스템</h1>
+      <h1 class="welcome-title">AI 유사 특허 검색 시스템</h1>
     </div>
     <div class="loading-view">
       <div class="progress-wrap">

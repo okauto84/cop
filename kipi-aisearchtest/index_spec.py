@@ -242,18 +242,6 @@ SPEC_MODAL_CSS = """
 }
 .spec-ai-badge { padding: 4px 8px; color: #fff; background: #7545e8; border-radius: 3px; font-size: var(--fs-caption); font-weight: 700; }
 .spec-result-title { margin-left: 7px; color: #26313c; font-size: var(--fs-subtitle); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.spec-right-tabs {
-  height: 26px;
-  flex: 0 0 26px;
-  display: flex;
-  gap: 17px;
-  align-items: end;
-  padding-left: 10px;
-  background: #fff;
-  border-bottom: 1px solid #e1e6eb;
-}
-.spec-right-tab { height: 25px; padding-top: 7px; color: #6f7a85; font-size: var(--fs-label); }
-.spec-right-tab.active { color: #2874dc; border-bottom: 2px solid #2874dc; font-weight: 700; }
 .spec-summary-row {
   height: 291px;
   flex: 0 0 291px;
@@ -316,14 +304,27 @@ SPEC_MODAL_CSS = """
   font-size: var(--fs-subtitle);
   font-weight: 700;
 }
-.spec-components-head span {
+.spec-components-actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.spec-components-actions .spec-btn {
   padding: 4px 8px;
-  color: #fff;
-  background: #16a980;
   border-radius: 3px;
   font-size: var(--fs-caption);
   font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.spec-btn-research {
+  color: #fff;
+  background: #2c6fc9;
+}
+.spec-btn-save {
+  color: #fff;
+  background: #16a980;
 }
 .spec-compare-table {
   min-height: 0;
@@ -476,17 +477,16 @@ SPEC_MODAL_HTML_TEMPLATE = """
   </main>
   <aside class="spec-right">
     <div class="spec-result-head"><span class="spec-ai-badge">⚡ AI 분석</span><span class="spec-result-title">이송 핸들러 및 마찰패드를 이용한 기판 처리장치</span></div>
-    <div class="spec-right-tabs"><div class="spec-right-tab active">분석</div><div class="spec-right-tab">무효성 분석개요</div></div>
     <div class="spec-summary-row">
       <div class="spec-panel"><div class="spec-panel-title">▧ 도면</div><div class="spec-drawing">__SPEC_DRAWING_VIEW__</div></div>
       <div class="spec-panel"><div class="spec-panel-title">⚡ AI 요약</div><div class="spec-ai-summary">
         <div class="spec-ai-box red"><strong>해결과제 및 목적</strong><span>인터포저 기반 패키지 구조에서 수동소자와 전력 관리 회로를 효율적으로 통합하여 패키지 실장 면적을 줄이면서도 전력 공급 안정성과 시스템 성능을 향상시킬 수 있는 전자 소자 패키지를 제공</span></div>
-        <div class="spec-ai-box green"><strong>발명의 효과</strong><span>패키지 기판 상부에 인터포저를 배치하고, 인터포저 상부에 프로세싱 소자와 고대역폭 메모리 소자 및 전력 관리 집적 회로 소자를 탑재하며, 인터포저 내부 또는 상부에 인덕터 및 커패시터와 같은 수동소자를 형성한다. 특히 인덕터는 인터포저 상하부에 형성된 자석층과 이를 연결하는 관통 실리콘 비아 및 재배선층을 이용하여 형성되며, 전력 관리 집적 회로와 전기적으로 연결되어 안정적인 전력 공급을 구현한다.</span></div>
-        <div class="spec-ai-box blue"><strong>청구범위 요약</strong><span>인터포저 내부에 수동소자와 전력 관리 회로를 통합함으로써 패키지 기판 상의 실장 면적을 줄일 수 있고, 프로세싱 소자와 고대역폭 메모리에 안정적인 전력 공급을 제공하여 전체 전자 시스템의 성능 및 전력 효율을 향상</span></div>
+        <div class="spec-ai-box green"><strong>발명의 효과</strong><span>패키지 기판 상부에 인터포저를 배치하고, 인터포저 상부에 프로세싱 소자와 고대역폭 메모리 소자 및 전력 관리 집적 회로 소자를 탑재하며, 인터포저 내부 또는 상부에 인덕터 및 커패시터와 같은 수동소자를 형성한다.</span></div>
+        <div class="spec-ai-box blue"><strong>해결수단</strong><span>인터포저 내부에 수동소자와 전력 관리 회로를 통합함으로써 패키지 기판 상의 실장 면적을 줄일 수 있고, 프로세싱 소자와 고대역폭 메모리에 안정적인 전력 공급을 제공하여 전체 전자 시스템의 성능 및 전력 효율을 향상</span></div>
       </div></div>
     </div>
     <div class="spec-components">
-      <div class="spec-components-head">▣ 구성요소 대비표 <span>선택 구성요소 저장</span></div>
+      <div class="spec-components-head">▣ 구성요소 대비표 <div class="spec-components-actions"><span class="spec-btn spec-btn-research">⌕ 선택 구성요소 재검색</span><span class="spec-btn spec-btn-save">선택 구성요소 저장</span></div></div>
       <div class="spec-compare-table">
         <div class="spec-compare-columns">
           <div class="spec-compare-col-title"><input type="checkbox" checked>출원발명 구성요소</div>
