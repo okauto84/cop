@@ -1138,7 +1138,7 @@ button.mini-button { width: 100%; }
 }
 #search-result-toggle:checked ~ .workspace .result-view {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 409.5px;
+  grid-template-columns: minmax(0, 1fr) 340px;
 }
 
 .result-center {
