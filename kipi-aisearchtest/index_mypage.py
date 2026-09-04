@@ -5,7 +5,12 @@ import html
 import random
 
 MYPAGE_COMPONENT_COL_WIDTH = 360
-MYPAGE_APP_NO = "1020017004375"
+MYPAGE_APP_NO_LIST = [
+    "1020017004375",
+    "1020017432576",
+    "1020017003485",
+]
+MYPAGE_APP_NO = MYPAGE_APP_NO_LIST[0]
 MYPAGE_CITED_DOCS = [
     "1020017000723",
     "1020017001933",
@@ -223,14 +228,26 @@ MYPAGE_MODAL_CSS = """
   align-items: center;
   gap: 6px;
   height: 28px;
-  padding: 0 10px;
+  padding: 0 8px 0 10px;
   background: #fff;
   border: 1px solid #dfe4ea;
   border-radius: 5px;
   font-size: var(--fs-body);
 }
 .mp-app-select-label { color: #6b7785; white-space: nowrap; }
-.mp-app-select-value { color: #27323d; font-weight: 700; }
+.mp-app-select-combo {
+  height: 24px;
+  min-width: 132px;
+  padding: 0 4px;
+  color: #27323d;
+  font-weight: 700;
+  font-size: var(--fs-body);
+  font-family: inherit;
+  background: transparent;
+  border: 0;
+  outline: none;
+  cursor: pointer;
+}
 .mp-close {
   width: 28px;
   height: 28px;
@@ -571,7 +588,9 @@ MYPAGE_MODAL_HTML_TEMPLATE = """
       </div>
       <div class="mp-app-select">
         <span class="mp-app-select-label">출원번호 선택 :</span>
-        <span class="mp-app-select-value">__MYPAGE_APP_NO__</span>
+        <select id="mp-app-no-select" class="mp-app-select-combo" aria-label="출원번호 선택" onchange="var el=this.closest('.mypage-modal').querySelector('.mp-info-app-no'); if(el) el.textContent=this.value;">
+          __MYPAGE_APP_OPTIONS__
+        </select>
       </div>
       <button type="button" class="mp-close" aria-label="닫기">×</button>
     </div>
@@ -610,9 +629,18 @@ MYPAGE_MODAL_HTML_TEMPLATE = """
 """
 
 
+def _build_app_no_options() -> str:
+    options = []
+    for index, app_no in enumerate(MYPAGE_APP_NO_LIST):
+        selected = " selected" if index == 0 else ""
+        options.append(f'<option value="{app_no}"{selected}>{app_no}</option>')
+    return "".join(options)
+
+
 def get_mypage_modal_html(component_items: list[str]) -> str:
     return (
         MYPAGE_MODAL_HTML_TEMPLATE.replace("__MYPAGE_APP_NO__", MYPAGE_APP_NO)
+        .replace("__MYPAGE_APP_OPTIONS__", _build_app_no_options())
         .replace("__MYPAGE_CITED_COUNT__", str(len(MYPAGE_CITED_DOCS)))
         .replace("__MYPAGE_CITED_HEADERS__", _build_cited_headers())
         .replace("__MYPAGE_TABLE_BODY__", _build_table_body(component_items))
