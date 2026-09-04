@@ -327,11 +327,15 @@ SPEC_MODAL_CSS = """
 }
 .spec-components-actions .spec-btn {
   padding: 4px 8px;
+  border: 0;
   border-radius: 3px;
+  font: inherit;
   font-size: var(--fs-caption);
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  appearance: none;
+  -webkit-appearance: none;
 }
 .spec-btn-research {
   color: #fff;
@@ -341,6 +345,8 @@ SPEC_MODAL_CSS = """
   color: #fff;
   background: #16a980;
 }
+.spec-btn-save:hover { filter: brightness(1.06); }
+.spec-btn-save:active { transform: translateY(1px); }
 .spec-compare-table {
   min-height: 0;
   flex: 1;
@@ -532,7 +538,7 @@ SPEC_MODAL_HTML_TEMPLATE = """
       </div></div>
     </div>
     <div class="spec-components">
-      <div class="spec-components-head">▣ Таблица сравнения элементов <div class="spec-components-actions"><span class="spec-btn spec-btn-research">⌕ Research Selected Components</span><span class="spec-btn spec-btn-save">Save Selected Components</span></div></div>
+      <div class="spec-components-head">▣ Таблица сравнения элементов <div class="spec-components-actions"><span class="spec-btn spec-btn-research">⌕ Research Selected Components</span><button type="button" class="spec-btn spec-btn-save" id="spec-save-evidence-btn">Save Evidence</button></div></div>
       <div class="spec-compare-table">
         <div class="spec-compare-columns">
           <div class="spec-compare-col-title"><input type="checkbox" checked>Элементы заявленного изобретения</div>
